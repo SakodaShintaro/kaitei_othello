@@ -3,7 +3,6 @@
 #define EVAL_ELEMENTS_HPP
 
 #include"piece.hpp"
-#include"piece_state.hpp"
 #include"square.hpp"
 #include"eval_params.hpp"
 #include<algorithm>

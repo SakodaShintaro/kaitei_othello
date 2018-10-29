@@ -44,31 +44,13 @@ const Move NULL_MOVE(0);
 
 //sfen形式で出力するオーバーロード
 inline std::ostream& operator<<(std::ostream& os, Move m) {
-    if (m.isDrop()) {
-        os << PieceToSfenStr[kind(m.subject())][0] << '*' << static_cast<int>(SquareToFile[m.to()]) << static_cast<char>(SquareToRank[m.to()] + 'a' - 1);
-    } else {
-        os << static_cast<int>(SquareToFile[m.from()])
-           << static_cast<char>(SquareToRank[m.from()] + 'a' - 1)
-           << static_cast<int>(SquareToFile[m.to()]) 
-           << static_cast<char>(SquareToRank[m.to()] + 'a' - 1);
-        if (m.isPromote())
-            os << '+';
-    }
+    os << m.move;
     return os;
 }
 
 //これコンストラクタとかで書いた方がいい気がするけどうまく書き直せなかった
 //まぁ動けばいいのかなぁ
 static Move stringToMove(std::string input) {
-	static std::unordered_map<char, Piece> charToPiece = {
-		{ 'P', PAWN },
-		{ 'L', LANCE },
-		{ 'N', KNIGHT },
-		{ 'S', SILVER },
-		{ 'G', GOLD },
-		{ 'B', BISHOP },
-		{ 'R', ROOK },
-	};
 	if ('A' <= input[0] && input[0] <= 'Z') { //持ち駒を打つ手
 		Square to = FRToSquare[input[2] - '0'][input[3] - 'a' + 1];
 		return dropMove(to, charToPiece[input[0]]);

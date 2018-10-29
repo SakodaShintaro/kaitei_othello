@@ -31,7 +31,6 @@
     <ClCompile Include="move_picker.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="piece.cpp" />
-    <ClCompile Include="piece_state.cpp" />
     <ClCompile Include="position.cpp" />
     <ClCompile Include="rootstrap_trainer.cpp" />
     <ClCompile Include="searcher.cpp" />
@@ -53,7 +52,6 @@
     <ClInclude Include="eval_elements.hpp" />
     <ClInclude Include="eval_params.hpp" />
     <ClInclude Include="game.hpp" />
-    <ClInclude Include="hand.hpp" />
     <ClInclude Include="hash_table.hpp" />
     <ClInclude Include="history.hpp" />
     <ClInclude Include="MCTSearcher.hpp" />
@@ -62,7 +60,6 @@
     <ClInclude Include="network.hpp" />
     <ClInclude Include="operate_params.hpp" />
     <ClInclude Include="piece.hpp" />
-    <ClInclude Include="piece_state.hpp" />
     <ClInclude Include="position.hpp" />
     <ClInclude Include="pv_table.hpp" />
     <ClInclude Include="rootstrap_trainer.hpp" />
