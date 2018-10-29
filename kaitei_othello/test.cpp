@@ -3,143 +3,10 @@
 #include"piece.hpp"
 #include"square.hpp"
 #include"position.hpp"
-#include"hand.hpp"
 #include"game.hpp"
 #include"network.hpp"
 #include<cassert>
 #include<numeric>
-
-void testInvPieceState() {
-    for (auto c : { BLACK, WHITE }) {
-        for (auto p : { PAWN, LANCE, KNIGHT, SILVER, GOLD, BISHOP, ROOK }) {
-            auto ps = pieceState(p, 3, c);
-            std::cout << ps << " の逆 " << invPieceState(ps) << std::endl;
-        }
-    }
-}
-
-void testHand() {
-	Hand h;
-	h.set(PAWN, 10);
-	assert(h.num(PAWN) == 10);
-	h.set(LANCE, 3);
-	assert(h.num(LANCE) ==3);
-	h.set(KNIGHT, 2);
-	assert(h.num(KNIGHT) == 2);
-	h.set(SILVER, 1);
-	assert(h.num(SILVER) == 1);
-}
-
-void testSFEN() {
-    std::string sfen1 = "1nsgsk2l/l8/1pppp1+R1n/p4pB1p/9/2P1P4/PP1P1PP1P/1B1S5/LN1GKGSNL w RG3P 1";
-    std::cout << sfen1 << std::endl;
-    Position p(*eval_params);
-    p.loadSFEN(sfen1);
-    p.printForDebug();
-    std::string sfen2 = "lnsgkgsn1/1r5b1/ppppppppp/9/9/9/PPPPPPPPP/1B5R1/LNSGKGSNL w - 1";
-    std::cout << sfen2 << std::endl;
-    p.loadSFEN(sfen2);
-    p.printForDebug();
-}
-
-void testVectorSpeed() {
-    constexpr int N = 100000;
-    int normal_array[N];
-    std::array<int, N> st_array;
-    std::vector<int> vec1(N), vec2;
-
-    std::cout << "write" << std::endl;
-    auto start = std::chrono::steady_clock::now();
-    for (int i = 0; i < N; ++i) {
-        normal_array[i] = i;
-    }
-    auto end = std::chrono::steady_clock::now();
-    auto elapsed = end - start;
-    std::cout << "normal_array:" << elapsed.count() << std::endl;
-
-    start = std::chrono::steady_clock::now();
-    for (int i = 0; i < N; ++i) {
-        st_array[i] = i;
-    }
-    end = std::chrono::steady_clock::now();
-    elapsed = end - start;
-    std::cout << "st_array[]  :" << elapsed.count() << std::endl;
-
-    start = std::chrono::steady_clock::now();
-    for (int i = 0; i < N; ++i) {
-        st_array.at(i) = i;
-    }
-    end = std::chrono::steady_clock::now();
-    elapsed = end - start;
-    std::cout << "st_arrayat  :" << elapsed.count() << std::endl;
-
-    start = std::chrono::steady_clock::now();
-    for (int i = 0; i < N; ++i) {
-        vec1[i] = i;
-    }
-    end = std::chrono::steady_clock::now();
-    elapsed = end - start;
-    std::cout << "vector      :" << elapsed.count() << std::endl;
-
-    start = std::chrono::steady_clock::now();
-    for (int i = 0; i < N; ++i) {
-        vec2.push_back(i);
-    }
-    end = std::chrono::steady_clock::now();
-    elapsed = end - start;
-    std::cout << "vector.push :" << elapsed.count() << std::endl;
-
-    std::cout << "read" << std::endl; //-------------------------------------------------------------------------------------
-    int64_t sum = 0;
-
-    int read_array[N];
-    for (int i = 0; i < N; ++i) {
-        read_array[i] = i;
-    }
-    std::random_device seed_gen;
-    std::mt19937 engine(seed_gen());
-    std::shuffle(read_array, read_array + N, engine);
-
-    start = std::chrono::steady_clock::now();
-    for (int i = 0; i < N; ++i) {
-        sum += normal_array[read_array[i]];
-    }
-    end = std::chrono::steady_clock::now();
-    elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    std::cout << "normal_array:" << elapsed.count() << std::endl;
-
-    sum = 0;
-    start = std::chrono::steady_clock::now();
-    for (int i = 0; i < N; ++i) {
-        sum += st_array[read_array[i]];
-    }
-    end = std::chrono::steady_clock::now();
-    elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    std::cout << "st_array[]  :" << elapsed.count() << std::endl;
-
-    sum = 0;
-    start = std::chrono::steady_clock::now();
-    for (int i = 0; i < N; ++i) {
-        sum += st_array.at(read_array[i]);
-    }
-    end = std::chrono::steady_clock::now();
-    elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    std::cout << "st_arrayat  :" << elapsed.count() << std::endl;
-
-    sum = 0;
-    start = std::chrono::steady_clock::now();
-    for (int i = 0; i < N; ++i) {
-        sum += vec1[read_array[i]];
-    }
-    end = std::chrono::steady_clock::now();
-    elapsed = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-    std::cout << "vector      :" << elapsed.count() << std::endl;
-
-    int size = 10;
-    int* a = new int[size];
-    auto p = new std::array<int, PieceStateNum>;
-    (*p)[5] = 5;
-}
 
 void testMakeRandomPosition() {
     std::unique_ptr<Searcher> s(new Searcher(Searcher::SLAVE));
@@ -248,7 +115,7 @@ void testNN() {
         }
 
         auto result = pos.policy();
-        printf("cp = %d\n", (int)pos.score());
+        printf("value_score = %f\n", pos.valueScore());
 
         Network::scoreByPolicy(moves, result, 10000);
         sort(moves.begin(), moves.end(), std::greater<Move>());
@@ -259,22 +126,6 @@ void testNN() {
         pos.doMove(moves.front());
     }
 #endif
-}
-
-void testToLabel() {
-    //for (Piece subject : PieceList) {
-    //    for (Square to : SquareList) {
-    //        for (Square from : SquareList) {
-    //            Move move(to, from, false, false, subject);
-    //            printf("%4d ", move.toLabel());
-    //            move.printWithScore();
-    //        }
-    //    }
-    //}
-
-    Move dragon11b(SQ11, SQ12, false, false, BLACK_ROOK_PROMOTE);
-    Move dragon99w(SQ99, SQ98, false, false, WHITE_ROOK_PROMOTE);
-    assert(dragon11b.toLabel() == dragon99w.toLabel());
 }
 
 void testKifuOutput() {
@@ -306,46 +157,8 @@ void testKifuOutput() {
         pos_t.doMove(best_move);
         game.moves.push_back(best_move);
         game.teachers.push_back(teacher);
-
-        Score repeat_score;
-        if (pos_c.isRepeating(repeat_score)) { //繰り返し
-            if (isMatedScore(repeat_score)) { //連続王手の千日手だけが怖い
-                //しかしどうすればいいかわからない
-            } else {
-                game.result = Game::RESULT_DRAW_REPEAT;
-                break;
-            }
-        }
-
-        if (pos_c.turn_number() >= usi_option.draw_turn) { //長手数
-            game.result = Game::RESULT_DRAW_OVER_LIMIT;
-            break;
-        }
     }
 
-    game.writeCSAFile("./");
     game.writeKifuFile("./");
     printf("finish testKifuOutput()\n");
-}
-
-void testMirror() {
-    for (Square sq : SquareList) {
-        auto num = SquareToNum[sq];
-        std::cout << num << "->" << mirrorSqNum(num) << std::endl;
-    }
-
-    std::vector<std::pair<PieceState, PieceState>> q = {
-        { pieceState(BLACK_PAWN, SQ17),pieceState(BLACK_PAWN, SQ97) },
-        { pieceState(WHITE_LANCE, SQ64),pieceState(WHITE_LANCE, SQ44) },
-        { pieceState(BLACK_KNIGHT, SQ25),pieceState(BLACK_KNIGHT, SQ85) },
-        { pieceState(WHITE_SILVER, SQ54),pieceState(WHITE_SILVER, SQ54) },
-        { pieceState(BLACK_GOLD, SQ69),pieceState(BLACK_GOLD, SQ49) },
-        { pieceState(WHITE_BISHOP, SQ22),pieceState(WHITE_BISHOP, SQ82) },
-        { pieceState(BLACK_ROOK, SQ34),pieceState(BLACK_ROOK, SQ74) },
-        { pieceState(WHITE_PAWN_PROMOTE, SQ37),pieceState(WHITE_PAWN_PROMOTE, SQ77) }
-    };
-
-    for (auto p : q) {
-        assert(mirrorPieceState(p.first) == p.second);
-    }
 }

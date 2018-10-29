@@ -13,6 +13,7 @@ public:
 	//Move() : move(0), score(Score(0)) {}
     Move() = default;
     Move(int32_t x) : move(x), score(Score(x)) {}
+    Move(Square to) : move(to), score(Score(0)) {}
 
 	//表示
 	void print() const {
@@ -51,15 +52,8 @@ inline std::ostream& operator<<(std::ostream& os, Move m) {
 //これコンストラクタとかで書いた方がいい気がするけどうまく書き直せなかった
 //まぁ動けばいいのかなぁ
 static Move stringToMove(std::string input) {
-	if ('A' <= input[0] && input[0] <= 'Z') { //持ち駒を打つ手
-		Square to = FRToSquare[input[2] - '0'][input[3] - 'a' + 1];
-		return dropMove(to, charToPiece[input[0]]);
-	} else { //盤上の駒を動かす手
-		Square from = FRToSquare[input[0] - '0'][input[1] - 'a' + 1];
-		Square   to = FRToSquare[input[2] - '0'][input[3] - 'a' + 1];
-        bool promote = (input.size() == 5 && input[4] == '+');
-        return Move(to, from, false, promote, EMPTY, EMPTY);
-	}
+    Square to = FRToSquare[input[0] - '0'][input[1] - 'a' + 1];
+    return Move(to);
 }
 
 #endif

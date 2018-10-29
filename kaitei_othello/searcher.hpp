@@ -16,7 +16,7 @@ class Searcher {
 public:
     //役割
     enum Role {
-        MAIN, SLAVE, MATE
+        MAIN, SLAVE
     };
 
     //コンストラクタ
@@ -31,11 +31,6 @@ public:
     //探索で再帰的に用いる通常の関数
     template<bool isPVNode, bool train_mode>
     Score search(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root);
-
-	//詰み探索を行う関数:今は使っていない
-	void searchMate(Position& root);
-    bool searchCheck(Position &pos, Depth depth);
-    bool searchEvasion(Position &pos, Depth depth);
 
     //局面の合法手から完全ランダムに選択する関数
     static Move randomChoice(Position& pos);

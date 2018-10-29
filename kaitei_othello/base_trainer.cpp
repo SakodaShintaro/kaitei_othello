@@ -34,7 +34,7 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
 #endif
     }
 #else
-    const auto win_rate = sigmoid(pos.valueForTurn(), 1.0);
+    const auto win_rate = sigmoid(pos.valueScoreForTurn(), 1.0);
     double value_loss = binaryCrossEntropy(win_rate, teacher[POLICY_DIM]);
 #endif
 
@@ -121,7 +121,7 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
     //ílÇïœÇ¶Ç∏Ç…èáì`îdÇµÇΩÇ∆Ç´ÇÃëπé∏
     double loss1 = 0.0;
     auto y1 = softmax(pos.policy());
-    auto value1 = sigmoid(pos.valueForTurn(), 1.0);
+    auto value1 = sigmoid(pos.valueScoreForTurn(), 1.0);
     std::cout << "value1 = " << value1 << std::endl;
     for (int32_t l = 0; l < POLICY_DIM; l++) {
         loss1 += crossEntropy(y1[l], teacher[l]);
@@ -135,7 +135,7 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
                 eval_params->w[i](j, k) += eps;
                 double loss2 = 0.0;
                 auto y2 = softmax(pos.policy());
-                auto value2 = sigmoid(pos.valueForTurn(), 1.0);
+                auto value2 = sigmoid(pos.valueScoreForTurn(), 1.0);
                 for (int32_t l = 0; l < POLICY_DIM; l++) {
                     loss2 += crossEntropy(y2[l], teacher[l]);
                 }
@@ -158,7 +158,7 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
             eval_params->b[i](j) += eps;
             double loss2 = 0.0;
             auto y2 = softmax(pos.policy());
-            auto value2 = sigmoid(pos.valueForTurn(), 1.0);
+            auto value2 = sigmoid(pos.valueScoreForTurn(), 1.0);
             for (int32_t l = 0; l < POLICY_DIM; l++) {
                 loss2 += crossEntropy(y2[l], teacher[l]);
             }

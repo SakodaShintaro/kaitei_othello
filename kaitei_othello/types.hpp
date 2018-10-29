@@ -20,46 +20,20 @@ enum Depth {
     MATE_DEPTH_MAX = 128,
 };
 
-enum Score {
-    MAX_SCORE = 1000000,
-    SCORE_ZERO = 0,
-    DRAW_SCORE = 0,
-    MIN_SCORE = -MAX_SCORE,
-    MATE_SCORE_LOWER_BOUND = MAX_SCORE - static_cast<int>(MATE_DEPTH_MAX),
-    MATE_SCORE_UPPER_BOUND = MIN_SCORE + static_cast<int>(MATE_DEPTH_MAX),
-    SCORE_NONE = MAX_SCORE + 1
-};
+using Score = float;
+constexpr Score MAX_SCORE = 1000000.0;
+constexpr Score SCORE_ZERO = 0;
+constexpr Score DRAW_SCORE = 0;
+constexpr Score MIN_SCORE = -MAX_SCORE;
+constexpr Score MATE_SCORE_LOWER_BOUND = MAX_SCORE - static_cast<int>(MATE_DEPTH_MAX);
+constexpr Score MATE_SCORE_UPPER_BOUND = MIN_SCORE + static_cast<int>(MATE_DEPTH_MAX);
+constexpr Score SCORE_NONE = MAX_SCORE + 1;
 
 constexpr double CP_GAIN = 1.0 / 600.0;
 
 inline bool isMatedScore(const Score score) {
     return score <= MATE_SCORE_UPPER_BOUND || MATE_SCORE_LOWER_BOUND <= score;
 }
-
-//演算子をオーバーロードしておかないと不便
-//Score
-constexpr Score operator-(Score lhs) { return Score(-int(lhs)); }
-constexpr Score operator+(Score lhs, Score rhs) { return Score(int(lhs) + int(rhs)); }
-constexpr Score operator-(Score lhs, Score rhs) { return Score(int(lhs) - int(rhs)); }
-constexpr Score operator+(Score lhs, int rhs) { return Score(int(lhs) + rhs); }
-constexpr Score operator-(Score lhs, int rhs) { return Score(int(lhs) - rhs); }
-constexpr Score operator+(int lhs, Score rhs) { return Score(lhs + int(rhs)); }
-constexpr Score operator-(int lhs, Score rhs) { return Score(lhs - int(rhs)); }
-inline Score& operator+=(Score& lhs, Score rhs) { return lhs = lhs + rhs; }
-inline Score& operator-=(Score& lhs, Score rhs) { lhs = lhs - rhs;  return lhs; }
-inline Score& operator+=(Score& lhs, int rhs) { lhs = lhs + rhs;  return lhs; }
-inline Score& operator-=(Score& lhs, int rhs) { lhs = lhs - rhs;  return lhs; }
-inline Score& operator++(Score& lhs) { lhs = lhs + 1;  return lhs; }
-inline Score& operator--(Score& lhs) { lhs = lhs - 1;  return lhs; }
-inline Score operator++(Score& lhs, int) { Score t = lhs; lhs += 1;  return t; }
-inline Score operator--(Score& lhs, int) { Score t = lhs; lhs -= 1;  return t; }
-
-constexpr Score operator*(Score lhs, int rhs) { return Score(int(lhs) * rhs); }
-constexpr Score operator*(int lhs, Score rhs) { return Score(lhs * int(rhs)); }
-constexpr Score operator/(Score lhs, int rhs) { return Score(int(lhs) / rhs); }
-inline Score& operator*=(Score& lhs, int rhs) { lhs = lhs * rhs;  return lhs; }
-inline Score& operator/=(Score& lhs, int rhs) { lhs = lhs / rhs;  return lhs; }
-std::ostream& operator<<(std::ostream& os, const Score s);
 
 //Depth
 constexpr Depth operator-(Depth lhs) { return Depth(-int(lhs)); }

@@ -263,21 +263,6 @@ std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit)
             pos.doMove(best_move);
             game.moves.push_back(best_move);
             game.teachers.push_back(teacher);
-
-            Score repeat_score;
-            if (pos.isRepeating(repeat_score)) { //繰り返し
-                if (isMatedScore(repeat_score)) { //連続王手の千日手だけが怖い
-                    //しかしどうすればいいかわからない
-                } else {
-                    game.result = Game::RESULT_DRAW_REPEAT;
-                    break;
-                }
-            }
-
-            if (pos.turn_number() >= usi_option.draw_turn) { //長手数
-                game.result = Game::RESULT_DRAW_OVER_LIMIT;
-                break;
-            }
         }
     }
     return games;
@@ -328,16 +313,6 @@ std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
                     pos_t.doMove(best_move);
                     game.moves.push_back(best_move);
                     game.teachers.push_back(teacher);
-
-                    Score repeat_score;
-                    if (pos_c.isRepeating(repeat_score)) { //繰り返し
-                        if (isMatedScore(repeat_score)) { //連続王手の千日手だけが怖い
-                            //しかしどうすればいいかわからない
-                        } else {
-                            game.result = Game::RESULT_DRAW_REPEAT;
-                            break;
-                        }
-                    }
 
                     if (pos_c.turn_number() >= usi_option.draw_turn) { //長手数
                         game.result = Game::RESULT_DRAW_OVER_LIMIT;
@@ -815,7 +790,7 @@ void RootstrapTrainer::testLearn() {
 #ifdef USE_CATEGORICAL
                     std::cout << std::endl;
 #else
-                    std::cout << ", value = " << sigmoid(pos.valueForTurn(), 1.0) << std::endl;
+                    std::cout << ", value = " << sigmoid(pos.valueScoreForTurn(), 1.0) << std::endl;
 #endif
                     pos.doMove(move);
                 }

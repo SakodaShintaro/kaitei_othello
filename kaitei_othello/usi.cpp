@@ -6,7 +6,6 @@
 #include"shared_data.hpp"
 #include"eval_params.hpp"
 #include"game.hpp"
-#include"bonanza_method_trainer.hpp"
 #include"rootstrap_trainer.hpp"
 #include"treestrap_trainer.hpp"
 #include"test.hpp"
@@ -53,14 +52,6 @@ void USI::loop() {
             eval_params->writeFile();
             eval_params->writeFile("tmp.bin");
             std::cout << "0初期化したパラメータを出力" << std::endl;
-        } else if (input == "cleanGame") {
-            std::cout << "棋譜のあるフォルダへのパス : ";
-            std::string file_path;
-            std::cin >> file_path;
-            cleanGames(file_path);
-        } else if (input == "BonanzaMethod") {
-            BonanzaMethodTrainer trainer("bonanza_method_settings.txt");
-            trainer.train();
         } else if (input == "learnAsync") {
             RootstrapTrainer trainer("rootstrap_settings.txt");
             trainer.learnAsync();
@@ -77,28 +68,11 @@ void USI::loop() {
             testMakeRandomPosition();
         } else if (input == "testKifuOutput") {
             testKifuOutput();
-#ifndef USE_NN
-        } else if (input == "convertAnotherEvalParams") {
-            std::string path;
-            std::cin >> path;
-            std::string kkp_file_name;
-            std::cin >> kkp_file_name;
-            std::string kpp_file_name;
-            std::cin >> kpp_file_name;
-            readAnotherFormatFile(path, kkp_file_name, kpp_file_name);
-            eval_params->writeFile();
-#else
-        } else if (input == "printBias") {
-            eval_params->readFile("tmp.bin");
-            eval_params->printBias();
-#endif
         } else if (input == "testNN") {
             testNN();
         } else if (input == "testLearn") {
             RootstrapTrainer trainer("rootstrap_settings.txt");
             trainer.testLearn();
-        } else if (input == "testMirror") {
-            testMirror();
         } else {
             std::cout << "Illegal input" << std::endl;
         }
@@ -124,7 +98,7 @@ void USI::usi() {
     usi_option.draw_turn = 256;
     printf("option name temperature type spin default 10 min 1 max 100000\n");
     usi_option.temperature = 10.0;
-    printf("option name resign_score type spin default %d min %d max %d\n", MIN_SCORE, MIN_SCORE, MAX_SCORE);
+    printf("option name resign_score type spin default %d min %d max %d\n", (int32_t)MIN_SCORE, (int32_t)MIN_SCORE, (int32_t)MAX_SCORE);
     usi_option.resign_score = MIN_SCORE;
 
 #ifdef USE_MCTS
@@ -220,7 +194,6 @@ void USI::position() {
             sfen += " ";
         }
     }
-    shared_data.root.loadSFEN(sfen);
 
     std::cin >> input;  //input == "moves" or "go"となる
     if (input != "go") {
@@ -230,7 +203,6 @@ void USI::position() {
             }
             //inputをMoveに直して局面を動かす
             Move move = stringToMove(input);
-            move = shared_data.root.transformValidMove(move);
             shared_data.root.doMove(move);
         }
     }

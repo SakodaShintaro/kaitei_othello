@@ -1,5 +1,4 @@
 ﻿#include"usi.hpp"
-#include"piece_state.hpp"
 #include"usi_options.hpp"
 #include"test.hpp"
 #include"bitboard.hpp"
@@ -12,12 +11,6 @@ SharedData shared_data;
 
 int main()
 {
-	initPieceToStateIndex();
-	initInvPieceState();
-
-	initCanMove();
-	initCanJump();
-
     initConDirToOppositeDir();
 
     Position::initHashSeed();

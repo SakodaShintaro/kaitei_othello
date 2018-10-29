@@ -21,14 +21,12 @@
   <ItemGroup>
     <ClCompile Include="base_trainer.cpp" />
     <ClCompile Include="bitboard.cpp" />
-    <ClCompile Include="bonanza_method_trainer.cpp" />
     <ClCompile Include="calcScore.cpp" />
     <ClCompile Include="game.cpp" />
     <ClCompile Include="hash_table.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MCTSearcher.cpp" />
     <ClCompile Include="move.cpp" />
-    <ClCompile Include="move_picker.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="piece.cpp" />
     <ClCompile Include="position.cpp" />
@@ -46,7 +44,6 @@
     <ClInclude Include="array_map.hpp" />
     <ClInclude Include="base_trainer.hpp" />
     <ClInclude Include="bitboard.hpp" />
-    <ClInclude Include="bonanza_method_trainer.hpp" />
     <ClInclude Include="book.hpp" />
     <ClInclude Include="common.hpp" />
     <ClInclude Include="eval_elements.hpp" />
@@ -56,7 +53,6 @@
     <ClInclude Include="history.hpp" />
     <ClInclude Include="MCTSearcher.hpp" />
     <ClInclude Include="move.hpp" />
-    <ClInclude Include="move_picker.hpp" />
     <ClInclude Include="network.hpp" />
     <ClInclude Include="operate_params.hpp" />
     <ClInclude Include="piece.hpp" />

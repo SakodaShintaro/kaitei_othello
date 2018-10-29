@@ -1,6 +1,5 @@
 ﻿#include"searcher.hpp"
 #include"move.hpp"
-#include"move_picker.hpp"
 #include"usi_options.hpp"
 #include"types.hpp"
 #include"shared_data.hpp"
@@ -35,11 +34,6 @@ void Searcher::think() {
 
     //コピーして使う
     Position root = shared_data.root;
-
-    if (role_ == MATE) {
-        searchMate(root);
-        return;
-    }
 
     //思考する局面の表示
     if (role_ == MAIN) {
@@ -137,7 +131,7 @@ void Searcher::think() {
             if (best_score <= alpha) {
                 //fail-low
                 if (role_ == MAIN) {
-                    printf("aspiration fail-low, alpha = %d\n", alpha);
+                    printf("aspiration fail-low, alpha = %f\n", alpha);
                     sendInfo(depth, "cp", best_score, UPPER_BOUND);
                 }
 
@@ -147,7 +141,7 @@ void Searcher::think() {
             } else if (best_score >= beta) {
                 //fail-high
                 if (role_ == MAIN) {
-                    printf("aspiration fail-high, beta = %d\n", beta);
+                    printf("aspiration fail-high, beta = %f\n", beta);
                     sendInfo(depth, "cp", best_score, LOWER_BOUND);
                 }
 
@@ -176,7 +170,7 @@ void Searcher::think() {
             } else {
                 //詰みあり
                 Score mate_num = MAX_SCORE - std::abs(root_moves_[0].score);
-                mate_num *= (mate_num % 2 == 0 ? -1 : 1);
+                mate_num *= ((int32_t)mate_num % 2 == 0 ? -1 : 1);
                 sendInfo(depth, "mate", mate_num, EXACT_BOUND);
             }
         }
@@ -287,182 +281,7 @@ std::pair<Move, TeacherType> Searcher::thinkForGenerateLearnData(Position& root,
 
 template<bool isPVNode>
 Score Searcher::qsearch(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root) {
-    // -----------------------
-    //     最初のチェック
-    // -----------------------
-
-    pv_table_.closePV(distance_from_root);
-    seldepth_ = std::max(seldepth_, distance_from_root * PLY);
-
-    //assert(isPVNode || alpha + 1 == beta);
-    assert(0 <= distance_from_root && distance_from_root <= DEPTH_MAX);
-
-    //探索局面数を増やす
-    node_number_++;
-
-    // -----------------------
-    //     停止確認
-    // -----------------------
-
-#ifdef USE_NN
-    //if (pos.generateAllMoves().size() == 0) {
-    //    //詰み
-    //    Score s = MIN_SCORE + distance_from_root;
-    //    if (pos.lastMove().isDrop() && kind(pos.lastMove().subject()) == PAWN) {
-    //        //打ち歩詰めなので勝ち
-    //        return -s;
-    //    }
-    //    return s;
-    //}
-
-    return pos.scoreForTurn();
-#endif
-
-    //ここでやる必要があるのかはわからない
-    if (shouldStop()) return SCORE_ZERO;
-
-    // -----------------------
-    //     置換表を見る
-    // -----------------------
-    auto hash_entry = shared_data.hash_table.find(pos.hash_value());
-    Score tt_score = hash_entry ? hash_entry->best_move.score : MIN_SCORE;
-
-    //tt_moveの合法性判定はここでやらなくてもMovePickerで確認するはず
-    Move tt_move = hash_entry ? hash_entry->best_move : NULL_MOVE;
-    Depth tt_depth = hash_entry ? hash_entry->depth : Depth(0);
-
-    //置換表による枝刈り
-    if (!isPVNode
-        && !pos.isKingChecked()
-        && hash_entry
-        && tt_depth >= depth
-        && tt_score >= beta) {
-        search_log.hash_cut_num++;
-        return tt_score;
-    }
-
-    //指し手を生成
-    MovePicker mp(pos, tt_move, depth, history_);
-    Score best_score = (pos.isKingChecked() && depth == 0 ? MIN_SCORE + distance_from_root //王手がかかっていたら最低点から始める
-        : pos.scoreForTurn());                            //そうでなかったら評価関数を呼び出した値から始める
-    if (best_score >= beta) {
-        return best_score;
-    }
-
-    //変数宣言
-    Move best_move = NULL_MOVE;
-    int move_count = 0;
-    
-    for (Move current_move = mp.nextMove(); current_move != NULL_MOVE; current_move = mp.nextMove()) {
-        //停止確認
-        if (shouldStop()) {
-            return Score(0);
-        }
-
-        //Null Window Searchはした方がいいんだろうか.今はしてない
-        pos.doMove(current_move);
-        Score score = -qsearch<isPVNode>(pos, -beta, -alpha, depth - PLY, distance_from_root + 1);
-
-        if (score > best_score) {
-            best_score = score;
-            best_move = current_move;
-            pv_table_.update(best_move, distance_from_root);
-
-            if (best_score >= beta) {
-                //fail-high
-                pos.undo();
-                break; //beta-cut
-            }
-
-            alpha = std::max(alpha, best_score);
-        }
-
-        pos.undo();
-
-        ++move_count;
-    }
-
-    if (isMatedScore(best_score) && pos.lastMove().isDrop() && kind(pos.lastMove().subject()) == PAWN) {
-        //打ち歩詰めなので勝ち
-        return -best_score;
-    }
-
-    shared_data.hash_table.save(pos.hash_value(), best_move, best_score, depth);
-
-    return best_score;
-}
-
-bool Searcher::searchCheck(Position &pos, Depth depth) {
-    //時間を確認
-    if (shouldStop()) return false;
-
-    //局面数を増やす
-    node_number_++;
-
-    //王手を生成
-    Move check_moves[MAX_MOVE_LIST_SIZE];
-    Move* end_ptr = check_moves;
-    pos.generateCheckMoves(end_ptr);
-
-    //可能な王手の数が0だったら詰まない
-    if (end_ptr == check_moves) return false;
-
-    //深さ最大まで来ていてまだ合法手があるなら不詰み
-    //王手側で深さ最大になることはないはずだけど一応
-    if (depth <= 0) return false;
-
-    //全ての王手について1手読みを深める
-    for (Move* start_ptr = check_moves; start_ptr < end_ptr; start_ptr++) {
-        pos.doMove(*start_ptr);
-        if (searchEvasion(pos, depth - 1)) { //詰み
-            //PV更新
-            pv_table_.update(*start_ptr, depth);
-
-            //局面を戻す
-            pos.undo();
-
-            return true;
-        }
-        pos.undo();
-    }
-
-    return false;
-}
-
-bool Searcher::searchEvasion(Position &pos, Depth depth) {
-    //時間を確認
-    if (shouldStop()) return false;
-
-    //局面数を増やす
-    node_number_++;
-
-    //指し手を全て生成
-    std::vector<Move> move_list;
-    Move evasion_moves[MAX_MOVE_LIST_SIZE];
-    Move* move_ptr = evasion_moves;
-    pos.generateEvasionMoves(move_ptr);
-
-    //番兵を設置
-    *move_ptr = NULL_MOVE;
-
-    //可能な指し手の数が0だったらtrueを返す
-    if (evasion_moves[0] == NULL_MOVE) return true;
-
-    //深さ最大まで来ていてまだ合法手があるなら不詰み
-    if (depth <= 0) return false;
-
-    //全ての指し手について1手読みを深める
-    for (Move* current_move = &evasion_moves[0]; *current_move != NULL_MOVE; ++current_move) {
-        pos.doMove(*current_move);
-        if (!searchCheck(pos, depth - 1)) { //詰まない逃れ方がある
-            pos.undo();
-            return false;
-        }
-        pos.undo();
-    }
-
-    //どの逃げ方でも詰んでいたら詰み
-    return true;
+    return pos.valueScoreForTurn();
 }
 
 void Searcher::sendInfo(Depth depth, std::string cp_or_mate, Score score, Bound bound) {
@@ -573,29 +392,6 @@ inline bool Searcher::shouldStop() {
     }
     return false;
 }
-void Searcher::searchMate(Position& root) {
-    for (Depth depth = Depth(1); ; depth += 2) {
-        if (shouldStop()) {
-            break;
-        }
-
-        if (searchCheck(root, depth)) {
-            std::cout << "詰み" << std::endl;
-
-            //詰みを発見したので他に動いているスレッドを止める
-            shared_data.stop_signal = true;
-
-            //詰みを発見したというシグナルそのものも必要そうな気がする
-            //shared_data.find_mate = true;
-
-            //GUIに読み筋を送る
-            sendInfo(depth, "mate", static_cast<Score>(depth), EXACT_BOUND);
-
-            //GUIにbest_moveを送る
-            //std::cout << "bestmove " << mate_move << std::endl;
-        }
-    }
-}
 
 #define OMIT_PRUNINGS
 
@@ -636,13 +432,6 @@ Score Searcher::search(Position &pos, Score alpha, Score beta, Depth depth, int 
         //停止確認
         if (!train_mode && shouldStop()) {
             return SCORE_ZERO;
-        }
-
-        //引き分けの確認
-        Score repeate_score;
-        if (pos.isRepeating(repeate_score)) {
-            pv_table_.closePV(distance_from_root);
-            return repeate_score;
         }
 
         //-----------------------------
@@ -991,10 +780,6 @@ moves_loop:
 
     if (move_count == 0) {
         //詰み
-        if (pos.lastMove().isDrop() && kind(pos.lastMove().subject()) == PAWN) {
-            //打ち歩詰めなので反則勝ち
-            return MAX_SCORE;
-        }
         return MIN_SCORE + distance_from_root;
     }
 

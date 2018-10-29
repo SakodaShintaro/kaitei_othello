@@ -2,7 +2,6 @@
 
 #include"position.hpp"
 #include"types.hpp"
-#include"move_picker.hpp"
 #include"shared_data.hpp"
 #include"usi_options.hpp"
 

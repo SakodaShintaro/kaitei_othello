@@ -278,20 +278,8 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
 #else
     CalcType result;
 #endif
-    Score score;
     // ノードの展開の確認
-    if (pos.isRepeating(score)) {
-#ifdef USE_CATEGORICAL
-        //これ逆じゃない？ 大丈夫？
-        double v = sigmoid((int32_t)score, CP_GAIN);
-        for (int32_t i = 0; i < BIN_SIZE; i++) {
-            result[i] = (i == (int32_t)(v * VALUE_WIDTH) ? 1.0f : 0.0f);
-            assert(0.0 <= result[i] && result[i] <= 1.0);
-        }
-#else
-        result = 1.0f - (CalcType)sigmoid((int32_t)score, CP_GAIN);
-#endif
-    } else if (child_indices[next_index] == UctHashTable::NOT_EXPANDED) {
+    if (child_indices[next_index] == UctHashTable::NOT_EXPANDED) {
         // ノードの展開
         auto index = expandNode(pos);
         child_indices[next_index] = index;
@@ -363,25 +351,14 @@ Index MCTSearcher::expandNode(Position& pos) {
     if (current_node.child_num > 0) {
         evalNode(pos, index);
     } else {
-        if (pos.lastMove().isDrop() && (kind(pos.lastMove().subject()) == PAWN)) {
-            //打ち歩詰め
+        //詰み
 #ifdef USE_CATEGORICAL
-            for (int32_t i = 0; i < BIN_SIZE; i++) {
-                current_node.value_dist[i] = (i == BIN_SIZE - 1 ? 1.0f : 0.0f);
-            }
-#else
-            current_node.value_win = 1.0;
-#endif
-        } else {
-            //詰み
-#ifdef USE_CATEGORICAL
-            for (int32_t i = 0; i < BIN_SIZE; i++) {
-                current_node.value_dist[i] = (i == 0 ? 1.0f : 0.0f);
-            }
-#else
-            current_node.value_win = 0.0;
-#endif
+        for (int32_t i = 0; i < BIN_SIZE; i++) {
+            current_node.value_dist[i] = (i == 0 ? 1.0f : 0.0f);
         }
+#else
+        current_node.value_win = 0.0;
+#endif
         current_node.evaled = true;
     }
 
@@ -403,7 +380,7 @@ void MCTSearcher::evalNode(Position& pos, Index index) {
 #ifdef USE_CATEGORICAL
     current_node.value_dist = pos.valueDist();
 #else
-    current_node.value_win = (CalcType)sigmoid(pos.valueForTurn(), 1.0);
+    current_node.value_win = (CalcType)sigmoid(pos.valueScoreForTurn(), 1.0);
 #endif
 #else
     Position p = pos;
@@ -418,18 +395,6 @@ void MCTSearcher::evalNode(Position& pos, Index index) {
 
     //softmax分布にする
     current_node.nn_rates = softmax(legal_move_policy);
-
-    Score repeat_score;
-    if (pos.isRepeating(repeat_score)) {
-#ifdef USE_CATEGORICAL
-        double v = sigmoid((int32_t)repeat_score, CP_GAIN);
-        for (int32_t i = 0; i < BIN_SIZE; i++) {
-            current_node.value_dist[i] = (i == (int32_t)(v * VALUE_WIDTH) ? 1.0f : 0.0f);
-        }
-#else
-        current_node.value_win = (CalcType)sigmoid((int)repeat_score, CP_GAIN);
-#endif
-    }
 
     current_node.evaled = true;
 }

@@ -86,7 +86,7 @@ void TreestrapTrainer::startLearn() {
                     break;
                 }
 
-                Score curr_score = pos.scoreForTurn();
+                Score curr_score = pos.valueScoreForTurn();
                 Score best_score = best_move.score;
 
                 //Œ»‹Ç–Ê‚ÌŠwK
@@ -99,11 +99,6 @@ void TreestrapTrainer::startLearn() {
                 learned_position_num_++;
 
                 pos.doMove(best_move);
-
-                Score dummy;
-                if (pos.isRepeating(dummy) || pos.turn_number() >= 256) {
-                    break;
-                }
             }
         }
 
@@ -118,7 +113,7 @@ void TreestrapTrainer::startLearn() {
 
 Score TreestrapTrainer::miniMaxLearn(Position& pos, Depth depth) {
     //Œ»‹Ç–Ê‚Ì•]‰¿’l
-    Score curr_score = pos.scoreForTurn();
+    Score curr_score = pos.valueScoreForTurn();
 
     if (depth < PLY) {
         //’TõI—¹
@@ -160,7 +155,7 @@ Score TreestrapTrainer::miniMaxLearn(Position& pos, Depth depth) {
 
 Score TreestrapTrainer::alphaBetaLearn(Position& pos, Score alpha, Score beta, Depth depth) {
     //Œ»‹Ç–Ê‚Ì•]‰¿’l
-    Score curr_score = pos.scoreForTurn();
+    Score curr_score = pos.valueScoreForTurn();
 
     if (depth < PLY) {
         //’TõI—¹
