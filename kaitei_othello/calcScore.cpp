@@ -78,6 +78,17 @@ void Position::calcScoreDiff() {
     initScore();
 }
 
+int32_t Position::score() const {
+    int32_t result = 0;
+    for (Square sq : SquareList) {
+        if (board_[sq] == EMPTY) {
+            continue;
+        }
+        result += (board_[sq] == BLACK_PIECE ? 1 : -1);
+    }
+    return result;
+}
+
 Vec Position::makeOutput() const{
     std::vector<CalcType> input = makeFeatures();
     Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());

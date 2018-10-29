@@ -144,6 +144,11 @@ void Position::doMove(const Move move) {
     }
 #endif
 
+    if (move == NULL_MOVE) {
+        doNullMove();
+        return;
+    }
+
     //動かす前の状態を残しておく
     std::vector<Piece> board(SquareNum);
     for (int32_t i = 0; i < SquareNum; i++) {
@@ -169,8 +174,8 @@ void Position::doMove(const Move move) {
             } else if (board_[sq] == p) {
                 if (is_there_enemy) {
                     isOK = true;
-                    break;
                 }
+                break;
             } else {
                 break;
             }
@@ -215,9 +220,7 @@ void Position::doMove(const Move move) {
 #endif
 
     //1bit目を0にする
-    hash_value_ &= ~1;
-    //手番が先手だったら1bitは0のまま,後手だったら1bit目は1になる
-    hash_value_ |= color_;
+    hash_value_ ^= 1;
 
 #ifdef USE_NN
     already_calc_ = false;
@@ -255,6 +258,15 @@ void Position::undo() {
 }
 
 void Position::doNullMove() {
+    //スタックの変更
+    std::vector<Piece> board(SquareNum);
+    for (int32_t i = 0; i < SquareNum; i++) {
+        board[i] = board_[i];
+    }
+    stack_.emplace_back(board);
+
+    hash_values_.push_back(hash_value_);
+
     //手番の更新
     color_ = ~color_;
 
@@ -319,6 +331,9 @@ std::vector<Move> Position::generateAllMoves() const {
         if (isLegalMove(move)) {
             moves.push_back(move);
         }
+    }
+    if (moves.size() == 0) {
+        moves.push_back(NULL_MOVE);
     }
     return moves;
 }

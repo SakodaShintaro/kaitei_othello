@@ -39,6 +39,7 @@ public:
 
     //評価値計算
     void calcScoreDiff();
+    int32_t score() const;
 #ifdef USE_NN
     Vec makeOutput() const;
     std::vector<CalcType> policy();

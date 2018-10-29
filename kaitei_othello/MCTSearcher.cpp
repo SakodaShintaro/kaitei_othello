@@ -347,18 +347,38 @@ Index MCTSearcher::expandNode(Position& pos) {
     current_node.child_wins = std::vector<float>(current_node.child_num, 0.0);
 #endif
 
+    //終局しているかどうかで条件分けするべき
+    //終局しているかどうかはPositionクラスで判定
+    //evalNodeの中で、movesのsize()が1ならPolicyを呼び出さず1として良い
+    //こういうところ明日直してな
+    assert(false);
+
     // ノードを評価
     if (current_node.child_num > 0) {
         evalNode(pos, index);
     } else {
-        //詰み
+        //パスするしかない
+        if (pos.lastMove() == NULL_MOVE) {
+            //直前もパスだったら終了
+            int32_t result = pos.score();
+            if (result == 0) {
+                current_node.value_win = 0.5;
+            } else if (result > 0) {
+                current_node.value_win = 1.0;
+            } else {
+                current_node.value_win = 0.0;
+            }
+        } else {
+            current_node.nn_rates = { 1.0 };
+
 #ifdef USE_CATEGORICAL
-        for (int32_t i = 0; i < BIN_SIZE; i++) {
-            current_node.value_dist[i] = (i == 0 ? 1.0f : 0.0f);
-        }
+            for (int32_t i = 0; i < BIN_SIZE; i++) {
+                current_node.value_dist[i] = (i == 0 ? 1.0f : 0.0f);
+            }
 #else
-        current_node.value_win = 0.0;
+            current_node.value_win = (CalcType)sigmoid(pos.valueScoreForTurn(), 1.0);
 #endif
+        }
         current_node.evaled = true;
     }
 
