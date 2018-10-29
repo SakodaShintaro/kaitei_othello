@@ -3,7 +3,7 @@
 
 Dir ConDirToOppositeDir[129];
 
-const std::array<Square, 81> SquareList = {
+const std::array<Square, 64> SquareList = {
     SQ11, SQ12, SQ13, SQ14, SQ15, SQ16, SQ17, SQ18,
     SQ21, SQ22, SQ23, SQ24, SQ25, SQ26, SQ27, SQ28,
     SQ31, SQ32, SQ33, SQ34, SQ35, SQ36, SQ37, SQ38,

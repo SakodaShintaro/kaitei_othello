@@ -36,8 +36,9 @@ void Bitboard::init() {
     for (Square sq1 : SquareList) {
         for (Square sq2 : SquareList) {
             auto dir = directionAtoB(sq1, sq2);
-            if (dir == H)
+            if (dir == H) {
                 continue;
+            }
             //1マスずつたどっていく
             for (Square between = sq1 + dir; between != sq2; between = between + dir) {
                 BETWEEN_BB[sq1][sq2] |= SQUARE_BB[between];

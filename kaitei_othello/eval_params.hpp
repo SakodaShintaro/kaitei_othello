@@ -29,7 +29,7 @@ const std::string DEFAULT_FILE_NAME = "model.bin";
 #ifdef SMALL_OUTPUT
 constexpr int32_t POLICY_DIM = 81 * 10; // = pieceToIndex[BLACK_KING]
 #else
-constexpr int32_t POLICY_DIM = 81 * ((8 + 2) * 2 + 7);
+constexpr int32_t POLICY_DIM = 64;
 #endif
 
 #ifdef USE_CATEGORICAL
@@ -39,7 +39,7 @@ constexpr double VALUE_WIDTH = 1.0 / BIN_SIZE;
 #else
 constexpr int32_t OUTPUT_DIM = POLICY_DIM + 1;
 #endif
-constexpr int32_t INPUT_DIM = 95; //81(盤面) + 7 * 2(持ち駒先手後手)
+constexpr int32_t INPUT_DIM = 65; //64(盤面) + 1(手番)
 constexpr int32_t HIDDEN_DIM = 128;
 constexpr int32_t LAYER_NUM = 2;
 

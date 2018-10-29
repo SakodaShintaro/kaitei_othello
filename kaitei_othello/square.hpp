@@ -41,8 +41,8 @@ enum Dir {
     H = 0,
     U = -1,  //上
     D = 1,  //下
-    R = -11, //右
-    L = 11, //左
+    R = -10, //右
+    L = 10, //左
     RU = R + U, //右上
     RD = R + D, //右下
     LD = L + D, //左下
@@ -199,7 +199,7 @@ inline static int operator<<(Square sq, int shift) {
     return static_cast<int>(static_cast<int>(sq) << shift);
 }
 
-extern const std::array<Square, 81> SquareList;
+extern const std::array<Square, 64> SquareList;
 extern const int SquareToNum[];
 extern const Square InvSquare[];
 

@@ -160,16 +160,11 @@ std::array<CalcType, BIN_SIZE> Position::valueDist() {
 
 std::vector<float> Position::makeFeatures() const {
     std::vector<float> features(INPUT_DIM, 0);
-    if (color_ == BLACK) {
-        for (auto sq : SquareList) {
-            features[SquareToNum[sq]] = (board_[sq] == BLACK_PIECE ? 1.0f : -1.0f);
-        }
-    } else {
-        for (auto sq : SquareList) {
-            auto inv_sq = InvSquare[sq];
-            features[SquareToNum[sq]] = (board_[inv_sq] == BLACK_PIECE ? -1.0f : 1.0f);
-        }
+    for (auto sq : SquareList) {
+        features[SquareToNum[sq]] = (board_[sq] == BLACK_PIECE ? 1.0f : -1.0f);
     }
+
+    features[INPUT_DIM - 1] = (CalcType)color_;
     return features;
 }
 
