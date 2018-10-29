@@ -65,6 +65,10 @@ public:
         board_ &= rhs.board_;
         return *this;
     }
+    Bitboard& operator^=(const Bitboard& rhs) {
+        board_ ^= rhs.board_;
+        return *this;
+    }
     Bitboard& operator <<= (const int shift) {
         board_ <<= shift;
         return *this;

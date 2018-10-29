@@ -106,6 +106,9 @@ private:
     //現局面のハッシュ値
     int64_t hash_value_;
 
+    //ハッシュ値の履歴
+    std::vector<int64_t> hash_values_;
+
     //Bitboard類
     Bitboard occupied_all_;
     Bitboard occupied_bb_[ColorNum];

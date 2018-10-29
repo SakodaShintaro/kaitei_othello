@@ -65,8 +65,8 @@ void Position::init() {
 
 void Position::print() const {
     //盤上
-    std::printf("８７６５４３２１\n");
-    std::printf("------------------\n");
+    std::printf("87654321\n");
+    std::printf("--------\n");
     for (int r = Rank1; r <= Rank8; r++) {
         for (int f = File8; f >= File1; f--) {
             std::cout << PieceToSfenStr[board_[FRToSquare[f][r]]];
@@ -87,6 +87,8 @@ void Position::print() const {
         printf("最後の手:");
         lastMove().printWithScore();
     }
+
+    printAllMoves();
 
     //評価値
 #ifdef USE_NN
@@ -150,9 +152,42 @@ void Position::doMove(const Move move) {
     stack_.emplace_back(board);
 
     //実際に動かす
-    //8方向を考えて駒を反転させていくとか？
-    //後で実装しよう
-    assert(false);
+    //8方向を一つずつ見ていって反転できる駒があったら反転する
+    Piece p = board_[move.to()] = (Piece)color_;
+
+    hash_values_.push_back(hash_value_);
+
+    //ハッシュ値を変更
+    hash_value_ ^= HashSeed[p][move.to()];
+
+    for (Dir d : DirList) {
+        bool is_there_enemy = false;
+        bool isOK = false;
+        for (int32_t sq = move.to() + d; board_[sq] != WALL; sq += d) {
+            if (board_[sq] == oppositeColor(p)) {
+                is_there_enemy = true;
+            } else if (board_[sq] == p) {
+                if (is_there_enemy) {
+                    isOK = true;
+                    break;
+                }
+            } else {
+                break;
+            }
+        }
+        if (!isOK) {
+            continue;
+        }
+
+        //実際に駒を変更する
+        for (int32_t sq = move.to() + d; board_[sq] != p; sq += d) {
+            board_[sq] = p;
+            occupied_bb_[p] |= SQUARE_BB[sq];
+            occupied_bb_[oppositeColor(p)] ^= SQUARE_BB[sq];
+            hash_value_ ^= HashSeed[oppositeColor(p)][sq];
+            hash_value_ ^= HashSeed[p][sq];
+        }
+    }
 
     //occupied_all_を更新
     occupied_all_ = occupied_bb_[BLACK] | occupied_bb_[WHITE];
@@ -199,25 +234,24 @@ void Position::undo() {
     color_ = ~color_;
 
     //盤の状態はstack_から戻して
-    assert(false);
+    for (int32_t i = 0; i < SquareNum; i++) {
+        board_[i] = stack_.back()[i];
+    }
+    stack_.pop_back();
 
     //occupied_all_を更新
     occupied_all_ = occupied_bb_[BLACK] | occupied_bb_[WHITE];
 
     //ハッシュの更新
-    assert(false);
+    hash_value_ = hash_values_.back();
+    hash_values_.pop_back();
 
     //手数
     turn_number_--;
-
-    //計算が面倒なものはコピーで戻してみる
  
 #ifdef USE_NN
     already_calc_ = false;
 #endif
-
-    //Stack更新
-    stack_.pop_back();
 }
 
 void Position::doNullMove() {
@@ -247,10 +281,26 @@ void Position::undoNullMove() {
 }
 
 bool Position::isLegalMove(const Move move) const {
-    //違法の場合だけ早くfalseで返す.合法手は一番最後の行でtrueが返る
-    //動かしてみて数が1以上ならオッケーとする
-    assert(false);
-    return true;
+    //間に敵駒がありその先に自駒があれば良い
+    if (board_[move.to()] != EMPTY) {
+        return false;
+    }
+    Piece p = (Piece)color_;
+    for (Dir d : DirList) {
+        bool ok = false;
+        for (int32_t sq = move.to() + d; board_[sq] != WALL; sq += d) {
+            if (board_[sq] == oppositeColor(p)) {
+                ok = true;
+            } else if (board_[sq] == p) {
+                if (ok) {
+                    return true;
+                }
+            } else {
+                break;
+            }
+        }
+    }
+    return false;
 }
 
 void Position::initHashSeed() {
