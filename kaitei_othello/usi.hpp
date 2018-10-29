@@ -21,6 +21,7 @@ public:
     void ponderhit();
     void quit();
     void gameover();
+    void vsHuman();
 };
 
 #endif

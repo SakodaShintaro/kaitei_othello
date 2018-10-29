@@ -73,6 +73,8 @@ void USI::loop() {
         } else if (input == "testLearn") {
             RootstrapTrainer trainer("rootstrap_settings.txt");
             trainer.testLearn();
+        } else if (input == "vsHuman") {
+            vsHuman();
         } else {
             std::cout << "Illegal input" << std::endl;
         }
@@ -302,4 +304,37 @@ void USI::gameover() {
         //引き分け
 		return;
 	}
+}
+
+void USI::vsHuman() {
+    Position pos(*eval_params);
+
+    shared_data.stop_signal = false;
+    shared_data.limit_msec = LLONG_MAX;
+#ifdef USE_MCTS
+    MCTSearcher mctsearcher(usi_option.USI_Hash);
+#endif
+
+    int32_t human_turn;
+    std::cout << "人間が先手なら0,後手なら1を入力: ";
+    std::cin >> human_turn;
+
+    while (true) {
+        pos.print();
+
+        if (pos.generateAllMoves().size() == 0) {
+            //数を数える
+            break;
+        }
+
+        if (pos.turn_number() % 2 == human_turn) {
+            std::cout << "指し手を入力(将棋形式で筋と段をスペース区切り): ";
+            int32_t file, rank;
+            std::cin >> file >> rank;
+            pos.doMove(Move(FRToSquare[file][rank]));
+        } else {
+            auto result = mctsearcher.thinkForGenerateLearnData(pos, usi_option.playout_limit);
+            pos.doMove(result.first);
+        }
+    }
 }
