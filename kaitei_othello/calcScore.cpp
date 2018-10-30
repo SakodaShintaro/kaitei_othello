@@ -68,6 +68,10 @@ std::vector<CalcType> Position::maskedPolicy() {
 }
 
 CalcType Position::valueScore() {
+    return (color_ == BLACK ? valueScoreForTurn() : -valueScoreForTurn());
+}
+
+CalcType Position::valueScoreForTurn() {
     if (!already_calc_) {
         initScore();
     }
@@ -85,10 +89,7 @@ CalcType Position::valueScore() {
 #else
     return output_[POLICY_DIM];
 #endif
-}
 
-CalcType Position::valueScoreForTurn() {
-    return (color_ == BLACK ? valueScore() : -valueScore());
 }
 
 #ifdef USE_CATEGORICAL

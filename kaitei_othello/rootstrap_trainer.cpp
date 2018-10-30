@@ -594,7 +594,7 @@ void RootstrapTrainer::testLearn() {
     std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
 #endif
 
-    games.front().moves.resize(1);
+    games.front().moves.resize(2);
 
     {
         Position pos(*eval_params);
@@ -607,8 +607,8 @@ void RootstrapTrainer::testLearn() {
     std::cout << std::fixed;
 
     //ここから学習のメイン
-    std::vector<double> vcs = { 1.0 };
-    std::vector<double> lrs = { 0.0001, 0.00001 };
+    std::vector<double> vcs = { 1.0, 10.0 };
+    std::vector<double> lrs = { 0.001, 0.0001, 0.00001 };
     for (int32_t i = 0; i < vcs.size(); i++) {
         for (int32_t j = 0; j < lrs.size(); j++) {
             VALUE_COEFF = vcs[i];
