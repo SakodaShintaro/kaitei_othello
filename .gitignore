@@ -261,3 +261,5 @@ __pycache__/
 *.pyc
 /kaitei_othello/model.bin
 /kaitei_othello/tmp.bin
+/kaitei_othello/learn_games
+/kaitei_othello/before_learn.bin

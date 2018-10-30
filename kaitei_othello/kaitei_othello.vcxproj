@@ -71,6 +71,9 @@
     <ClInclude Include="usi.hpp" />
     <ClInclude Include="usi_options.hpp" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="rootstrap_settings.txt" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{E05EB196-A07B-42C9-949B-EFAC79AF8F40}</ProjectGuid>

@@ -244,16 +244,11 @@ std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit)
         Game& game = games[i];
         Position pos(*eval_params);
 
-        while (true) {
+        while (!pos.isFinish()) {
             //iが偶数のときpos_cが先手
             auto move_and_teacher = searcher->thinkForGenerateLearnData(pos, search_limit);
             Move best_move = move_and_teacher.first;
             TeacherType teacher = move_and_teacher.second;
-
-            if (best_move == NULL_MOVE) { //NULL_MOVEは投了を示す
-                game.result = (pos.color() == BLACK ? Game::RESULT_WHITE_WIN : Game::RESULT_BLACK_WIN);
-                break;
-            }
 
             if (!pos.isLegalMove(best_move)) {
                 pos.printForDebug();
@@ -263,6 +258,16 @@ std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit)
             pos.doMove(best_move);
             game.moves.push_back(best_move);
             game.teachers.push_back(teacher);
+        }
+
+        //対局結果の設定
+        int32_t num = pos.score();
+        if (num == 0) {
+            game.result = 0.5;
+        } else if (num > 0) {
+            game.result = 1.0;
+        } else {
+            game.result = 0.0;
         }
     }
     return games;
@@ -291,7 +296,7 @@ std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
                 game.teachers.reserve(usi_option.draw_turn);
                 Position pos_c(curr), pos_t(target);
 
-                while (true) {
+                while (!pos_c.isFinish()) {
                     //iが偶数のときpos_cが先手
                     auto move_and_teacher = ((pos_c.turn_number() % 2) == (curr_index % 2) ?
                         searcher->thinkForGenerateLearnData(pos_c, search_limit) :
@@ -299,25 +304,25 @@ std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
                     Move best_move = move_and_teacher.first;
                     TeacherType teacher = move_and_teacher.second;
 
-                    if (best_move == NULL_MOVE) { //NULL_MOVEは投了を示す
-                        game.result = (pos_c.color() == BLACK ? Game::RESULT_WHITE_WIN : Game::RESULT_BLACK_WIN);
-                        break;
-                    }
-
-                    if (!pos_c.isLegalMove(best_move)) {
-                        pos_c.printForDebug();
-                        best_move.printWithScore();
-                        assert(false);
-                    }
+                    //if (!pos_c.isLegalMove(best_move)) {
+                    //    pos_c.printForDebug();
+                    //    best_move.printWithScore();
+                    //    assert(false);
+                    //}
                     pos_c.doMove(best_move);
                     pos_t.doMove(best_move);
                     game.moves.push_back(best_move);
                     game.teachers.push_back(teacher);
+                }
 
-                    if (pos_c.turn_number() >= usi_option.draw_turn) { //長手数
-                        game.result = Game::RESULT_DRAW_OVER_LIMIT;
-                        break;
-                    }
+                //対局結果の設定
+                int32_t num = pos_c.score();
+                if (num == 0) {
+                    game.result = 0.5;
+                } else if (num > 0) {
+                    game.result = 1.0;
+                } else {
+                    game.result = 0.0;
                 }
             }
         });
@@ -440,12 +445,7 @@ double RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType
 #endif
     for (int32_t i = 0; i < game.moves.size(); i++) {
         Move m = game.moves[i];
-        if (m.score == MIN_SCORE || isMatedScore(m.score)) { //ランダムムーブということなので学習はしない
-            if (!pos.isLegalMove(m)) {
-                pos.printForDebug();
-                m.printWithScore();
-            }
-
+        if (m == NULL_MOVE) {
             pos.doMove(m);
             continue;
         }
@@ -647,8 +647,6 @@ void RootstrapTrainer::learnSync() {
     print("総和更新量");
     print("最大パラメータ");
     print("総和パラメータ");
-    print("千日手率");
-    print(std::to_string(usi_option.draw_turn) + "手率");
     print("勝率");
     print("勝ち越し数");
     print("負け越し数");
@@ -702,8 +700,6 @@ void RootstrapTrainer::learnSync() {
         print(LEARN_RATE * grad->sumAbs());
         print(eval_params->maxAbs());
         print(eval_params->sumAbs());
-        print(100.0 * draw_repeat_num / BATCH_SIZE);
-        print(100.0 * draw_long_game_num / BATCH_SIZE);
 
         //評価
         if (sum_learned_games_ % (BATCH_SIZE * EVALUATION_INTERVAL) == 0) {
