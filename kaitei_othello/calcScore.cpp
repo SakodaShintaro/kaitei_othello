@@ -7,64 +7,6 @@
 #include<iostream>
 #include<fstream>
 
-//enum {
-//    PAWN_VALUE = 100,
-//    LANCE_VALUE = 267,
-//    KNIGHT_VALUE = 295,
-//    SILVER_VALUE = 424,
-//    GOLD_VALUE = 510,
-//    BISHOP_VALUE = 654,
-//    ROOK_VALUE = 738,
-//    PAWN_PROMOTE_VALUE = 614,
-//    LANCE_PROMOTE_VALUE = 562,
-//    KNIGHT_PROMOTE_VALUE = 586,
-//    SILVER_PROMOTE_VALUE = 569,
-//    BISHOP_PROMOTE_VALUE = 951,
-//    ROOK_PROMOTE_VALUE = 1086,
-//};
-//
-//int piece_value[] = {
-//    0, static_cast<int>(PAWN_VALUE * 1.05), static_cast<int>(LANCE_VALUE * 1.05), static_cast<int>(KNIGHT_VALUE * 1.05), static_cast<int>(SILVER_VALUE * 1.05),
-//    static_cast<int>(GOLD_VALUE * 1.05), static_cast<int>(BISHOP_VALUE * 1.05), static_cast<int>(ROOK_VALUE * 1.05), 0, 0, //0~9
-//    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //10~19
-//    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //20~29
-//    0, 0, 0, PAWN_VALUE, LANCE_VALUE, KNIGHT_VALUE, SILVER_VALUE, GOLD_VALUE, BISHOP_VALUE, ROOK_VALUE, //30~39
-//    0, 0, 0, 0, 0, 0, 0, 0, 0, PAWN_PROMOTE_VALUE, //40~49
-//    LANCE_PROMOTE_VALUE, KNIGHT_PROMOTE_VALUE,  SILVER_PROMOTE_VALUE, 0, BISHOP_PROMOTE_VALUE, ROOK_PROMOTE_VALUE, 0, 0, 0, 0, //50~59
-//    0, 0, 0, 0, 0, -PAWN_VALUE, -LANCE_VALUE, -KNIGHT_VALUE, -SILVER_VALUE, -GOLD_VALUE, //60~69
-//    -BISHOP_VALUE, -ROOK_VALUE, 0, 0, 0, 0, 0, 0, 0, 0, //70~79
-//    0, -PAWN_PROMOTE_VALUE, -LANCE_PROMOTE_VALUE, -KNIGHT_PROMOTE_VALUE, -SILVER_PROMOTE_VALUE, 0, -BISHOP_PROMOTE_VALUE, -ROOK_PROMOTE_VALUE, 0, 0 //80~89
-//};
-
-//Aperyの駒割り
-enum {
-    PAWN_VALUE = 100 * 9 / 10,
-    LANCE_VALUE = 350 * 9 / 10,
-    KNIGHT_VALUE = 450 * 9 / 10,
-    SILVER_VALUE = 550 * 9 / 10,
-    GOLD_VALUE = 600 * 9 / 10,
-    BISHOP_VALUE = 950 * 9 / 10,
-    ROOK_VALUE = 1100 * 9 / 10,
-    PAWN_PROMOTE_VALUE = 600 * 9 / 10,
-    LANCE_PROMOTE_VALUE = 600 * 9 / 10,
-    KNIGHT_PROMOTE_VALUE = 600 * 9 / 10,
-    SILVER_PROMOTE_VALUE = 600 * 9 / 10,
-    BISHOP_PROMOTE_VALUE = 1050 * 9 / 10,
-    ROOK_PROMOTE_VALUE = 1550 * 9 / 10,
-};
-
-int32_t piece_value[] = {
-    0, PAWN_VALUE, LANCE_VALUE, KNIGHT_VALUE, SILVER_VALUE, GOLD_VALUE, BISHOP_VALUE, ROOK_VALUE, 0, 0, //0~9
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //10~19
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, //20~29
-    0, 0, 0, PAWN_VALUE, LANCE_VALUE, KNIGHT_VALUE, SILVER_VALUE, GOLD_VALUE, BISHOP_VALUE, ROOK_VALUE, //30~39
-    0, 0, 0, 0, 0, 0, 0, 0, 0, PAWN_PROMOTE_VALUE, //40~49
-    LANCE_PROMOTE_VALUE, KNIGHT_PROMOTE_VALUE,  SILVER_PROMOTE_VALUE, 0, BISHOP_PROMOTE_VALUE, ROOK_PROMOTE_VALUE, 0, 0, 0, 0, //50~59
-    0, 0, 0, 0, 0, -PAWN_VALUE, -LANCE_VALUE, -KNIGHT_VALUE, -SILVER_VALUE, -GOLD_VALUE, //60~69
-    -BISHOP_VALUE, -ROOK_VALUE, 0, 0, 0, 0, 0, 0, 0, 0, //70~79
-    0, -PAWN_PROMOTE_VALUE, -LANCE_PROMOTE_VALUE, -KNIGHT_PROMOTE_VALUE, -SILVER_PROMOTE_VALUE, 0, -BISHOP_PROMOTE_VALUE, -ROOK_PROMOTE_VALUE, 0, 0 //80~89
-};
-
 #ifdef USE_NN
 
 void Position::initScore() {
@@ -175,7 +117,7 @@ std::vector<float> Position::makeFeatures() const {
         features[SquareToNum[sq]] = (board_[sq] == BLACK_PIECE ? 1.0f : -1.0f);
     }
 
-    features[INPUT_DIM - 1] = (CalcType)color_;
+    features[POLICY_DIM] = (CalcType)color_;
     return features;
 }
 

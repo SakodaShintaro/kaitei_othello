@@ -323,7 +323,6 @@ void USI::vsHuman() {
         pos.print();
         if (pos.isFinish()) {
             int32_t num = pos.score();
-            double result;
             if (num == 0) {
                 printf("引き分け\n");
             } else if (num > 0) {

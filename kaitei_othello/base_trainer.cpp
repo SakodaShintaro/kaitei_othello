@@ -13,6 +13,9 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
     const Vec u0 = params.w[0] * input_vec + params.b[0];
     const Vec z0 = Network::activationFunction(u0);
 
+    pos.print();
+    std::cout << teacher[POLICY_DIM] << std::endl;
+
     //Policy
     auto y = softmax(pos.policy());
 

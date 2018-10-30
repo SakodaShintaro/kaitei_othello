@@ -46,25 +46,13 @@ private:
     void evaluate();
 
     //棋譜群から損失・勾配・千日手数・長手数による引き分け数を計算する関数
-#ifdef USE_NN
     void learnGames(const std::vector<Game>& games, std::array<double, 2>& loss, EvalParams<LearnEvalType>& grad);
-#else
-    void learnGames(const std::vector<Game>& games, double& loss, EvalParams<LearnEvalType>& grad);
-#endif
 
     //棋譜を初手側から再生して損失・勾配を計算する関数:elmo絞りに対応
-#ifdef USE_NN
     std::array<double, 2> learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad);
-#else
-    double learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad);
-#endif
 
     //棋譜を最終手から再生して損失・勾配を計算する関数:Sarsaに対応?
-#ifdef USE_NN
     std::array<double, 2> learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad);
-#else
-    double learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad);
-#endif
 
     //標準出力とlog_file_の両方に出力する関数
     template<class T> void print(T t);

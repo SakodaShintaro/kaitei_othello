@@ -178,23 +178,14 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
 #endif
 
         //損失・勾配・千日手数・長手数による引き分け数を計算
-#ifdef USE_NN
         std::array<double, 2> loss;
-#else
-        double loss;
-#endif
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
         learnGames(games, loss, *grad);
 
         MUTEX.lock();
-#ifdef USE_NN
         //パラメータ更新
         updateParams(*eval_params, *grad);
-#else
-        //パラメータ更新
-        updateParams(*learning_parameters, *grad);
-        eval_params->roundCopy(*learning_parameters);
-#endif
+
         //tmpファイルとして書き出し
         eval_params->writeFile("tmp.bin");
 
@@ -204,13 +195,9 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
         //学習情報の出力
         timestamp();
         print(sum_learned_games_);
-#ifdef USE_NN
         print(loss[0] + VALUE_COEFF * loss[1]);
         print(loss[0]);
         print(loss[1]);
-#else
-        print(loss);
-#endif
         print(LEARN_RATE * grad->maxAbs());
         print(LEARN_RATE * grad->sumAbs());
         print(eval_params->maxAbs());
@@ -376,14 +363,8 @@ void RootstrapTrainer::evaluate() {
     print(consecutive_fail_num_);
 }
 
-#ifdef USE_NN
 void RootstrapTrainer::learnGames(const std::vector<Game>& games, std::array<double, 2>& loss, EvalParams<LearnEvalType>& grad) {
     loss[0] = loss[1] = 0.0;
-#else
-void RootstrapTrainer::learnGames(const std::vector<Game>& games, double & loss, EvalParams<LearnEvalType>& grad) {
-    //初期化
-    loss = 0.0;
-#endif
     grad.clear();
 
     //引き分けを除く場合があるのでこれはBATCH_SIZEに一致するとは限らない
@@ -392,13 +373,13 @@ void RootstrapTrainer::learnGames(const std::vector<Game>& games, double & loss,
     //一つ書き出してみる
     games.front().writeKifuFile("./learn_games/");
 
-    for (Game g : games) {
+    for (const Game& game : games) {
         //学習
         learn_game_num++;
         if (LEARN_MODE == ELMO_LEARN) {
-            loss += learnOneGame(g, grad);
+            loss += learnOneGame(game, grad);
         } else if (LEARN_MODE == N_STEP_SARSA) {
-            loss += learnOneGameReverse(g, grad);
+            loss += learnOneGameReverse(game, grad);
         } else { //ここには来ないはず
             assert(false);
         }
@@ -406,17 +387,12 @@ void RootstrapTrainer::learnGames(const std::vector<Game>& games, double & loss,
     (learn_game_num == 0 ? loss : loss /= learn_game_num);
 }
 
-#ifdef USE_NN
 std::array<double, 2> RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad) {
     std::array<double, 2> loss = { 0.0, 0.0 };
-#else
-double RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad) {
-    double loss = 0.0;
-#endif
     Position pos(*eval_params);
     uint64_t learn_num = 0;
 
-#ifndef USE_NN
+#ifndef USE_NN //これ探索手法の違いじゃね？
     auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
 #endif
     for (int32_t i = 0; i < game.moves.size(); i++) {
@@ -428,7 +404,6 @@ double RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType
 
         //学習
         learn_num++;
-#ifdef USE_NN
         TeacherType teacher = game.teachers[i];
         //対局結果を用いてvalueを加工する
 #ifdef USE_CATEGORICAL
@@ -447,30 +422,6 @@ double RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType
 #endif
 
         loss += addGrad(grad, pos, teacher);
-#else
-        //浅い探索を行ってpvを取れるようにする
-        //searcher->thinkForGenerateLearnData(pos, Depth(0));
-
-        //auto pv = searcher->pv();
-        //int move_num = 0;
-        //for (auto pv_move : pv) {
-        //    pos.doMove(pv_move);
-        //    move_num++;
-        //}
-
-        //教師信号の計算
-        double deep_win_rate = game.teachers[i];
-        double result_for_turn = (pos.color() == BLACK ? game.result : 1.0 - game.result);
-        TeacherType teacher_signal = DEEP_COEFFICIENT * deep_win_rate + (1.0 - DEEP_COEFFICIENT) * result_for_turn;
-
-        //損失・勾配の計算
-        loss += addGrad(grad, pos, teacher_signal);
-
-        //浅い探索のpvに沿って動かした分を戻す
-        //for (int num = 0; num < move_num; num++) {
-        //    pos.undo();
-        //}
-#endif
         if (!pos.isLegalMove(m)) {
             pos.printForDebug();
             m.printWithScore();
@@ -482,13 +433,8 @@ double RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType
     return (learn_num == 0 ? loss : loss / learn_num);
 }
 
-#ifdef USE_NN
 std::array<double, 2> RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad) {
     std::array<double, 2> loss = { 0.0, 0.0 };
-#else
-double RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad) {
-    double loss = 0.0;
-#endif
     auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
     Position pos(*eval_params);
     uint64_t learn_num = 0;
@@ -521,7 +467,6 @@ double RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnE
         }
 
         //先手から見た勝率について指数移動平均を取り,教師データにセットする
-#ifdef USE_NN
         //教師データをコピーする gameをconstで受け取ってしまっているので
         TeacherType teacher = game.teachers[i];
 
@@ -563,36 +508,6 @@ double RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnE
 #endif
         //損失・勾配の計算
         loss += addGrad(grad, pos, teacher);
-#else
-        Score score_for_black = (pos.color() == BLACK ? game.moves[i].score : -game.moves[i].score);
-        win_rate_for_black = DECAY_RATE * win_rate_for_black + (1 - DECAY_RATE) * sigmoid((int32_t)score_for_black, CP_GAIN);
-
-        //浅い探索を行って評価値を得る
-        searcher->thinkForGenerateLearnData(pos, Depth(0));
-
-        //浅い探索で得たpvに沿って局面を動かす
-        auto pv = searcher->pv();
-        int32_t move_num = 0;
-        for (auto pv_move : pv) {
-            if (pos.isLegalMove(pv_move)) {
-                pos.doMove(pv_move);
-                move_num++;
-            } else {
-                break;
-            }
-        }
-
-        //教師信号を手番側から見た値に変更
-        TeacherType teacher_signal = (pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
-
-        //損失・勾配の計算
-        loss += addGrad(grad, pos, win_rate_for_black);
-
-        //浅い探索のpvに沿って動かした分を戻す
-        for (int num = 0; num < move_num; num++) {
-            pos.undo();
-        }
-#endif
         //学習局面数を増やす
         learn_num++;
 
@@ -615,10 +530,8 @@ void RootstrapTrainer::learnSync() {
     print("経過時間");
     print("学習局数");
     print("損失");
-#ifdef USE_NN
     print("Policy損失");
     print("Value損失");
-#endif
     print("最大更新量");
     print("総和更新量");
     print("最大パラメータ");
@@ -639,22 +552,12 @@ void RootstrapTrainer::learnSync() {
         auto games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
 #endif
         //損失・勾配・千日手数・長手数による引き分け数を計算
-#ifdef USE_NN
         std::array<double, 2> loss;
-#else
-        double loss;
-#endif
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
         learnGames(games, loss, *grad);
 
         //パラメータ更新
-#ifdef USE_NN
         updateParams(*eval_params, *grad);
-#else
-        //LearnEvalTypeで学習中の値を保持してそれを通常使うもの(int16_t)にコピーする
-        updateParams(*learning_parameters, *grad);
-        eval_params->roundCopy(*learning_parameters);
-#endif
         //書き出し
         eval_params->writeFile("tmp.bin");
 
@@ -696,7 +599,7 @@ void RootstrapTrainer::testLearn() {
     start_time_ = std::chrono::steady_clock::now();
 
     //テスト用に設定
-    BATCH_SIZE = 10;
+    BATCH_SIZE = 1;
 
     //自己対局による棋譜生成:並列化
 #ifdef USE_MCTS
@@ -704,6 +607,14 @@ void RootstrapTrainer::testLearn() {
 #else
     std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
 #endif
+
+    {
+        Position pos(*eval_params);
+        for (auto move : games.front().moves) {
+            pos.doMove(move);
+            pos.print();
+        }
+    }
 
     std::cout << std::fixed;
 
@@ -723,42 +634,33 @@ void RootstrapTrainer::testLearn() {
             ofs << "\tVALUE_COEFF = " << VALUE_COEFF << ", LEARN_RATE = " << LEARN_RATE;
             ofs << "\tVALUE_COEFF = " << VALUE_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
 
-            for (int64_t i = 0; i < 100; i++) {
+            for (int64_t i = 0; i < 1000; i++) {
                 //損失・勾配・千日手数・長手数による引き分け数を計算
-#ifdef USE_NN
                 std::array<double, 2> loss;
-#else
-                double loss;
-#endif
                 auto grad = std::make_unique<EvalParams<LearnEvalType>>();
                 learnGames(games, loss, *grad);
 
                 //パラメータ更新
-#ifdef USE_NN
                 updateParams(*eval_params, *grad);
-#else
-                updateParams(*learning_parameters, *grad);
-                eval_params->roundCopy(*learning_parameters);
-#endif
                 std::cout << i << "\tloss[0] = " << loss[0] << ",\tloss[1] = " << loss[1] << "\t" << loss[1] * VALUE_COEFF << std::endl;
                 ofs << i << "\t" << loss[0] << "\t" << loss[1] << std::endl;
             }
 
-            for (auto game : games) {
-                Position pos(*eval_params);
-
-                for (auto move : game.moves) {
-                    pos.print();
-                    auto policy = pos.maskedPolicy();
-                    std::cout << "policy[" << move << "] = " << policy[move.toLabel()];
-#ifdef USE_CATEGORICAL
-                    std::cout << std::endl;
-#else
-                    std::cout << ", value = " << sigmoid(pos.valueScoreForTurn(), 1.0) << std::endl;
-#endif
-                    pos.doMove(move);
-                }
-            }
+//            for (auto game : games) {
+//                Position pos(*eval_params);
+//
+//                for (auto move : game.moves) {
+//                    pos.print();
+//                    auto policy = pos.maskedPolicy();
+//                    std::cout << "policy[" << move << "] = " << policy[move.toLabel()];
+//#ifdef USE_CATEGORICAL
+//                    std::cout << std::endl;
+//#else
+//                    std::cout << ", value = " << sigmoid(pos.valueScoreForTurn(), 1.0) << std::endl;
+//#endif
+//                    pos.doMove(move);
+//                }
+//            }
         }
     }
     std::cout << "finish testLearn()" << std::endl;
