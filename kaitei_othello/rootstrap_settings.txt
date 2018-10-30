@@ -11,7 +11,7 @@ deep_coefficient 0.0
 decay_rate 0.9
 playout_limit 800
 use_draw_game 1
-random_move_num 30
+random_move_num 0
 draw_turn 512
 draw_score -100000
 USI_Hash 16

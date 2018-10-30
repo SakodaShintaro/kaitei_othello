@@ -12,6 +12,6 @@ int32_t Move::toLabel() const {
     //print();
     return piece_num * 81 + to_num;
 #else
-    return SquareToNum[to()];
+    return (color() == BLACK ? SquareToNum[to()] : SquareToNum[InvSquare[to()]]);
 #endif
 }

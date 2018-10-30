@@ -66,10 +66,8 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
             ifs >> EVALUATION_GAME_NUM;
         } else if (name == "evaluation_interval") {
             ifs >> EVALUATION_INTERVAL;
-#ifdef USE_NN
         } else if (name == "value_coeff") {
             ifs >> VALUE_COEFF;
-#endif
 #ifdef USE_MCTS
         } else if (name == "playout_limit") {
             ifs >> usi_option.playout_limit;
@@ -98,12 +96,6 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
     if (OPTIMIZER_NAME == "MOMENTUM") {
         pre_update_ = std::make_unique<EvalParams<LearnEvalType>>();
     }
-
-    //パラメータを学習用のものにコピーしておく
-#ifndef USE_NN
-    learning_parameters = std::make_unique<EvalParams<LearnEvalType>>();
-    learning_parameters->copy(*eval_params);
-#endif
     
     //棋譜を保存するディレクトリの削除
     std::experimental::filesystem::remove_all("./learn_games");
@@ -128,10 +120,8 @@ void RootstrapTrainer::learnAsync() {
     print("経過時間");
     print("学習局数");
     print("損失");
-#ifdef USE_NN
     print("Policy損失");
     print("Value損失");
-#endif
     print("最大更新量");
     print("総和更新量");
     print("最大パラメータ");
@@ -567,13 +557,9 @@ void RootstrapTrainer::learnSync() {
         //学習情報の表示
         timestamp();
         print(sum_learned_games_);
-#ifdef USE_NN
         print(loss[0] + VALUE_COEFF * loss[1]);
         print(loss[0]);
         print(loss[1]);
-#else
-        print(loss);
-#endif
         print(LEARN_RATE * grad->maxAbs());
         print(LEARN_RATE * grad->sumAbs());
         print(eval_params->maxAbs());

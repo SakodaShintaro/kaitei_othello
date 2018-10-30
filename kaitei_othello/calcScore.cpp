@@ -7,8 +7,6 @@
 #include<iostream>
 #include<fstream>
 
-#ifdef USE_NN
-
 void Position::initScore() {
     std::vector<CalcType> input = makeFeatures();
     Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());
@@ -117,8 +115,5 @@ std::vector<float> Position::makeFeatures() const {
         features[SquareToNum[sq]] = (board_[sq] == BLACK_PIECE ? 1.0f : -1.0f);
     }
 
-    features[POLICY_DIM] = (CalcType)color_;
     return features;
 }
-
-#endif

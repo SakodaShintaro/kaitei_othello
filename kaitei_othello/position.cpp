@@ -42,10 +42,6 @@ void Position::init() {
     //ハッシュ値の初期化
     initHashValue();
 
-#ifndef USE_NN
-    initFeature();
-#endif
-
     //局面の評価値
     initScore();
 
@@ -91,7 +87,6 @@ void Position::print() const {
     printAllMoves();
 
     //評価値
-#ifdef USE_NN
     auto output = makeOutput();
 #ifdef USE_CATEGORICAL
     std::vector<CalcType> categorical_distribution(BIN_SIZE);
@@ -108,7 +103,6 @@ void Position::print() const {
     printf("value = %f\n", value);
 #else
     printf("value = %f\n", output(POLICY_DIM));
-#endif
 #endif
 
     printf("ハッシュ値:%lld\n", hash_value_);
@@ -206,27 +200,10 @@ void Position::doMove(const Move move) {
     //棋譜に指し手を追加
     kifu_.push_back(move);
 
-    //王手
-#if DEBUG
-    bool true_is_checked = isThereControl(~color_, king_sq_[color_]);
-    if (isChecked_ != true_is_checked) {
-        print();
-        move.print();
-        std::cout << "isChecked = " << (isChecked_ ? "true" : "false") << std::endl;
-        std::cout << "isControl = " << (true_is_checked ? "true" : "false") << std::endl;
-        isLastMoveCheck();
-        assert(false);
-    }
-#endif
-
     //1bit目を0にする
     hash_value_ ^= 1;
 
-#ifdef USE_NN
     already_calc_ = false;
-#else
-    calcScoreDiff();
-#endif
 }
 
 void Position::undo() {
@@ -252,9 +229,7 @@ void Position::undo() {
     //手数
     turn_number_--;
  
-#ifdef USE_NN
     already_calc_ = false;
-#endif
 }
 
 void Position::doNullMove() {
@@ -334,7 +309,7 @@ void Position::initHashSeed() {
 std::vector<Move> Position::generateAllMoves() const {
     std::vector<Move> moves;
     for (Square sq : SquareList) {
-        Move move(sq);
+        Move move(sq, color_);
         if (isLegalMove(move)) {
             moves.push_back(move);
         }
