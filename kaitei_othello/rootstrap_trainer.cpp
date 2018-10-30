@@ -585,7 +585,7 @@ void RootstrapTrainer::testLearn() {
     start_time_ = std::chrono::steady_clock::now();
 
     //テスト用に設定
-    BATCH_SIZE = 1;
+    BATCH_SIZE = 10;
 
     //自己対局による棋譜生成:並列化
 #ifdef USE_MCTS
@@ -594,20 +594,10 @@ void RootstrapTrainer::testLearn() {
     std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
 #endif
 
-    games.front().moves.resize(2);
-
-    {
-        Position pos(*eval_params);
-        for (auto move : games.front().moves) {
-            pos.doMove(move);
-            pos.print();
-        }
-    }
-
     std::cout << std::fixed;
 
     //ここから学習のメイン
-    std::vector<double> vcs = { 1.0, 10.0 };
+    std::vector<double> vcs = { 1.0 };
     std::vector<double> lrs = { 0.001, 0.0001, 0.00001 };
     for (int32_t i = 0; i < vcs.size(); i++) {
         for (int32_t j = 0; j < lrs.size(); j++) {
