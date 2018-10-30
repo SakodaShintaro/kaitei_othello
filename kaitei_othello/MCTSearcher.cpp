@@ -138,6 +138,11 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
         return { NULL_MOVE, TeacherType() };
     }
 
+    //NULL_MOVEだけでもすぐ返す
+    if (current_node.child_num == 1 && current_node.legal_moves[0] == NULL_MOVE) {
+        return { NULL_MOVE, TeacherType() };
+    }
+
     //ノイズを加える
     //Alpha Zeroの論文と同じディリクレノイズ
     constexpr double epsilon = 0.25;
@@ -279,7 +284,17 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
     CalcType result;
 #endif
     // ノードの展開の確認
-    if (child_indices[next_index] == UctHashTable::NOT_EXPANDED) {
+    if (pos.isFinish()) {
+        //終了
+        int32_t num = pos.score();
+        if (num == 0) {
+            result = 0.5;
+        } else if (num > 0) {
+            result = 1.0;
+        } else {
+            result = 0.0;
+        }
+    } else if (child_indices[next_index] == UctHashTable::NOT_EXPANDED) {
         // ノードの展開
         auto index = expandNode(pos);
         child_indices[next_index] = index;
@@ -347,38 +362,28 @@ Index MCTSearcher::expandNode(Position& pos) {
     current_node.child_wins = std::vector<float>(current_node.child_num, 0.0);
 #endif
 
-    //終局しているかどうかで条件分けするべき
-    //終局しているかどうかはPositionクラスで判定
-    //evalNodeの中で、movesのsize()が1ならPolicyを呼び出さず1として良い
-    //こういうところ明日直してな
-    assert(false);
-
-    // ノードを評価
-    if (current_node.child_num > 0) {
+    //終局しているかどうかで条件分け
+    //ノードを評価
+    if (!pos.isFinish()) {
         evalNode(pos, index);
     } else {
-        //パスするしかない
-        if (pos.lastMove() == NULL_MOVE) {
-            //直前もパスだったら終了
-            int32_t result = pos.score();
-            if (result == 0) {
-                current_node.value_win = 0.5;
-            } else if (result > 0) {
-                current_node.value_win = 1.0;
-            } else {
-                current_node.value_win = 0.0;
-            }
+        printf("ここには来ないはず\n");
+        assert(false);
+        //終了
+        int32_t num = pos.score();
+        double result;
+        if (num == 0) {
+            result = 0.5;
+        } else if (num > 0) {
+            result = 1.0;
         } else {
-            current_node.nn_rates = { 1.0 };
-
-#ifdef USE_CATEGORICAL
-            for (int32_t i = 0; i < BIN_SIZE; i++) {
-                current_node.value_dist[i] = (i == 0 ? 1.0f : 0.0f);
-            }
-#else
-            current_node.value_win = (CalcType)sigmoid(pos.valueScoreForTurn(), 1.0);
-#endif
+            result = 0.0;
         }
+#ifdef USE_CATEGORICAL
+        current_node.value_dist = onehotDist(result);
+#else
+        current_node.value_win = (CalcType)result;
+#endif
         current_node.evaled = true;
     }
 
@@ -390,10 +395,19 @@ void MCTSearcher::evalNode(Position& pos, Index index) {
     std::vector<float> legal_move_policy(current_node.child_num);
 
 #ifdef USE_NN
-    auto policy_and_value = pos.policy();
+    //Policyの計算
+    if (current_node.child_num != 1) {
+        auto policy_and_value = pos.policy();
 
-    for (int32_t i = 0; i < current_node.child_num; i++) {
-        legal_move_policy[i] = policy_and_value[current_node.legal_moves[i].toLabel()];
+        for (int32_t i = 0; i < current_node.child_num; i++) {
+            legal_move_policy[i] = policy_and_value[current_node.legal_moves[i].toLabel()];
+        }
+
+        //softmax分布にする
+        current_node.nn_rates = softmax(legal_move_policy);
+    } else {
+        //1手だけだから計算するまでもない
+        current_node.nn_rates.assign(1, 1.0);
     }
 
     //ノードの値を計算
@@ -402,20 +416,7 @@ void MCTSearcher::evalNode(Position& pos, Index index) {
 #else
     current_node.value_win = (CalcType)sigmoid(pos.valueScoreForTurn(), 1.0);
 #endif
-#else
-    Position p = pos;
-    for (int32_t i = 0; i < current_node.child_num; i++) {
-        p.doMove(current_node.legal_moves[i]);
-        legal_move_policy[i] = (float)p.scoreForTurn();
-        p.undo();
-    }
-
-    current_node.value_win = (float)sigmoid((float)pos.scoreForTurn(), 1.0 / 600);
 #endif
-
-    //softmax分布にする
-    current_node.nn_rates = softmax(legal_move_policy);
-
     current_node.evaled = true;
 }
 

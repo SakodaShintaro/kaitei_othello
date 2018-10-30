@@ -36,6 +36,7 @@ public:
 
     //合法性に関する関数
     bool isLegalMove(const Move move) const;
+    bool isFinish() const;
 
     //評価値計算
     void calcScoreDiff();

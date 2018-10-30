@@ -307,12 +307,19 @@ bool Position::isLegalMove(const Move move) const {
                 if (ok) {
                     return true;
                 }
+                break;
             } else {
                 break;
             }
         }
     }
     return false;
+}
+
+bool Position::isFinish() const {
+    //パスが2回続いたら終了
+    int32_t N = (int32_t)kifu_.size();
+    return (N >= 2 && kifu_[N - 1] == NULL_MOVE && kifu_[N - 2] == NULL_MOVE);
 }
 
 void Position::initHashSeed() {

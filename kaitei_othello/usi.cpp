@@ -321,6 +321,18 @@ void USI::vsHuman() {
 
     while (true) {
         pos.print();
+        if (pos.isFinish()) {
+            int32_t num = pos.score();
+            double result;
+            if (num == 0) {
+                printf("引き分け\n");
+            } else if (num > 0) {
+                printf("先手が%d差で勝ち\n", num);
+            } else {
+                printf("後手が%d差で勝ち\n", -num);
+            }
+            break;
+        }
 
         if (pos.generateAllMoves().size() == 0) {
             //数を数える
@@ -333,7 +345,7 @@ void USI::vsHuman() {
             std::cin >> file >> rank;
             pos.doMove(Move(FRToSquare[file][rank]));
         } else {
-            auto result = mctsearcher.thinkForGenerateLearnData(pos, usi_option.playout_limit);
+            auto result = mctsearcher.thinkForGenerateLearnData(pos, (int32_t)usi_option.playout_limit);
             pos.doMove(result.first);
         }
     }
