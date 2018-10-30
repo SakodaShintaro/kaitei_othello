@@ -47,9 +47,9 @@ private:
 
     //棋譜群から損失・勾配・千日手数・長手数による引き分け数を計算する関数
 #ifdef USE_NN
-    void learnGames(const std::vector<Game>& games, std::array<double, 2>& loss, EvalParams<LearnEvalType>& grad, int32_t& draw_repeat_num, int32_t& draw_long_game_num);
+    void learnGames(const std::vector<Game>& games, std::array<double, 2>& loss, EvalParams<LearnEvalType>& grad);
 #else
-    void learnGames(const std::vector<Game>& games, double& loss, EvalParams<LearnEvalType>& grad, int32_t& draw_repeat_num, int32_t& draw_long_game_num);
+    void learnGames(const std::vector<Game>& games, double& loss, EvalParams<LearnEvalType>& grad);
 #endif
 
     //棋譜を初手側から再生して損失・勾配を計算する関数:elmo絞りに対応

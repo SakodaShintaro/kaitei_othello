@@ -136,8 +136,6 @@ void RootstrapTrainer::learnAsync() {
     print("総和更新量");
     print("最大パラメータ");
     print("総和パラメータ");
-    print("千日手率");
-    print(std::to_string(usi_option.draw_turn) + "手率");
     print("勝率");
     print("勝ち越し数");
     print("負け越し数");
@@ -186,8 +184,7 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
         double loss;
 #endif
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
-        int32_t draw_repeat_num, draw_long_game_num;
-        learnGames(games, loss, *grad, draw_repeat_num, draw_long_game_num);
+        learnGames(games, loss, *grad);
 
         MUTEX.lock();
 #ifdef USE_NN
@@ -218,8 +215,6 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
         print(LEARN_RATE * grad->sumAbs());
         print(eval_params->maxAbs());
         print(eval_params->sumAbs());
-        print(100.0 * draw_repeat_num / BATCH_SIZE);
-        print(100.0 * draw_long_game_num / BATCH_SIZE);
 
         if (sum_learned_games_ % (BATCH_SIZE * EVALUATION_INTERVAL) == 0) {
             evaluate();
@@ -338,11 +333,7 @@ double RootstrapTrainer::calcCurrWinRate(const std::vector<Game>& games) {
     assert(games.size() != 0);
     double win_rate = 0.0;
     for (int32_t i = 0; i < games.size(); i++) {
-        double result = (i % 2 == 0 ? games[i].result : 1.0 - games[i].result);
-        if (games[i].result == Game::RESULT_DRAW_REPEAT || games[i].result == Game::RESULT_DRAW_OVER_LIMIT) {
-            result = 0.5;
-        }
-        win_rate += result;
+        win_rate += (i % 2 == 0 ? games[i].result : 1.0 - games[i].result);
     }
     return win_rate / games.size();
 }
@@ -386,16 +377,14 @@ void RootstrapTrainer::evaluate() {
 }
 
 #ifdef USE_NN
-void RootstrapTrainer::learnGames(const std::vector<Game>& games, std::array<double, 2>& loss, EvalParams<LearnEvalType>& grad, int32_t & draw_repeat_num, int32_t & draw_long_game_num) {
+void RootstrapTrainer::learnGames(const std::vector<Game>& games, std::array<double, 2>& loss, EvalParams<LearnEvalType>& grad) {
     loss[0] = loss[1] = 0.0;
 #else
-void RootstrapTrainer::learnGames(const std::vector<Game>& games, double & loss, EvalParams<LearnEvalType>& grad, int32_t & draw_repeat_num, int32_t & draw_long_game_num) {
+void RootstrapTrainer::learnGames(const std::vector<Game>& games, double & loss, EvalParams<LearnEvalType>& grad) {
     //初期化
     loss = 0.0;
 #endif
     grad.clear();
-    draw_repeat_num = 0;
-    draw_long_game_num = 0;
 
     //引き分けを除く場合があるのでこれはBATCH_SIZEに一致するとは限らない
     int32_t learn_game_num = 0;
@@ -404,19 +393,6 @@ void RootstrapTrainer::learnGames(const std::vector<Game>& games, double & loss,
     games.front().writeKifuFile("./learn_games/");
 
     for (Game g : games) {
-        //引き分けを処理する
-        if (g.result == Game::RESULT_DRAW_REPEAT
-            || g.result == Game::RESULT_DRAW_OVER_LIMIT) {
-            //千日手か長手数かでそれぞれ分けて数を数える
-            (g.result == Game::RESULT_DRAW_REPEAT ? draw_repeat_num++ : draw_long_game_num++);
-            
-            if (!USE_DRAW_GAME) { //使わないと指定されていたらスキップ
-                continue;
-            } else { //そうでなかったら結果を0.5にして使用
-                g.result = 0.5;
-            }
-        }
-
         //学習
         learn_game_num++;
         if (LEARN_MODE == ELMO_LEARN) {
@@ -669,8 +645,7 @@ void RootstrapTrainer::learnSync() {
         double loss;
 #endif
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
-        int32_t draw_repeat_num, draw_long_game_num;
-        learnGames(games, loss, *grad, draw_repeat_num, draw_long_game_num);
+        learnGames(games, loss, *grad);
 
         //パラメータ更新
 #ifdef USE_NN
@@ -730,12 +705,6 @@ void RootstrapTrainer::testLearn() {
     std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
 #endif
 
-    for (auto& game : games) {
-        if (game.result == Game::RESULT_DRAW_REPEAT || game.result == Game::RESULT_DRAW_OVER_LIMIT) {
-            game.result = 0.5;
-        }
-    }
-
     std::cout << std::fixed;
 
     //ここから学習のメイン
@@ -762,8 +731,7 @@ void RootstrapTrainer::testLearn() {
                 double loss;
 #endif
                 auto grad = std::make_unique<EvalParams<LearnEvalType>>();
-                int32_t draw_repeat_num, draw_long_game_num;
-                learnGames(games, loss, *grad, draw_repeat_num, draw_long_game_num);
+                learnGames(games, loss, *grad);
 
                 //パラメータ更新
 #ifdef USE_NN

@@ -43,12 +43,5 @@ void Game::writeKifuFile(std::string dir_path) const {
 #endif
     }
     
-    ofs << moves.size() + 1 << " ";
-    if (result == RESULT_BLACK_WIN || result == RESULT_WHITE_WIN) {
-        ofs << "投了" << std::endl;
-    } else if (result == RESULT_DRAW_REPEAT) {
-        ofs << "千日手" << std::endl;
-    } else {
-        ofs << "持将棋" << std::endl;
-    }
+    ofs << pos.score() << std::endl;
 }
