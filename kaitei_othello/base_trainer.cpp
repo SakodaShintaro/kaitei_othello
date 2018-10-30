@@ -12,8 +12,8 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
     const Vec u0 = params.w[0] * input_vec + params.b[0];
     const Vec z0 = Network::activationFunction(u0);
 
-    pos.print();
-    std::cout << teacher[POLICY_DIM] << std::endl;
+    //pos.print();
+    //std::cout << teacher[POLICY_DIM] << std::endl;
 
     //Policy
     auto y = softmax(pos.policy());
@@ -65,14 +65,14 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
 #ifdef PRINT_DEBUG
     std::cout << "abs_sum = " << abs_sum << std::endl;
     std::cout << "abs_max = " << abs_max << std::endl;
-    std::cout << "value   = " << delta_o(POLICY_DIM) << "\n" << std::endl;
 
     pos.print();
     for (auto move : pos.generateAllMoves()) {
         auto index = move.toLabel();
-        std::cout << y[index] << " " << teacher[index] << " ";
+        std::cout << "index = " << index << " y = " <<  y[index] << "  t = " << teacher[index] << " ";
         move.print();
     }
+    std::cout << "value = " << win_rate << " t = " << teacher[POLICY_DIM] << std::endl;
 #endif
 
     //‹t“`”d

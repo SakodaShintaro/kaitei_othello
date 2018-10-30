@@ -594,6 +594,8 @@ void RootstrapTrainer::testLearn() {
     std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
 #endif
 
+    games.front().moves.resize(1);
+
     {
         Position pos(*eval_params);
         for (auto move : games.front().moves) {
@@ -606,7 +608,7 @@ void RootstrapTrainer::testLearn() {
 
     //ここから学習のメイン
     std::vector<double> vcs = { 1.0 };
-    std::vector<double> lrs = { 0.0001, 0.00001, 0.000001 };
+    std::vector<double> lrs = { 0.0001, 0.00001 };
     for (int32_t i = 0; i < vcs.size(); i++) {
         for (int32_t j = 0; j < lrs.size(); j++) {
             VALUE_COEFF = vcs[i];
@@ -620,7 +622,7 @@ void RootstrapTrainer::testLearn() {
             ofs << "\tVALUE_COEFF = " << VALUE_COEFF << ", LEARN_RATE = " << LEARN_RATE;
             ofs << "\tVALUE_COEFF = " << VALUE_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
 
-            for (int64_t i = 0; i < 1000; i++) {
+            for (int64_t i = 0; i < 2000; i++) {
                 //損失・勾配・千日手数・長手数による引き分け数を計算
                 std::array<double, 2> loss;
                 auto grad = std::make_unique<EvalParams<LearnEvalType>>();

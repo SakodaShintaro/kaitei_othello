@@ -263,3 +263,6 @@ __pycache__/
 /kaitei_othello/tmp.bin
 /kaitei_othello/learn_games
 /kaitei_othello/before_learn.bin
+/kaitei_othello/test_learn_log0_0.txt
+/kaitei_othello/test_learn_log0_1.txt
+/kaitei_othello/test_learn_log0_2.txt

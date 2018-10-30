@@ -15,7 +15,7 @@ public:
     Move() = default;
     Move(int32_t x) : move(x), score(Score(0)) {}
     Move(Square to) : move(to), score(Score(0)) {}
-    Move(Square to, Color c) : move(to | (1 << TURN_BIT)), score(Score(0)) {}
+    Move(Square to, Color c) : move(c == BLACK ? to : to | (1 << TURN_BIT)), score(Score(0)) {}
 
 	//表示
 	void print() const {
@@ -27,8 +27,8 @@ public:
 	}
 	
 	//要素を取り出す関数ら
-	inline Square to() const { return Square(move); }
-    inline Color color() const { return (move & TURN_BIT ? WHITE : BLACK); }
+	inline Square to() const { return Square(move & ~(1 << TURN_BIT)); }
+    inline Color color() const { return (move & (1 << TURN_BIT) ? WHITE : BLACK); }
 
 	//演算子オーバーロード
 	bool operator==(const Move &rhs) const { return (move == rhs.move); }
