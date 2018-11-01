@@ -259,14 +259,7 @@ paket-files/
 # Python Tools for Visual Studio (PTVS)
 __pycache__/
 *.pyc
-/kaitei_othello/model.bin
-/kaitei_othello/tmp.bin
+/kaitei_othello/*.bin
 /kaitei_othello/learn_games
-/kaitei_othello/before_learn.bin
 /kaitei_othello/learn_sync_log.txt
-/kaitei_othello/test_learn_log0_0.txt
-/kaitei_othello/test_learn_log0_1.txt
-/kaitei_othello/test_learn_log0_2.txt
-/kaitei_othello/test_learn_log1_0.txt
-/kaitei_othello/test_learn_log1_1.txt
-/kaitei_othello/test_learn_log1_2.txt
+/kaitei_othello/test_learn_log*.txt
