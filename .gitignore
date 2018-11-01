@@ -263,3 +263,4 @@ __pycache__/
 /kaitei_othello/learn_games
 /kaitei_othello/learn_sync_log.txt
 /kaitei_othello/test_learn_log*.txt
+/kaitei_othello/test_games
