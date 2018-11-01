@@ -168,6 +168,7 @@
       <ConformanceMode>true</ConformanceMode>
       <AdditionalIncludeDirectories>C:\Users\迫田真太郎\Downloads\eigen-eigen-b3f3d4950030;C:\Users\rgbyg\Downloads\eigen;C:\Users\Sakoda\Downloads\eigen-eigen-b3f3d4950030.tar\eigen-eigen-b3f3d4950030</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>USE_NN;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
