@@ -7,12 +7,18 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kaitei_othello", "kaitei_ot
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Categorical|x64 = Categorical|x64
+		Categorical|x86 = Categorical|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
 		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Categorical|x64.ActiveCfg = Categorical|x64
+		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Categorical|x64.Build.0 = Categorical|x64
+		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Categorical|x86.ActiveCfg = Categorical|Win32
+		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Categorical|x86.Build.0 = Categorical|Win32
 		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Debug|x64.ActiveCfg = Debug|x64
 		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Debug|x64.Build.0 = Debug|x64
 		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Debug|x86.ActiveCfg = Debug|Win32

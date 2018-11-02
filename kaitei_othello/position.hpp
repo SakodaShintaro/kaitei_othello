@@ -41,7 +41,6 @@ public:
     //評価値計算
     void calcScoreDiff();
     int32_t score() const;
-#ifdef USE_NN
     Vec makeOutput() const;
     std::vector<CalcType> policy();
     std::vector<CalcType> maskedPolicy();
@@ -50,13 +49,9 @@ public:
 #ifdef USE_CATEGORICAL
     std::array<CalcType, BIN_SIZE> valueDist();
 #endif
-#endif
 
     //特徴量作成
-#ifdef USE_NN
     Features makeFeatures() const;
-#else
-#endif
 
     //合法手生成
     std::vector<Move> generateAllMoves() const;
@@ -115,10 +110,8 @@ private:
     Bitboard occupied_all_;
     Bitboard occupied_bb_[ColorNum];
 
-#ifdef USE_NN
     Vec output_;
     bool already_calc_;
-#endif
 
     //評価パラメータへの参照
     const EvalParams<DefaultEvalType>& eval_params_;

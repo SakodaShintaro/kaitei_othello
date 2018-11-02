@@ -522,11 +522,7 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node, double
     // ucb = Q(s, a) + U(s, a)
     // Q(s, a) = W(s, a) / N(s, a)
     // U(s, a) = C_PUCT * P(s, a) * sqrt(sum_b(B(s, b)) / (1 + N(s, a))
-#ifdef USE_NN
-    constexpr double C_PUCT = 0.1;
-#else
-    constexpr double C_PUCT = 0.1;
-#endif
+    constexpr double C_PUCT = 1.0;
 
     int32_t max_index = -1;
     double max_value = INT_MIN;
@@ -558,11 +554,7 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
     // ucb = Q(s, a) + U(s, a)
     // Q(s, a) = W(s, a) / N(s, a)
     // U(s, a) = C_PUCT * P(s, a) * sqrt(sum_b(B(s, b)) / (1 + N(s, a))
-#ifdef USE_NN
     constexpr double C_PUCT = 1.0;
-#else
-    constexpr double C_PUCT = 0.1;
-#endif
 
     int32_t max_index = -1;
     double max_value = INT_MIN;
