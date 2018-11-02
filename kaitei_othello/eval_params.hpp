@@ -12,8 +12,6 @@
 #include<random>
 #include<Eigen/Core>
 
-constexpr uint64_t SqNum = 81;
-
 //評価関数のパラメータをまとめたもの
 //型は実際のパラメータ(int16_t)と、学習時のパラメータ,勾配(float)を想定
 using DefaultEvalType = float;
@@ -22,12 +20,7 @@ using Vec = Eigen::VectorXf;
 using TeacherType = std::vector<CalcType>;
 const std::string DEFAULT_FILE_NAME = "model.bin";
 
-//#define SMALL_OUTPUT
-#ifdef SMALL_OUTPUT
-constexpr int32_t POLICY_DIM = 81 * 10; // = pieceToIndex[BLACK_KING]
-#else
 constexpr int32_t POLICY_DIM = 64;
-#endif
 
 #ifdef USE_CATEGORICAL
 constexpr int32_t BIN_SIZE = 11;
