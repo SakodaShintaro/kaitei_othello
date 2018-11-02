@@ -4,6 +4,7 @@
 #include"eval_params.hpp"
 #include"usi_options.hpp"
 #include"network.hpp"
+#include"operate_params.hpp"
 #include<iostream>
 #include<fstream>
 
@@ -28,6 +29,19 @@ int32_t Position::score() const {
     }
     return result;
 }
+
+#ifdef USE_CATEGORICAL
+std::array<CalcType, BIN_SIZE> Position::result() const {
+    int32_t s = score();
+    double r = (s > 0 ? 1.0 : (s < 0 ? 0.0 : 0.5));
+    return onehotDist(r);
+}
+#else
+CalcType Position::result() const {
+    int32_t s = score();
+    return (s > 0 ? 1.0f : (s < 0 ? 0.0f : 0.5f));
+}
+#endif
 
 Vec Position::makeOutput() const{
     std::vector<CalcType> input = makeFeatures();
