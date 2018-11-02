@@ -3,7 +3,6 @@
 #define EVAL_PARAMS_HPP
 
 #include"piece.hpp"
-#include"eval_elements.hpp"
 #include"square.hpp"
 #include<climits>
 #include<cmath>
