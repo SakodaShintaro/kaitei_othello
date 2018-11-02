@@ -1,8 +1,6 @@
 ﻿#include"square.hpp"
 #include<array>
 
-Dir ConDirToOppositeDir[129];
-
 const std::array<Square, 64> SquareList = {
     SQ11, SQ12, SQ13, SQ14, SQ15, SQ16, SQ17, SQ18,
     SQ21, SQ22, SQ23, SQ24, SQ25, SQ26, SQ27, SQ28,
