@@ -34,7 +34,6 @@
     <ClCompile Include="hash_table.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MCTSearcher.cpp" />
-    <ClCompile Include="move.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="piece.cpp" />
     <ClCompile Include="position.cpp" />

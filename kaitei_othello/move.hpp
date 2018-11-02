@@ -36,7 +36,9 @@ public:
 	bool operator<(const Move &rhs) const { return (score < rhs.score); }
 	bool operator>(const Move &rhs) const { return (score > rhs.score); }
 
-    int32_t toLabel() const;
+    int32_t toLabel() const {
+        return (color() == BLACK ? SquareToNum[to()] : SquareToNum[InvSquare[to()]]);
+    }
 
 	//探索時にSeacherクラスから気軽にアクセスできるようpublicにおいてるけど
 	int32_t move;
