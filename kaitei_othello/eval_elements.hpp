@@ -8,8 +8,6 @@
 #include<algorithm>
 #include<vector>
 
-constexpr int PIECE_STATE_LIST_SIZE = 38;
-
 //評価値の計算に用いる特徴量をまとめたもの
 using Features = std::vector<float>;
 
