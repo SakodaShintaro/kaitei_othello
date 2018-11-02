@@ -61,40 +61,6 @@ std::ostream& operator<<(std::ostream& os, const Depth d);
 std::istream& operator>>(std::istream& is, Depth& d);
 
 //std::arrayに関するオーバーロード
-inline std::array<int32_t, 2>& operator+=(std::array<int32_t, 2>& lhs, std::array<int16_t, 2> rhs) {
-    lhs[0] += rhs[0];
-    lhs[1] += rhs[1];
-    return lhs;
-}
-inline std::array<int32_t, 2>& operator-=(std::array<int32_t, 2>& lhs, std::array<int16_t, 2> rhs) {
-    lhs[0] -= rhs[0];
-    lhs[1] -= rhs[1];
-    return lhs;
-}
-template<class T>
-inline std::array<T, 2>& operator+=(std::array<T, 2>& lhs, std::array<T, 2> rhs) {
-    lhs[0] += rhs[0];
-    lhs[1] += rhs[1];
-    return lhs;
-}
-template<class T>
-inline std::array<T, 2>& operator-=(std::array<T, 2>& lhs, std::array<T, 2> rhs) {
-    lhs[0] -= rhs[0];
-    lhs[1] -= rhs[1];
-    return lhs;
-}
-inline std::array<int16_t, 2> operator*(int c, std::array<int16_t, 2> rhs) {
-    rhs[0] *= c;
-    rhs[1] *= c;
-    return rhs;
-}
-inline std::array<int32_t, 2> operator*(int c, std::array<int32_t, 2> rhs) {
-    rhs[0] *= c;
-    rhs[1] *= c;
-    return rhs;
-}
-
-//これで上の要らなくなりそうだけど
 template<class T, size_t SIZE>
 inline std::array<T, SIZE> operator+(std::array<T, SIZE> lhs, std::array<T, SIZE> rhs) {
     for (size_t i = 0; i < SIZE; i++) {
