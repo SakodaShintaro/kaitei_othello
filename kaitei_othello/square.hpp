@@ -53,25 +53,6 @@ enum Dir {
     LUU = LU + U, //左上上
 };
 
-enum ControlDir {
-    //利きの方向を表す定数
-    //真ん中のマスに対してどこから利きが来ているのかをn番目のビットを立てて表す
-    /*
-       812
-       7 3
-       654
-    */
-    //             87654321
-    Con_U      = 0b00000001,
-    Con_RU     = 0b00000010,
-    Con_R      = 0b00000100,
-    Con_RD     = 0b00001000,
-    Con_D      = 0b00010000,
-    Con_LD     = 0b00100000,
-    Con_L      = 0b01000000,
-    Con_LU     = 0b10000000,
-};
-
 const Rank SquareToRank[SquareNum] = {
     Rank0, Rank1, Rank2, Rank3, Rank4, Rank5, Rank6, Rank7, Rank8, Rank9,
     Rank0, Rank1, Rank2, Rank3, Rank4, Rank5, Rank6, Rank7, Rank8, Rank9,
@@ -148,25 +129,8 @@ static Dir DirList[8] = {
     U, RU, R, RD, D, LD, L, LU
 };
 
-static ControlDir LongControlList[8] = {
-    //前から時計回りに
-    Con_U,	Con_RU, Con_R, Con_RD,	Con_D,	Con_LD, Con_L, Con_LU,
-};
-
 inline static Dir oppositeDir(const Dir d) {
     return static_cast<Dir>(-d);
-}
-
-extern Dir ConDirToOppositeDir[129];
-static void initConDirToOppositeDir() {
-    ConDirToOppositeDir[Con_U] = D;
-    ConDirToOppositeDir[Con_RU] = LD;
-    ConDirToOppositeDir[Con_R] = L;
-    ConDirToOppositeDir[Con_RD] = LU;
-    ConDirToOppositeDir[Con_D] = U;
-    ConDirToOppositeDir[Con_LD] = RU;
-    ConDirToOppositeDir[Con_L] = R;
-    ConDirToOppositeDir[Con_LU] = RD;
 }
 
 inline Dir directionAtoB(Square A, Square B) {

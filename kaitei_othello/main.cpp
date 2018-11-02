@@ -11,8 +11,6 @@ SharedData shared_data;
 
 int main()
 {
-    initConDirToOppositeDir();
-
     Position::initHashSeed();
 
     Bitboard::init();
