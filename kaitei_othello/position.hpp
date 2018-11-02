@@ -49,6 +49,8 @@ public:
     std::vector<CalcType> maskedPolicy();
     CalcType valueScore();
     CalcType valueScoreForTurn();
+    double valueForBlack();
+    double valueForTurn();
 #ifdef USE_CATEGORICAL
     std::array<CalcType, BIN_SIZE> valueDist();
 #endif

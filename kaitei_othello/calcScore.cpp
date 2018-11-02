@@ -86,6 +86,23 @@ CalcType Position::valueScoreForTurn() {
         initScore();
     }
 #ifdef USE_CATEGORICAL
+    //CategoricalでScoreだけを返す方法がわからない
+    return valueForTurn();
+#else
+    return output_[POLICY_DIM];
+#endif
+
+}
+
+double Position::valueForBlack() {
+    return (color_ == BLACK ? valueForTurn() : 1.0 - valueForTurn());
+}
+
+double Position::valueForTurn() {
+    if (!already_calc_) {
+        initScore();
+    }
+#ifdef USE_CATEGORICAL
     std::vector<CalcType> categorical_distribution(BIN_SIZE);
     for (int32_t i = 0; i < BIN_SIZE; i++) {
         categorical_distribution[i] = output_[POLICY_DIM + i];
@@ -97,9 +114,8 @@ CalcType Position::valueScoreForTurn() {
     }
     return value;
 #else
-    return output_[POLICY_DIM];
+    return standardSigmoid(output_[POLICY_DIM]);
 #endif
-
 }
 
 #ifdef USE_CATEGORICAL
