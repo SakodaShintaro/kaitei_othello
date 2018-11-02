@@ -52,7 +52,6 @@
     <ClInclude Include="base_trainer.hpp" />
     <ClInclude Include="bitboard.hpp" />
     <ClInclude Include="common.hpp" />
-    <ClInclude Include="eval_elements.hpp" />
     <ClInclude Include="eval_params.hpp" />
     <ClInclude Include="game.hpp" />
     <ClInclude Include="hash_table.hpp" />

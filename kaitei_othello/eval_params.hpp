@@ -18,6 +18,7 @@ using DefaultEvalType = float;
 using CalcType = float;
 using Vec = Eigen::VectorXf;
 using TeacherType = std::vector<CalcType>;
+using Features = std::vector<CalcType>;
 const std::string DEFAULT_FILE_NAME = "model.bin";
 
 constexpr int32_t POLICY_DIM = 64;

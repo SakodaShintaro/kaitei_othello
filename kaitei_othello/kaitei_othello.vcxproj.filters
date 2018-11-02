@@ -86,9 +86,6 @@
     <ClInclude Include="common.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="eval_elements.hpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="eval_params.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
