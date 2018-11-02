@@ -94,7 +94,6 @@ void testMakeRandomPosition() {
 }
 
 void testNN() {
-#ifdef USE_NN
     eval_params->readFile();
     Position pos(*eval_params);
 
@@ -125,7 +124,6 @@ void testNN() {
 
         pos.doMove(moves.front());
     }
-#endif
 }
 
 void testKifuOutput() {

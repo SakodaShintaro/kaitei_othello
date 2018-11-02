@@ -21,7 +21,7 @@ enum Depth {
 };
 
 using Score = float;
-constexpr Score MAX_SCORE = 1000000.0;
+constexpr Score MAX_SCORE = 1000000.0f;
 constexpr Score SCORE_ZERO = 0;
 constexpr Score DRAW_SCORE = 0;
 constexpr Score MIN_SCORE = -MAX_SCORE;

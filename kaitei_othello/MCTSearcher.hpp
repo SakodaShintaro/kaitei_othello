@@ -8,9 +8,7 @@
 #include<vector>
 #include<chrono>
 
-#ifdef USE_NN
 #define USE_MCTS
-#endif
 
 class MCTSearcher {
 public:

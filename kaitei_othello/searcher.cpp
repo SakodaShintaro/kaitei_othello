@@ -176,11 +176,7 @@ void Searcher::think() {
         }
 
         //置換表への保存
-#ifdef USE_NN
         shared_data.hash_table.save(root.hash_value(), root_moves_[0], root_moves_[0].score, depth, root_moves_);
-#else
-        shared_data.hash_table.save(root.hash_value(), root_moves_[0], root_moves_[0].score, depth);
-#endif
 
         //詰みがあったらすぐ返す
         if (isMatedScore(root_moves_[0].score)) {
@@ -226,11 +222,7 @@ std::pair<Move, TeacherType> Searcher::thinkForGenerateLearnData(Position& root,
 
     //合法手が0だったら投了
     if (root_moves_.size() == 0) {
-#ifdef USE_NN
         return { NULL_MOVE, TeacherType() };
-#else
-        return { NULL_MOVE, 0.0 };
-#endif
     }
 
     //指定された手数までソフトマックスランダムにより指し手を決定
@@ -259,24 +251,16 @@ std::pair<Move, TeacherType> Searcher::thinkForGenerateLearnData(Position& root,
 
     if (isMatedScore(best_score)) {
         //詰みがある場合は最善のものを返す
-#ifdef USE_NN
-#else
-        return { root_moves_[std::max_element(scores.begin(), scores.end()) - scores.begin()], sigmoid((int32_t)best_score, CP_GAIN) };
-#endif
     }
 
     scores = softmax(scores, 50.0);
 
-#ifdef USE_NN
     scores.push_back(sigmoid((int32_t)best_score, CP_GAIN));
     TeacherType teacher(OUTPUT_DIM, 0.0);
     for (int32_t i = 0; i < root_moves_.size(); i++) {
         teacher[root_moves_[i].toLabel()] = (CalcType)scores[i];
     }
     return { root_moves_[randomChoise(scores)], teacher };
-#else
-    return { root_moves_[randomChoise(scores)], sigmoid((int32_t)best_score, CP_GAIN) };
-#endif
 }
 
 template<bool isPVNode>
@@ -330,18 +314,12 @@ Move Searcher::softmaxChoice(Position& pos, double temperature) {
     if (moves.size() == 0) {
         return NULL_MOVE;
     }
-#ifdef USE_NN
     auto policy = pos.policy();
-#endif
     std::vector<double> score(moves.size());
     for (int i = 0; i < moves.size(); i++) {
         pos.doMove(moves[i]);
         //手番から見たスコア
-#ifdef USE_NN
         moves[i].score = (Score)(int)policy[moves[i].toLabel()];
-#else
-        moves[i].score = -qsearch<true>(pos, MIN_SCORE, MAX_SCORE, Depth(0), 1);
-#endif
         pos.undo();
     }
 
@@ -488,117 +466,6 @@ Score Searcher::search(Position &pos, Score alpha, Score beta, Depth depth, int 
     // Step5. 局面の静的評価
     //-----------------------------
 
-#ifndef USE_NN
-
-    //Score static_score = (hash_entry ? tt_score : pos.scoreForTurn());
-    Score static_score = (hash_entry ? tt_score : qsearch<isPVNode || train_mode>(pos, alpha, beta, Depth(0), distance_from_root));
-
-    //王手がかかっているときは下の枝刈りはしない
-    if (pos.isKingChecked()) {
-        goto moves_loop;
-    }
-
-    //-----------------------------
-    // static_scoreによる枝刈り
-    //-----------------------------
-
-    //-----------------------------
-    // Step6. Razoring
-    //-----------------------------
-    constexpr int razor_margin[] = { 0, 590, 604 };
-    if (!isPVNode
-        && depth < 3 * PLY
-        && static_score + razor_margin[depth / PLY] <= alpha) {
-        Score ralpha = alpha - (depth >= 2 * PLY) * razor_margin[depth / PLY];
-        Score v = qsearch<isPVNode>(pos, ralpha, ralpha + 1, Depth(0), distance_from_root);
-        if (depth < 2 * PLY || v <= ralpha) {
-            search_log.razoring_num++;
-            //printf("razoring\n");
-            return v;
-        }
-    }
-
-    //-----------------------------
-    // Step7. Futility pruning
-    //-----------------------------
-
-    if (!isPVNode 
-        && (static_score - futilityMargin(depth) >= beta)) {
-        search_log.futility_num++;
-        //printf("futility pruning\n");
-        return static_score;
-    }
-
-    //-----------------------------
-    // Step8. Null Move Pruning
-    //-----------------------------
-
-#ifdef USE_SEARCH_STACK
-    if (!isPVNode
-        && static_score >= beta
-        && ss->can_null_move) {
-        Depth rdepth = depth / 2 - PLY;
-
-        //2回連続null_moveになるのを避ける
-        (ss + 1)->can_null_move = false;
-        pos.doNullMove();
-        Score null_score = -search<false, train_mode>(pos, -alpha - 1, -alpha, rdepth - PLY, distance_from_root + 1);
-
-        pos.undoNullMove();
-        (ss + 1)->can_null_move = true;
-        if (null_score >= beta) {
-            search_log.null_move_num++;
-            //printf("nullmove pruning\n");
-            return null_score;
-        }
-    }
-#endif
-
-#ifndef OMIT_PRUNINGS
-    //-----------------------------
-    // Step9. ProbCut
-    //-----------------------------
-
-    if (!isPVNode
-        && depth >= 5 * PLY) {
-        Score rbeta = std::min(beta + 300, MAX_SCORE);
-        Depth rdepth = depth - 4;
-        MovePicker mp(pos, tt_move, rdepth, history_, ss->killers);
-        for (Move move = mp.nextMove(); move != NULL_MOVE; move = mp.nextMove()) {
-            pos.doMove(move);
-            Score score = -search<false>(pos, -rbeta, -rbeta + 1, rdepth, distance_from_root + 1);
-            pos.undo();
-            if (score >= rbeta) {
-                return score;
-            }
-        }
-    }
-#endif
-
-    //-----------------------------
-    // Step10. 多重反復深化
-    //-----------------------------
-
-    if (depth >= 6 * PLY
-        && tt_move == NULL_MOVE
-        && (isPVNode || static_score + 128 >= beta)
-        && !train_mode) {
-        Depth d = (depth * 3 / 4) - 2 * PLY;
-#ifdef USE_SEARCH_STACK
-        ss->can_null_move = false;
-#endif
-        search<isPVNode, train_mode>(pos, alpha, beta, d, distance_from_root);
-#ifdef USE_SEARCH_STACK
-        ss->can_null_move = true;
-#endif
-
-        hash_entry = shared_data.hash_table.find(pos.hash_value());
-        tt_move = hash_entry ? hash_entry->best_move : NULL_MOVE;
-    }
-
-moves_loop:
-#endif
-
     //変数の準備
     Move non_cut_moves[600];
     uint32_t non_cut_moves_index = 0;
@@ -608,7 +475,6 @@ moves_loop:
     Move best_move = NULL_MOVE;
 
     //指し手を生成
-#ifdef USE_NN
     constexpr int32_t scale = 1000;
     constexpr int32_t threshold = scale;
     std::vector<Move> moves;
@@ -628,12 +494,6 @@ moves_loop:
         Network::scoreByPolicy(moves, pos.policy(), scale);
         sort(moves.begin(), moves.end(), std::greater<Move>());
     }
-#elif USE_SEARCH_STACK
-    //MovePicker mp(pos, tt_move, depth, history_, ss->killers, move_history_[pre]);
-    MovePicker mp(pos, tt_move, depth, history_, ss->killers, NULL_MOVE);
-#else
-    MovePicker mp(pos, tt_move, depth, history_, NULL_MOVE);
-#endif
 
     //-----------------------------
     // Step11. Loop through moves
@@ -644,11 +504,7 @@ moves_loop:
     //    printf("base_line = %4d\n", base_line);
     //}
 
-#if USE_NN
     for (Move current_move : moves) {
-#else
-    for (Move current_move = mp.nextMove(); current_move != NULL_MOVE; current_move = mp.nextMove()) {
-#endif
         //ルートノードでしか参照されない
         std::vector<Move>::iterator root_move_itr;
 
@@ -666,13 +522,6 @@ moves_loop:
         // Step13. 動かす前での枝刈り
         //-----------------------------
 
-#if USE_NN
-        //nnの出力をベースに枝刈り
-        //if (!isMatedScore(best_score) && moves[0].scores - current_move.scores >= threshold) {
-        //    //ソートしてあるのでbreakして良い
-        //    break;
-        //}
-#endif
 
         //-----------------------------
         // Step14. 1手進める
@@ -701,12 +550,6 @@ moves_loop:
         //-----------------------------
         // Step15. Move countに応じてdepthを減らした探索(Late Move Reduction)
         //-----------------------------
-
-#ifdef USE_NN
-        //Depth new_depth = depth  - (int)(moves[0].scores - current_move.scores) * 3;
-        //scores = -search<false, train_mode>(pos, -alpha - 1, -alpha, new_depth - PLY, distance_from_root + 1);
-        //shouldSearchFullDepth = (scores > alpha);
-#endif
 
         //-----------------------------
         // Step16. Full Depth Search
@@ -799,11 +642,7 @@ moves_loop:
     //-----------------------------
     // 置換表に保存
     //-----------------------------
-#ifdef USE_NN
-        shared_data.hash_table.save(pos.hash_value(), best_move, best_score, depth, moves);
-#else
-        shared_data.hash_table.save(pos.hash_value(), best_move, best_score, depth);
-#endif
+    shared_data.hash_table.save(pos.hash_value(), best_move, best_score, depth, moves);
 
     return best_score;
 }

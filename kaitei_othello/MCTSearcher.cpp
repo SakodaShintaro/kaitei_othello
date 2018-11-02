@@ -387,7 +387,6 @@ void MCTSearcher::evalNode(Position& pos, Index index) {
     auto& current_node = hash_table_[index];
     std::vector<float> legal_move_policy(current_node.child_num);
 
-#ifdef USE_NN
     //Policy‚ÌŒvŽZ
     if (current_node.child_num != 1) {
         auto policy_and_value = pos.policy();
@@ -408,7 +407,6 @@ void MCTSearcher::evalNode(Position& pos, Index index) {
     current_node.value_dist = pos.valueDist();
 #else
     current_node.value_win = (CalcType)sigmoid(pos.valueScoreForTurn(), 1.0);
-#endif
 #endif
     current_node.evaled = true;
 }

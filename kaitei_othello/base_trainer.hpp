@@ -17,26 +17,15 @@ protected:
     //    パラメータ更新に関する関数類
     //------------------------------------
     //現局面に対する評価関数の出力をteacherに近づけるように勾配を更新する関数
-#ifdef USE_NN
     std::array<double, 2> addGrad(EvalParams<LearnEvalType>& grad, Position& pos, TeacherType teacher);
-#else
-    double addGrad(EvalParams<LearnEvalType>& grad, Position& pos, TeacherType teacher);
-#endif
 
-#ifdef USE_NN
     //逆伝播が合っているか数値微分と照らし合わせて検証する関数
     void verifyAddGrad(Position& pos, TeacherType teacher);
-#endif
 
     //勾配をもとにパラメータを更新する関数
     void updateParams(EvalParams<LearnEvalType>& params, const EvalParams<LearnEvalType>& grad);
     void updateParamsSGD(EvalParams<LearnEvalType>& params, const EvalParams<LearnEvalType>& grad);
     void updateParamsMomentum(EvalParams<LearnEvalType>& params, const EvalParams<LearnEvalType>& grad, EvalParams<LearnEvalType>& pre_update);
-
-#ifndef USE_NN
-    //KPPTに関して特徴を受け取ってそれらパラメータについての勾配を更新する関数:Bonanza Methodで使うため消せない
-    void updateGradient(EvalParams<LearnEvalType>& grad, const Features &ee, const LearnEvalType delta);
-#endif
 
     //--------------------
     //    その他関数類
@@ -69,10 +58,8 @@ protected:
     //並列化するスレッド数
     uint32_t THREAD_NUM;
 
-#ifdef USE_NN
     //value_lossにかける係数
     double VALUE_COEFF;
-#endif
 
     //--------------------------------
     //    学習中に用いるメンバ変数
@@ -83,10 +70,6 @@ protected:
     //学習開始時間
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
 
-    //学習中のパラメータ:KPPTのときだけ使う
-#ifndef USE_NN
-    std::unique_ptr<EvalParams<LearnEvalType>> learning_parameters;
-#endif
 
     std::unique_ptr<EvalParams<LearnEvalType>> pre_update_;
 };

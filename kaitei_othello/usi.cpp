@@ -43,11 +43,7 @@ void USI::loop() {
         } else if (input == "gameover") {
             gameover();
         } else if (input == "prepareForLearn") {
-#ifdef USE_NN
             eval_params->initRandom();
-#else
-            eval_params->clear();
-#endif
             eval_params->printHistgram();
             eval_params->writeFile();
             eval_params->writeFile("tmp.bin");
@@ -82,11 +78,7 @@ void USI::loop() {
 }
 
 void USI::usi() {
-#ifdef USE_NN
-    printf("id name kaitei_nn\n");
-#else
-    printf("id name kaitei_kppt\n");
-#endif
+    printf("id name kaitei_othello_nn\n");
     printf("id author Sakoda Shintaro\n");
 	printf("option name byoyomi_margin type spin default 0 min 0 max 1000\n");
     usi_option.byoyomi_margin = 0;

@@ -28,7 +28,6 @@ void Game::writeKifuFile(std::string dir_path) const {
         ofs << fileToString[to_file] << rankToString[to_rank];
         ofs << "**対局 評価値 " << (i % 2 == 0 ? m.score : -m.score) << std::endl;
 
-#ifdef USE_NN
         if (i == 0) {
             auto p = pos.maskedPolicy();
             for (auto& move : pos.generateAllMoves()) {
@@ -40,7 +39,6 @@ void Game::writeKifuFile(std::string dir_path) const {
         ofs << "*sigmoid(val) = " << sigmoid(pos.valueScoreForTurn(), 1.0) << std::endl;
 
         pos.doMove(m);
-#endif
     }
     
     ofs << pos.score() << std::endl;

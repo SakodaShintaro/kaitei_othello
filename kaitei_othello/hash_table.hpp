@@ -19,9 +19,7 @@ struct HashEntry {
     //登録されているか
     bool flag_;
 
-#ifdef USE_NN
     std::vector<Move> sorted_moves;
-#endif
 
     HashEntry() :
         hash_val(0),
@@ -41,9 +39,7 @@ class HashTable{
 public:
     HashTable() { setSize(64); }
 	HashEntry* find(int64_t key);
-#ifdef USE_NN
     void save(int64_t key, Move move, Score score, Depth depth, std::vector<Move> sorted_moves);
-#endif
     void save(int64_t key, Move move, Score score, Depth depth);
     void setSize(int64_t megabytes);
 	double hashfull() { return static_cast<double>(hashfull_) / static_cast<double>(size_) * 1000.0; }

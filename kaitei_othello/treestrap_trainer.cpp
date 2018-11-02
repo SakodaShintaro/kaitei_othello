@@ -90,12 +90,7 @@ void TreestrapTrainer::startLearn() {
                 Score best_score = best_move.score;
 
                 //åªã«ñ ÇÃäwèK
-#ifdef USE_NN
                 assert(false);
-#else
-                loss_ += calcLoss(curr_score, best_score);
-                updateGradient(*grad_, pos.features(), (LearnEvalType)calcGrad(curr_score, best_score));
-#endif
                 learned_position_num_++;
 
                 pos.doMove(best_move);
@@ -142,12 +137,7 @@ Score TreestrapTrainer::miniMaxLearn(Position& pos, Depth depth) {
     }
 
     //åªã«ñ ÇÃäwèK
-#ifdef USE_NN
     assert(false);
-#else
-    loss_ += calcLoss(curr_score, best_score);
-    updateGradient(*grad_, pos.features(), (LearnEvalType)calcGrad(curr_score, best_score));
-#endif
     learned_position_num_++;
 
     return best_score;
@@ -189,12 +179,7 @@ Score TreestrapTrainer::alphaBetaLearn(Position& pos, Score alpha, Score beta, D
     }
 
     //åªã«ñ ÇÃäwèK
-#ifdef USE_NN
     assert(false);
-#else
-    loss_ += calcLoss(curr_score, best_score);
-    updateGradient(*grad_, pos.features(), (LearnEvalType)calcGrad(curr_score, best_score));
-#endif
     learned_position_num_++;
 
     return best_score;

@@ -1,5 +1,3 @@
-#if USE_NN
-
 #include"network.hpp"
 #include"common.hpp"
 #include"move.hpp"
@@ -69,7 +67,5 @@ Vec Network::d_sigmoid(const Vec & x) {
     }
     return result;
 }
-
-#endif
 
 #endif

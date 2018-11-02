@@ -8,7 +8,6 @@ HashEntry* HashTable::find(int64_t key) {
 	return &table_[key & key_mask_];
 }
 
-#ifdef USE_NN
 void HashTable::save(int64_t key, Move move, Score score, Depth depth, std::vector<Move> sorted_moves) {
     HashEntry* target = &table_[key & key_mask_];
     target->hash_val = key;
@@ -21,7 +20,7 @@ void HashTable::save(int64_t key, Move move, Score score, Depth depth, std::vect
         hashfull_++;
     }
 }
-#endif
+
 void HashTable::save(int64_t key, Move move, Score score, Depth depth) {
 	HashEntry* target = &table_[key & key_mask_];
 	target->hash_val = key;

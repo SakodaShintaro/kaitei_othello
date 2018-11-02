@@ -1,7 +1,5 @@
 #pragma once
 
-#if USE_NN
-
 #include"types.hpp"
 #include"move.hpp"
 #include"eval_params.hpp"
@@ -20,5 +18,3 @@ namespace Network {
     Vec d_sigmoid(const Vec& x);
 #endif
 };
-
-#endif
