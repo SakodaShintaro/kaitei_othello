@@ -98,7 +98,7 @@ void testNN() {
     Position pos(*eval_params);
 
     while (true) {
-        auto moves = pos.generateAllMoves();
+        auto moves = pos.scoredAllMoves();
         if (moves.size() == 0) {
             break;
         }
@@ -116,7 +116,6 @@ void testNN() {
         auto result = pos.policy();
         printf("value_score = %f\n", pos.valueScore());
 
-        Network::scoreByPolicy(moves, result, 10000);
         sort(moves.begin(), moves.end(), std::greater<Move>());
         for (auto move : moves) {
             move.printWithScore();

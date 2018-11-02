@@ -320,6 +320,17 @@ std::vector<Move> Position::generateAllMoves() const {
     return moves;
 }
 
+std::vector<Move> Position::scoredAllMoves() {
+    auto moves = generateAllMoves();
+    if (!already_calc_) {
+        initScore();
+    }
+    for (Move& move : moves) {
+        move.score = output_(move.toLabel());
+    }
+    return moves;
+}
+
 void Position::initHashValue() {
     hash_value_ = 0;
     for (auto sq : SquareList) {

@@ -59,6 +59,7 @@ public:
 
     //合法手生成
     std::vector<Move> generateAllMoves() const;
+    std::vector<Move> scoredAllMoves();
 
     //ハッシュ
     static void initHashSeed();

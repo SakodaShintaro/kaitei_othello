@@ -7,7 +7,6 @@
 #include<random>
 
 namespace Network {
-    void scoreByPolicy(std::vector<Move>& moves, const std::vector<CalcType>& u, int32_t scale);
     Vec activationFunction(const Vec& x);
     Vec d_activationFunction(const Vec& x);
 #ifdef USE_ACTIVATION_RELU

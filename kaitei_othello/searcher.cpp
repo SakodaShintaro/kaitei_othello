@@ -485,13 +485,11 @@ Score Searcher::search(Position &pos, Score alpha, Score beta, Depth depth, int 
             flag = (flag && pos.isLegalMove(move));
         }
         if (!flag) {
-            moves = pos.generateAllMoves();
-            Network::scoreByPolicy(moves, pos.policy(), scale);
+            moves = pos.scoredAllMoves();
             sort(moves.begin(), moves.end(), std::greater<Move>());
         }
     } else {
-        moves = pos.generateAllMoves();
-        Network::scoreByPolicy(moves, pos.policy(), scale);
+        moves = pos.scoredAllMoves();
         sort(moves.begin(), moves.end(), std::greater<Move>());
     }
 

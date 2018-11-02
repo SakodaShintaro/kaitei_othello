@@ -4,18 +4,6 @@
 #include<fstream>
 #include<iostream>
 
-void Network::scoreByPolicy(std::vector<Move>& moves, const std::vector<CalcType>& u, int32_t scale) {
-    std::vector<CalcType> prob(moves.size());
-    for (int32_t i = 0; i < moves.size(); i++) {
-        prob[i] = u[moves[i].toLabel()];
-    }
-    prob = softmax(prob);
-    for (int32_t i = 0; i < moves.size(); i++) {
-        //®”‰»‚·‚é‚½‚ßscale”{‚Å•ÛŽ
-        moves[i].score = (Score)(int32_t)(prob[i] * scale);
-    }
-}
-
 Vec Network::activationFunction(const Vec & x) {
 #ifdef USE_ACTIVATION_RELU
     return relu(x);
