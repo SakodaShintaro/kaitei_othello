@@ -83,9 +83,6 @@
     <ClInclude Include="bitboard.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="book.hpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="common.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
