@@ -612,7 +612,7 @@ void RootstrapTrainer::testLearn() {
             ofs << "\tVALUE_COEFF = " << VALUE_COEFF << ", LEARN_RATE = " << LEARN_RATE;
             ofs << "\tVALUE_COEFF = " << VALUE_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
 
-            for (int64_t i = 0; i < 2000; i++) {
+            for (int64_t i = 0; i < 1000; i++) {
                 //損失・勾配・千日手数・長手数による引き分け数を計算
                 std::array<double, 2> loss;
                 auto grad = std::make_unique<EvalParams<LearnEvalType>>();
@@ -624,21 +624,19 @@ void RootstrapTrainer::testLearn() {
                 ofs << i << "\t" << loss[0] << "\t" << loss[1] << std::endl;
             }
 
-//            for (auto game : games) {
-//                Position pos(*eval_params);
-//
-//                for (auto move : game.moves) {
-//                    pos.print();
-//                    auto policy = pos.maskedPolicy();
-//                    std::cout << "policy[" << move << "] = " << policy[move.toLabel()];
-//#ifdef USE_CATEGORICAL
-//                    std::cout << std::endl;
-//#else
-//                    std::cout << ", value = " << sigmoid(pos.valueScoreForTurn(), 1.0) << std::endl;
-//#endif
-//                    pos.doMove(move);
-//                }
-//            }
+            for (auto game : games) {
+                Position pos(*eval_params);
+
+                for (auto move : game.moves) {
+                    //pos.print();
+                    if (move != NULL_MOVE) {
+                        auto policy = pos.maskedPolicy();
+                        std::cout << "policy[" << std::setw(4) << move << "] = " << policy[move.toLabel()]
+                                  << ", value = " << pos.valueForTurn() << std::endl;
+                    }
+                    pos.doMove(move);
+                }
+            }
         }
     }
     std::cout << "finish testLearn()" << std::endl;

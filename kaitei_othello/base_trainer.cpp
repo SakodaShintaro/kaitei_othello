@@ -33,7 +33,7 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
 #endif
     }
 #else
-    const auto win_rate = sigmoid(pos.valueScoreForTurn(), 1.0);
+    const auto win_rate = pos.valueForTurn();
     double value_loss = binaryCrossEntropy(win_rate, teacher[POLICY_DIM]);
 #endif
 
@@ -69,7 +69,7 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
         std::cout << "index = " << index << " y = " <<  y[index] << "  t = " << teacher[index] << " ";
         move.print();
     }
-    std::cout << "value = " << win_rate << " t = " << teacher[POLICY_DIM] << std::endl;
+    std::cout << "value = " << pos.valueForTurn() << " t = " << teacher[POLICY_DIM] << std::endl;
 #endif
 
     //‹t“`”d
