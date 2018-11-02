@@ -9,7 +9,7 @@
 #include<fstream>
 
 void Position::initScore() {
-    std::vector<CalcType> input = makeFeatures();
+    std::vector<CalcType> input = makeFeature();
     Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());
     output_ = eval_params_.w[1] * Network::activationFunction(eval_params_.w[0] * input_vec + eval_params_.b[0]) + eval_params_.b[1];
     already_calc_ = true;
@@ -40,7 +40,7 @@ CalcType Position::result() const {
 #endif
 
 Vec Position::makeOutput() const{
-    std::vector<CalcType> input = makeFeatures();
+    std::vector<CalcType> input = makeFeature();
     Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());
     return eval_params_.w[1] * Network::activationFunction(eval_params_.w[0] * input_vec + eval_params_.b[0]) + eval_params_.b[1];
 }
@@ -120,7 +120,7 @@ std::array<CalcType, BIN_SIZE> Position::valueDist() {
 }
 #endif
 
-std::vector<float> Position::makeFeatures() const {
+std::vector<float> Position::makeFeature() const {
     std::vector<float> features(INPUT_DIM, 0.0);
     if (color_ == BLACK) {
         for (auto sq : SquareList) {

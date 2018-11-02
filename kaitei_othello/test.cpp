@@ -104,7 +104,7 @@ void testNN() {
         }
         pos.print();
 
-        auto feature = pos.makeFeatures();
+        auto feature = pos.makeFeature();
         for (int32_t r = Rank1; r <= Rank9; r++) {
             for (int32_t f = File9; f >= File1; f--) {
                 auto sq = FRToSquare[f][r];

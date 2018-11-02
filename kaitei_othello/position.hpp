@@ -54,7 +54,7 @@ public:
 #endif
 
     //特徴量作成
-    Features makeFeatures() const;
+    Feature makeFeature() const;
 
     //合法手生成
     std::vector<Move> generateAllMoves() const;

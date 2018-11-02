@@ -6,7 +6,7 @@
 std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Position& pos, TeacherType teacher) {
     assert(teacher.size() == OUTPUT_DIM);
 
-    const auto input = pos.makeFeatures();
+    const auto input = pos.makeFeature();
     const auto& params = pos.evalParams();
     const Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());
     const Vec u0 = params.w[0] * input_vec + params.b[0];
