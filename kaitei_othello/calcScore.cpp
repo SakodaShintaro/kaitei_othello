@@ -15,10 +15,6 @@ void Position::initScore() {
     already_calc_ = true;
 }
 
-void Position::calcScoreDiff() {
-    initScore();
-}
-
 int32_t Position::score() const {
     int32_t result = 0;
     for (Square sq : SquareList) {

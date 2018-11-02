@@ -39,7 +39,6 @@ public:
     bool isFinish() const;
 
     //評価値計算
-    void calcScoreDiff();
     int32_t score() const;
 #ifdef USE_CATEGORICAL
     std::array<CalcType, BIN_SIZE> result() const;
