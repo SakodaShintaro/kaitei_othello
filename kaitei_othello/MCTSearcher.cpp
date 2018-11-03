@@ -233,7 +233,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
             teacher[best_move.toLabel()] = 1.0;
         }
         
-        best_move.score = (Score)(int32_t)inv_sigmoid(best_wp, CP_GAIN);
+        best_move.score = (Score)best_wp;
 
         return { best_move, teacher };
     }
@@ -289,7 +289,7 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
 #ifdef USE_CATEGORICAL
         result = reverseDist(onehotDist(pos.resultForTurn()));
 #else
-        result = 1.0 - pos.resultForTurn();
+        result = (CalcType)(1.0 - pos.resultForTurn());
 #endif
     } else if (child_indices[next_index] == UctHashTable::NOT_EXPANDED) {
         // ÉmÅ[ÉhÇÃìWäJ
