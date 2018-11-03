@@ -251,7 +251,11 @@ void Position::doNullMove() {
     //hashの手番要素を更新
     hash_value_ ^= 1;
 
+    //NULL_MOVEを棋譜に追加
     kifu_.push_back(NULL_MOVE);
+
+    //反転するから評価はしていない
+    already_calc_ = false;
 }
 
 void Position::undoNullMove() {
