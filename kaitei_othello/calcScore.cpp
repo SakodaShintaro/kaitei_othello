@@ -26,18 +26,10 @@ int32_t Position::score() const {
     return result;
 }
 
-#ifdef USE_CATEGORICAL
-std::array<CalcType, BIN_SIZE> Position::result() const {
-    int32_t s = score();
-    double r = (s > 0 ? 1.0 : (s < 0 ? 0.0 : 0.5));
-    return onehotDist(r);
+double Position::resultForTurn() const {
+    int32_t s = (color_ == BLACK ? score() : -score());
+    return (s > 0 ? 1.0 : (s < 0 ? 0.0 : 0.5));
 }
-#else
-CalcType Position::result() const {
-    int32_t s = score();
-    return (s > 0 ? 1.0f : (s < 0 ? 0.0f : 0.5f));
-}
-#endif
 
 Vec Position::makeOutput() const{
     std::vector<CalcType> input = makeFeature();
@@ -83,7 +75,7 @@ CalcType Position::valueScoreForTurn() {
     }
 #ifdef USE_CATEGORICAL
     //CategoricalでScoreだけを返す方法がわからない
-    return valueForTurn();
+    return (CalcType)valueForTurn();
 #else
     return output_[POLICY_DIM];
 #endif

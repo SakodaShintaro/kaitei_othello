@@ -45,6 +45,7 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
 #endif
     for (int32_t i = 0; i < POLICY_DIM; i++) {
         delta_o(i) = y[i] - teacher[i];
+        delta_o(i) = 0.0f;
 #ifdef PRINT_DEBUG
         abs_sum += std::abs(delta_o(i));
         abs_max = std::max(abs_max, (double)(std::abs(delta_o(i))));

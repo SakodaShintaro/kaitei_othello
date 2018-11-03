@@ -626,13 +626,15 @@ void RootstrapTrainer::testLearn() {
 
             for (auto game : games) {
                 Position pos(*eval_params);
+                std::cout << "game.result = " << game.result << std::endl;
 
                 for (auto move : game.moves) {
                     //pos.print();
                     if (move != NULL_MOVE) {
                         auto policy = pos.maskedPolicy();
                         std::cout << "policy[" << std::setw(4) << move << "] = " << policy[move.toLabel()]
-                                  << ", value = " << pos.valueForTurn() << std::endl;
+                                  << ", value = " << pos.valueForTurn() 
+                                  << ", score = " << move.score << std::endl;
                     }
                     pos.doMove(move);
                 }

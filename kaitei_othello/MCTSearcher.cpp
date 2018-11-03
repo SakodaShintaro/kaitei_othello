@@ -286,7 +286,11 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
     // ノードの展開の確認
     if (pos.isFinish()) {
         //終了
-        result = pos.result();
+#ifdef USE_CATEGORICAL
+        result = reverseDist(onehotDist(pos.resultForTurn()));
+#else
+        result = 1.0 - pos.resultForTurn();
+#endif
     } else if (child_indices[next_index] == UctHashTable::NOT_EXPANDED) {
         // ノードの展開
         auto index = expandNode(pos);

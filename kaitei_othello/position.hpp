@@ -39,11 +39,7 @@ public:
 
     //評価値計算
     int32_t score() const;
-#ifdef USE_CATEGORICAL
-    std::array<CalcType, BIN_SIZE> result() const;
-#else
-    CalcType result() const;
-#endif
+    double resultForTurn() const;
     Vec makeOutput() const;
     std::vector<CalcType> policy();
     std::vector<CalcType> maskedPolicy();
