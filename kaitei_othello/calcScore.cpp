@@ -77,10 +77,6 @@ std::vector<CalcType> Position::maskedPolicy() {
     return y;
 }
 
-CalcType Position::valueScore() {
-    return (color_ == BLACK ? valueScoreForTurn() : -valueScoreForTurn());
-}
-
 CalcType Position::valueScoreForTurn() {
     if (!already_calc_) {
         initScore();

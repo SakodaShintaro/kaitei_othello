@@ -114,7 +114,7 @@ void testNN() {
         }
 
         auto result = pos.policy();
-        printf("value_score = %f\n", pos.valueScore());
+        printf("valueForBlack = %f\n", pos.valueForBlack());
 
         sort(moves.begin(), moves.end(), std::greater<Move>());
         for (auto move : moves) {

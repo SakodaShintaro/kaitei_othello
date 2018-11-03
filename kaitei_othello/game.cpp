@@ -35,8 +35,7 @@ void Game::writeKifuFile(std::string dir_path) const {
             }
         }
 
-        ofs << "*valueForTurn = " << pos.valueScoreForTurn() << std::endl;
-        ofs << "*sigmoid(val) = " << sigmoid(pos.valueScoreForTurn(), 1.0) << std::endl;
+        ofs << "*valueForBlack = " << pos.valueForBlack() << std::endl;
 
         pos.doMove(m);
     }

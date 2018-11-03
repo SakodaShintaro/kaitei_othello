@@ -47,7 +47,6 @@ public:
     Vec makeOutput() const;
     std::vector<CalcType> policy();
     std::vector<CalcType> maskedPolicy();
-    CalcType valueScore();
     CalcType valueScoreForTurn();
     double valueForBlack();
     double valueForTurn();
