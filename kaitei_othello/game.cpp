@@ -25,8 +25,15 @@ void Game::writeKifuFile(std::string dir_path) const {
         ofs << i + 1 << " ";
         File to_file = SquareToFile[m.to()];
         Rank to_rank = SquareToRank[m.to()];
-        ofs << fileToString[to_file] << rankToString[to_rank];
-        ofs << "**対局 評価値 " << (i % 2 == 0 ? m.score : 1.0 - m.score) << std::endl;
+        ofs << fileToString[to_file] << rankToString[to_rank] << std::endl;
+
+        if (m == NULL_MOVE) {
+            pos.doMove(m);
+            continue;
+        }
+
+        ofs << "scoreForBlack = " << (i % 2 == 0 ? m.score : 1.0 - m.score) << std::endl;
+        ofs << "valueForBlack = " << pos.valueForBlack() << std::endl;
 
         if (i == 0) {
             auto p = pos.maskedPolicy();
@@ -34,8 +41,6 @@ void Game::writeKifuFile(std::string dir_path) const {
                 ofs << "*" << move << " " << teachers[i][move.toLabel()] << " " << p[move.toLabel()] << std::endl;
             }
         }
-
-        ofs << "*valueForBlack = " << pos.valueForBlack() << std::endl;
 
         pos.doMove(m);
     }
