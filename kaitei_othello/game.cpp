@@ -26,7 +26,7 @@ void Game::writeKifuFile(std::string dir_path) const {
         File to_file = SquareToFile[m.to()];
         Rank to_rank = SquareToRank[m.to()];
         ofs << fileToString[to_file] << rankToString[to_rank];
-        ofs << "**対局 評価値 " << (i % 2 == 0 ? m.score : -m.score) << std::endl;
+        ofs << "**対局 評価値 " << (i % 2 == 0 ? m.score : 1.0 - m.score) << std::endl;
 
         if (i == 0) {
             auto p = pos.maskedPolicy();
