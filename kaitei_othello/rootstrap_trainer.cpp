@@ -598,7 +598,7 @@ void RootstrapTrainer::testLearn() {
 
     //ここから学習のメイン
     std::vector<double> vcs = { 1.0 };
-    std::vector<double> lrs = { 0.001, 0.0001, 0.00001 };
+    std::vector<double> lrs = { 0.001 };
     for (int32_t i = 0; i < vcs.size(); i++) {
         for (int32_t j = 0; j < lrs.size(); j++) {
             VALUE_COEFF = vcs[i];
@@ -639,5 +639,7 @@ void RootstrapTrainer::testLearn() {
             }
         }
     }
+
+    eval_params->writeFile();
     std::cout << "finish testLearn()" << std::endl;
 }
