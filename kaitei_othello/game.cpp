@@ -10,7 +10,7 @@
 
 void Game::writeKifuFile(std::string dir_path) const {
     static std::atomic<int64_t> id;
-    std::string file_name = dir_path + std::to_string(id++) + ".kif";
+    std::string file_name = dir_path + std::to_string(id++) + ".okif";
     std::ofstream ofs(file_name);
     if (!ofs) {
         std::cout << "cannnot open " << dir_path << std::endl;
