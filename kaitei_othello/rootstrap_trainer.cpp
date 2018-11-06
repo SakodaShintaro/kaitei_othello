@@ -185,7 +185,7 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
         //学習情報の出力
         timestamp();
         print(sum_learned_games_);
-        print(loss[0] + VALUE_COEFF * loss[1]);
+        print(POLICY_LOSS_COEFF * loss[0] + VALUE_COEFF * loss[1]);
         print(loss[0]);
         print(loss[1]);
         print(LEARN_RATE * grad->maxAbs());
@@ -557,7 +557,7 @@ void RootstrapTrainer::learnSync() {
         //学習情報の表示
         timestamp();
         print(sum_learned_games_);
-        print(loss[0] + VALUE_COEFF * loss[1]);
+        print(POLICY_LOSS_COEFF * loss[0] + VALUE_COEFF * loss[1]);
         print(loss[0]);
         print(loss[1]);
         print(LEARN_RATE * grad->maxAbs());

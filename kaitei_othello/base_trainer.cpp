@@ -33,8 +33,8 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
 #endif
     }
 #else
-    const auto win_rate = pos.valueForTurn();
-    double value_loss = binaryCrossEntropy(win_rate, teacher[POLICY_DIM]);
+    const auto v = pos.valueForTurn();
+    double value_loss = binaryCrossEntropy(v, teacher[POLICY_DIM]);
 #endif
 
     //Policy‚ÌŒù”z
@@ -44,8 +44,7 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
     double abs_max = 0.0;
 #endif
     for (int32_t i = 0; i < POLICY_DIM; i++) {
-        delta_o(i) = y[i] - teacher[i];
-        delta_o(i) = 0.0f;
+        delta_o(i) = POLICY_LOSS_COEFF * (y[i] - teacher[i]);
 #ifdef PRINT_DEBUG
         abs_sum += std::abs(delta_o(i));
         abs_max = std::max(abs_max, (double)(std::abs(delta_o(i))));
@@ -57,7 +56,7 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
         delta_o(POLICY_DIM + i) = (CalcType)(VALUE_COEFF * (v[i] - teacher[POLICY_DIM + i]));
     }
 #else
-    delta_o(POLICY_DIM) = (CalcType)(VALUE_COEFF * (win_rate - teacher[POLICY_DIM]));
+    delta_o(POLICY_DIM) = (CalcType)(VALUE_COEFF * (v - teacher[POLICY_DIM]));
 #endif
 
 #ifdef PRINT_DEBUG

@@ -58,6 +58,9 @@ protected:
     //•À—ñ‰»‚·‚éƒXƒŒƒbƒh”
     uint32_t THREAD_NUM;
 
+    //policy_loss‚É‚©‚¯‚éŒW”
+    double POLICY_LOSS_COEFF;
+
     //value_loss‚É‚©‚¯‚éŒW”
     double VALUE_COEFF;
 
