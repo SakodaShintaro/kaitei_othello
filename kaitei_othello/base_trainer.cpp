@@ -11,11 +11,10 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
     const Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());
 
     Vec u[LAYER_NUM];
-    Vec z[LAYER_NUM];
-    z[0] = input_vec;
-    for (int32_t i = 1; i < LAYER_NUM; i++) {
-        u[i] = params.w[i - 1] * z[i - 1] + params.b[i - 1];
-        z[i] = Network::activationFunction(u[i]);
+    Vec x[LAYER_NUM];
+    for (int32_t i = 0; i < LAYER_NUM; i++) {
+        x[i] = (i == 0 ? input_vec : Network::activationFunction(u[i - 1]));
+        u[i] = params.w[i] * x[i] + params.b[i];
     }
 
     //Policy
@@ -80,12 +79,12 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
 
     //‹t“`”d
     for (int32_t i = LAYER_NUM - 1; i >= 0; i--) {
-        grad.w[i] += delta_o * z[i].transpose();
+        grad.w[i] += delta_o * x[i].transpose();
         grad.b[i] += delta_o;
         if (i == 0) {
             break;
         }
-        delta_o = Network::d_activationFunction(u[i]).array() * (params.w[i].transpose() * delta_o).array();
+        delta_o = Network::d_activationFunction(u[i - 1]).array() * (params.w[i].transpose() * delta_o).array();
     }
 
     return { policy_loss, value_loss };
@@ -125,7 +124,7 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
 
                 double grad = (loss2 - loss1) / eps;
 
-                if (abs(grad - grad_bp->w[i](j, k)) >= 0.0005) {
+                if (abs(grad - grad_bp->w[i](j, k)) >= 0.005) {
                     printf("Œù”z‚ª‚¨‚©‚µ‚¢\n");
                     std::cout << "(i, j, k) = (" << i << ", " << j << ", " << k << ")" << std::endl;
                     std::cout << "loss    = " << loss[0] + loss[1]  << std::endl;
@@ -149,7 +148,7 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
 
             double grad = (loss2 - loss1) / eps;
 
-            if (std::abs(grad - grad_bp->b[i](j)) >= 0.0005) {
+            if (std::abs(grad - grad_bp->b[i](j)) >= 0.005) {
                 printf("Œù”z‚ª‚¨‚©‚µ‚¢\n");
                 std::cout << "(i, j) = (" << i << ", " << j << ")" << std::endl;
                 std::cout << "loss    = " << loss[0] + loss[1] << std::endl;
@@ -157,13 +156,6 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
                 std::cout << "loss2   = " << loss2 << std::endl;
                 std::cout << "grad    = " << grad << std::endl;
                 std::cout << "grad_bp = " << grad_bp->b[i](j) << std::endl;
-                if (j < POLICY_DIM) {
-                    std::cout << "y = " << y1[j] << std::endl;
-                    std::cout << "t = " << teacher[j] << std::endl;
-                } else {
-                    std::cout << "v = " << value1 << std::endl;
-                    std::cout << "t = " << teacher[j] << std::endl;
-                }
             }
         }
     }

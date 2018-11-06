@@ -1,7 +1,7 @@
-batch_size 10
+batch_size 1
 search_depth 2
 optimizer MOMENTUM
-learn_rate 0.001
+learn_rate 0.0001
 momentum_decay 0.9
 thread_num 4
 threshold(0.0~1.0)  0.75

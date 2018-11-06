@@ -11,7 +11,13 @@
 void Position::initScore() {
     std::vector<CalcType> input = makeFeature();
     Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());
-    output_ = eval_params_.w[1] * Network::activationFunction(eval_params_.w[0] * input_vec + eval_params_.b[0]) + eval_params_.b[1];
+    Vec u[LAYER_NUM];
+    Vec x[LAYER_NUM];
+    for (int32_t i = 0; i < LAYER_NUM; i++) {
+        x[i] = (i == 0 ? input_vec : Network::activationFunction(u[i - 1]));
+        u[i] = eval_params_.w[i] * x[i] + eval_params_.b[i];
+    }
+    output_ = u[LAYER_NUM - 1];
     already_calc_ = true;
 }
 
@@ -34,7 +40,13 @@ double Position::resultForTurn() const {
 Vec Position::makeOutput() const{
     std::vector<CalcType> input = makeFeature();
     Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());
-    return eval_params_.w[1] * Network::activationFunction(eval_params_.w[0] * input_vec + eval_params_.b[0]) + eval_params_.b[1];
+    Vec u[LAYER_NUM];
+    Vec x[LAYER_NUM];
+    for (int32_t i = 0; i < LAYER_NUM; i++) {
+        x[i] = (i == 0 ? input_vec : Network::activationFunction(u[i - 1]));
+        u[i] = eval_params_.w[i] * x[i] + eval_params_.b[i];
+    }
+    return u[LAYER_NUM - 1];
 }
 
 std::vector<CalcType> Position::policy() {

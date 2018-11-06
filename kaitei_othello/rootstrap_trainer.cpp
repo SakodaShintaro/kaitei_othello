@@ -414,6 +414,9 @@ std::array<double, 2> RootstrapTrainer::learnOneGame(const Game& game, EvalParam
 #endif
 
         loss += addGrad(grad, pos, teacher);
+        
+        verifyAddGrad(pos, teacher);
+
         if (!pos.isLegalMove(m)) {
             pos.printForDebug();
             m.printWithScore();
@@ -501,7 +504,7 @@ std::array<double, 2> RootstrapTrainer::learnOneGameReverse(const Game& game, Ev
         loss += addGrad(grad, pos, teacher);
 
         //数値微分による誤差逆伝播の検証
-        //verifyAddGrad(pos, teacher);
+        verifyAddGrad(pos, teacher);
         
         //学習局面数を増やす
         learn_num++;
