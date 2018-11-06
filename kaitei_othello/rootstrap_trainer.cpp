@@ -412,10 +412,11 @@ std::array<double, 2> RootstrapTrainer::learnOneGame(const Game& game, EvalParam
         double teacher_signal = DEEP_COEFFICIENT * deep_win_rate + (1 - DEEP_COEFFICIENT) * result_for_turn;
         teacher[POLICY_DIM] = (CalcType)teacher_signal;
 #endif
-
+        //損失・勾配の計算
         loss += addGrad(grad, pos, teacher);
         
-        verifyAddGrad(pos, teacher);
+        //数値微分による誤差逆伝播の検証
+        //verifyAddGrad(pos, teacher);
 
         if (!pos.isLegalMove(m)) {
             pos.printForDebug();
@@ -504,7 +505,7 @@ std::array<double, 2> RootstrapTrainer::learnOneGameReverse(const Game& game, Ev
         loss += addGrad(grad, pos, teacher);
 
         //数値微分による誤差逆伝播の検証
-        verifyAddGrad(pos, teacher);
+        //verifyAddGrad(pos, teacher);
         
         //学習局面数を増やす
         learn_num++;
