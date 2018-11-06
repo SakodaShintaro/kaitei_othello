@@ -98,7 +98,7 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
     if (OPTIMIZER_NAME == "MOMENTUM") {
         pre_update_ = std::make_unique<EvalParams<LearnEvalType>>();
     }
-    
+
     //棋譜を保存するディレクトリの削除
     std::experimental::filesystem::remove_all("./learn_games");
     std::experimental::filesystem::remove_all("./test_games");
@@ -161,7 +161,7 @@ void RootstrapTrainer::learnAsync() {
 
 void RootstrapTrainer::learnAsyncSlave(int32_t id) {
     //停止信号が来るまでループ
-    while(!shared_data.stop_signal) {
+    while (!shared_data.stop_signal) {
         //棋譜を生成
 #ifdef USE_MCTS
         auto games = play(BATCH_SIZE, (int32_t)usi_option.playout_limit);
@@ -404,7 +404,7 @@ std::array<double, 2> RootstrapTrainer::learnOneGame(const Game& game, EvalParam
         for (int32_t i = 0; i < BIN_SIZE; i++) {
             teacher[POLICY_DIM + i] =
                 (CalcType)(DEEP_COEFFICIENT * teacher[POLICY_DIM + i] +
-                    (1.0 - DEEP_COEFFICIENT) * dist_for_turn[i]);
+                (1.0 - DEEP_COEFFICIENT) * dist_for_turn[i]);
         }
 #else
         double deep_win_rate = teacher[POLICY_DIM];
@@ -496,7 +496,7 @@ std::array<double, 2> RootstrapTrainer::learnOneGameReverse(const Game& game, Ev
         win_rate_for_black = DECAY_RATE * win_rate_for_black + (1.0 - DECAY_RATE) * curr_win_rate;
 
         //teacherにコピーする
-        teacher[POLICY_DIM]  = (CalcType)(pos.color() == BLACK ? win_rate_for_black  : -win_rate_for_black);
+        teacher[POLICY_DIM] = (CalcType)(pos.color() == BLACK ? win_rate_for_black : -win_rate_for_black);
 #endif
         //損失・勾配の計算
         loss += addGrad(grad, pos, teacher);
@@ -586,9 +586,6 @@ void RootstrapTrainer::testLearn() {
     //時間を設定
     start_time_ = std::chrono::steady_clock::now();
 
-    //テスト用に設定
-    BATCH_SIZE = 10;
-
     //自己対局による棋譜生成:並列化
 #ifdef USE_MCTS
     std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, (int32_t)usi_option.playout_limit);
@@ -599,48 +596,40 @@ void RootstrapTrainer::testLearn() {
     std::cout << std::fixed;
 
     //ここから学習のメイン
-    std::vector<double> vcs = { 1.0 };
-    std::vector<double> lrs = { 0.001 };
-    for (int32_t i = 0; i < vcs.size(); i++) {
-        for (int32_t j = 0; j < lrs.size(); j++) {
-            VALUE_LOSS_COEFF = vcs[i];
-            LEARN_RATE = lrs[j];
-            eval_params->readFile();
+    eval_params->readFile();
 
-            pre_update_->clear();
+    pre_update_->clear();
 
-            std::ofstream ofs("test_learn_log" + std::to_string(i) + "_" + std::to_string(j) + ".txt");
-            ofs << "step";
-            ofs << "\tVALUE_COEFF = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE;
-            ofs << "\tVALUE_COEFF = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
+    std::ofstream ofs("test_learn_log.txt");
+    ofs << "step";
+    ofs << "\tVALUE_COEFF = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE;
+    ofs << "\tVALUE_COEFF = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
 
-            for (int64_t i = 0; i < 1000; i++) {
-                //損失・勾配・千日手数・長手数による引き分け数を計算
-                std::array<double, 2> loss;
-                auto grad = std::make_unique<EvalParams<LearnEvalType>>();
-                learnGames(games, loss, *grad);
+    for (int64_t i = 0; i < 1000; i++) {
+        //損失・勾配・千日手数・長手数による引き分け数を計算
+        std::array<double, 2> loss;
+        auto grad = std::make_unique<EvalParams<LearnEvalType>>();
+        learnGames(games, loss, *grad);
 
-                //パラメータ更新
-                updateParams(*eval_params, *grad);
-                std::cout << i << "\tloss[0] = " << loss[0] << ",\tloss[1] = " << loss[1] << "\t" << loss[1] * VALUE_LOSS_COEFF << std::endl;
-                ofs << i << "\t" << loss[0] << "\t" << loss[1] << std::endl;
+        //パラメータ更新
+        updateParams(*eval_params, *grad);
+        std::cout << i << "\tloss[0] = " << loss[0] << ",\tloss[1] = " << loss[1] << "\t" << loss[1] * VALUE_LOSS_COEFF << std::endl;
+        ofs << i << "\t" << loss[0] << "\t" << loss[1] << std::endl;
+    }
+
+    for (auto game : games) {
+        Position pos(*eval_params);
+        std::cout << "game.result = " << game.result << std::endl;
+
+        for (auto move : game.moves) {
+            //pos.print();
+            if (move != NULL_MOVE) {
+                auto policy = pos.maskedPolicy();
+                std::cout << "policy[" << std::setw(4) << move << "] = " << policy[move.toLabel()]
+                    << ", value = " << pos.valueForTurn()
+                    << ", score = " << move.score << std::endl;
             }
-
-            for (auto game : games) {
-                Position pos(*eval_params);
-                std::cout << "game.result = " << game.result << std::endl;
-
-                for (auto move : game.moves) {
-                    //pos.print();
-                    if (move != NULL_MOVE) {
-                        auto policy = pos.maskedPolicy();
-                        std::cout << "policy[" << std::setw(4) << move << "] = " << policy[move.toLabel()]
-                                  << ", value = " << pos.valueForTurn() 
-                                  << ", score = " << move.score << std::endl;
-                    }
-                    pos.doMove(move);
-                }
-            }
+            pos.doMove(move);
         }
     }
 
