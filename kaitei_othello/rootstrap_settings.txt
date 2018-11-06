@@ -1,4 +1,4 @@
-batch_size 250
+batch_size 5
 search_depth 2
 optimizer MOMENTUM
 learn_rate 0.000001
@@ -6,9 +6,9 @@ momentum_decay 0.9
 thread_num 4
 threshold(0.0~1.0)  0.75
 random_move_temperature 200
-learn_mode(0or1) 0
+learn_mode(0or1) 1
 deep_coefficient 0.0
-decay_rate 0.9
+decay_rate 0.95
 playout_limit 800
 use_draw_game 1
 random_move_num 0
@@ -17,5 +17,5 @@ draw_score -100000
 USI_Hash 16
 evaluation_game_num 500
 evaluation_interval 10
-policy_loss_coeff 0.01
+policy_loss_coeff 1.0
 value_loss_coeff 1.0

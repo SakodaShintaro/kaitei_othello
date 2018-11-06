@@ -1,7 +1,7 @@
 #include"base_trainer.hpp"
 #include"network.hpp"
 
-//#define PRINT_DEBUG
+#define PRINT_DEBUG
 
 std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Position& pos, TeacherType teacher) {
     assert(teacher.size() == OUTPUT_DIM);

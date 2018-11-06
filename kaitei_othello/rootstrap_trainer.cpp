@@ -444,17 +444,16 @@ std::array<double, 2> RootstrapTrainer::learnOneGameReverse(const Game& game, Ev
     auto dist_for_black = onehotDist(win_rate_for_black);
 #endif
 
-    //最後の局面(詰みや256手,千日手)では教師となる指し手がないので1手戻したところから学習開始
-    pos.undo();
-
-    for (size_t i = game.moves.size() - 1; i >= 0; i--) {
+    for (int32_t i = (int32_t)game.moves.size() - 1; i >= 0; i--) {
         if (game.moves[i].score == MIN_SCORE) { //ランダムムーブということなので学習はしない
             //ランダムムーブは1局の最初の方に行っているのでもう学習終了
             break;
         }
 
-        if (isMatedScore(game.moves[i].score)) { //詰みの値だったら学習を飛ばす
-            pos.undo();
+        //この指し手が対応するのは1手戻した局面
+        pos.undo();
+
+        if (isMatedScore(game.moves[i].score) || game.moves[i] == NULL_MOVE) { //詰みの値だったら学習を飛ばす
             continue;
         }
 
@@ -490,21 +489,18 @@ std::array<double, 2> RootstrapTrainer::learnOneGameReverse(const Game& game, Ev
         }
 #else
         //先手から見た値を得る
-        double curr_win_rate = (pos.color() == BLACK ? teacher[POLICY_DIM] : -teacher[POLICY_DIM]);
+        double curr_win_rate = (pos.color() == BLACK ? teacher[POLICY_DIM] : 1.0 - teacher[POLICY_DIM]);
 
         //混合する
         win_rate_for_black = DECAY_RATE * win_rate_for_black + (1.0 - DECAY_RATE) * curr_win_rate;
 
         //teacherにコピーする
-        teacher[POLICY_DIM] = (CalcType)(pos.color() == BLACK ? win_rate_for_black : -win_rate_for_black);
+        teacher[POLICY_DIM] = (CalcType)(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
 #endif
         //損失・勾配の計算
         loss += addGrad(grad, pos, teacher);
         //学習局面数を増やす
         learn_num++;
-
-        //この局面の学習は終わったので1手戻す
-        pos.undo();
     }
 
     return (learn_num == 0 ? loss : loss / learn_num);
@@ -607,7 +603,7 @@ void RootstrapTrainer::testLearn() {
     ofs << "\tP = " << POLICY_LOSS_COEFF << ", V = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE;
     ofs << "\tP = " << POLICY_LOSS_COEFF << ", V = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
 
-    for (int64_t i = 0; i < 200; i++) {
+    for (int64_t i = 0; i < 100; i++) {
         //損失・勾配・千日手数・長手数による引き分け数を計算
         std::array<double, 2> loss;
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
@@ -619,21 +615,22 @@ void RootstrapTrainer::testLearn() {
         ofs << i << "\t" << loss[0] << "\t" << loss[1] << std::endl;
     }
 
-    //for (auto game : games) {
-    //    Position pos(*eval_params);
-    //    std::cout << "game.result = " << game.result << std::endl;
+    for (auto game : games) {
+        Position pos(*eval_params);
+        std::cout << "game.result = " << game.result << std::endl;
 
-    //    for (auto move : game.moves) {
-    //        //pos.print();
-    //        if (move != NULL_MOVE) {
-    //            auto policy = pos.maskedPolicy();
-    //            std::cout << "policy[" << std::setw(4) << move << "] = " << policy[move.toLabel()]
-    //                << ", value = " << pos.valueForTurn()
-    //                << ", score = " << move.score << std::endl;
-    //        }
-    //        pos.doMove(move);
-    //    }
-    //}
+        for (int32_t i = 0; i < game.moves.size(); i++) {
+            auto move = game.moves[i];
+            if (move != NULL_MOVE) {
+                auto policy = pos.maskedPolicy();
+                std::cout << "policy[" << std::setw(4) << move << "] = " << policy[move.toLabel()]
+                    << ", value = " << pos.valueForTurn()
+                    << ", score = " << move.score 
+                    << ", teacher = " << game.teachers[i][POLICY_DIM] << std::endl;
+            }
+            pos.doMove(move);
+        }
+    }
 
     std::cout << "finish testLearn()" << std::endl;
 }
