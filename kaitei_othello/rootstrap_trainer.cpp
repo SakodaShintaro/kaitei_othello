@@ -66,7 +66,9 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
             ifs >> EVALUATION_GAME_NUM;
         } else if (name == "evaluation_interval") {
             ifs >> EVALUATION_INTERVAL;
-        } else if (name == "value_coeff") {
+        } else if (name == "policy_loss_coeff") {
+            ifs >> POLICY_LOSS_COEFF;
+        } else if (name == "value_loss_coeff") {
             ifs >> VALUE_LOSS_COEFF;
 #ifdef USE_MCTS
         } else if (name == "playout_limit") {

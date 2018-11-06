@@ -17,4 +17,5 @@ draw_score -100000
 USI_Hash 16
 evaluation_game_num 500
 evaluation_interval 10
-value_coeff 1.0
+policy_loss_coeff 1.0
+value_loss_coeff 1.0
