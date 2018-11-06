@@ -598,14 +598,16 @@ void RootstrapTrainer::testLearn() {
     //ここから学習のメイン
     eval_params->readFile();
 
-    pre_update_->clear();
+    if (OPTIMIZER_NAME == "MOMENTUM") {
+        pre_update_->clear();
+    }
 
     std::ofstream ofs("test_learn_log.txt");
     ofs << "step";
-    ofs << "\tVALUE_COEFF = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE;
-    ofs << "\tVALUE_COEFF = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
+    ofs << "\tP = " << POLICY_LOSS_COEFF << ", V = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE;
+    ofs << "\tP = " << POLICY_LOSS_COEFF << ", V = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
 
-    for (int64_t i = 0; i < 1000; i++) {
+    for (int64_t i = 0; i < 200; i++) {
         //損失・勾配・千日手数・長手数による引き分け数を計算
         std::array<double, 2> loss;
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
@@ -613,26 +615,25 @@ void RootstrapTrainer::testLearn() {
 
         //パラメータ更新
         updateParams(*eval_params, *grad);
-        std::cout << i << "\tloss[0] = " << loss[0] << ",\tloss[1] = " << loss[1] << "\t" << loss[1] * VALUE_LOSS_COEFF << std::endl;
+        std::cout << i << "\tloss[0] = " << loss[0] << ",\tloss[1] = " << loss[1] << std::endl;
         ofs << i << "\t" << loss[0] << "\t" << loss[1] << std::endl;
     }
 
-    for (auto game : games) {
-        Position pos(*eval_params);
-        std::cout << "game.result = " << game.result << std::endl;
+    //for (auto game : games) {
+    //    Position pos(*eval_params);
+    //    std::cout << "game.result = " << game.result << std::endl;
 
-        for (auto move : game.moves) {
-            //pos.print();
-            if (move != NULL_MOVE) {
-                auto policy = pos.maskedPolicy();
-                std::cout << "policy[" << std::setw(4) << move << "] = " << policy[move.toLabel()]
-                    << ", value = " << pos.valueForTurn()
-                    << ", score = " << move.score << std::endl;
-            }
-            pos.doMove(move);
-        }
-    }
+    //    for (auto move : game.moves) {
+    //        //pos.print();
+    //        if (move != NULL_MOVE) {
+    //            auto policy = pos.maskedPolicy();
+    //            std::cout << "policy[" << std::setw(4) << move << "] = " << policy[move.toLabel()]
+    //                << ", value = " << pos.valueForTurn()
+    //                << ", score = " << move.score << std::endl;
+    //        }
+    //        pos.doMove(move);
+    //    }
+    //}
 
-    eval_params->writeFile();
     std::cout << "finish testLearn()" << std::endl;
 }

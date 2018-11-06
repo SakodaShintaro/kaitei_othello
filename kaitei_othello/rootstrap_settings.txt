@@ -1,7 +1,7 @@
 batch_size 250
 search_depth 2
 optimizer MOMENTUM
-learn_rate 0.00001
+learn_rate 0.000001
 momentum_decay 0.9
 thread_num 4
 threshold(0.0~1.0)  0.75
@@ -17,5 +17,5 @@ draw_score -100000
 USI_Hash 16
 evaluation_game_num 500
 evaluation_interval 10
-policy_loss_coeff 1.0
+policy_loss_coeff 0.01
 value_loss_coeff 1.0
