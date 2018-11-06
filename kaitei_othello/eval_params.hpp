@@ -30,7 +30,7 @@ constexpr double VALUE_WIDTH = 1.0 / BIN_SIZE;
 constexpr int32_t OUTPUT_DIM = POLICY_DIM + 1;
 #endif
 constexpr int32_t INPUT_DIM = 64;
-constexpr int32_t HIDDEN_DIM = 32;
+constexpr int32_t HIDDEN_DIM = 64;
 constexpr int32_t LAYER_NUM = 3;
 
 //LAYER_NUMを変えたらここの行列サイズも変えること
