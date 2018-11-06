@@ -499,6 +499,10 @@ std::array<double, 2> RootstrapTrainer::learnOneGameReverse(const Game& game, Ev
 #endif
         //損失・勾配の計算
         loss += addGrad(grad, pos, teacher);
+
+        //数値微分による誤差逆伝播の検証
+        //verifyAddGrad(pos, teacher);
+        
         //学習局面数を増やす
         learn_num++;
     }
@@ -603,7 +607,7 @@ void RootstrapTrainer::testLearn() {
     ofs << "\tP = " << POLICY_LOSS_COEFF << ", V = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE;
     ofs << "\tP = " << POLICY_LOSS_COEFF << ", V = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
 
-    for (int64_t i = 0; i < 100; i++) {
+    for (int64_t i = 0; i < 1000; i++) {
         //損失・勾配・千日手数・長手数による引き分け数を計算
         std::array<double, 2> loss;
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
@@ -625,7 +629,6 @@ void RootstrapTrainer::testLearn() {
                 auto policy = pos.maskedPolicy();
                 std::cout << "policy[" << std::setw(4) << move << "] = " << policy[move.toLabel()]
                     << ", value = " << pos.valueForTurn()
-                    << ", score = " << move.score 
                     << ", teacher = " << game.teachers[i][POLICY_DIM] << std::endl;
             }
             pos.doMove(move);

@@ -9,8 +9,14 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
     const auto input = pos.makeFeature();
     const auto& params = pos.evalParams();
     const Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());
-    const Vec u0 = params.w[0] * input_vec + params.b[0];
-    const Vec z0 = Network::activationFunction(u0);
+
+    Vec u[LAYER_NUM];
+    Vec z[LAYER_NUM];
+    z[0] = input_vec;
+    for (int32_t i = 1; i < LAYER_NUM; i++) {
+        u[i] = params.w[i - 1] * z[i - 1] + params.b[i - 1];
+        z[i] = Network::activationFunction(u[i]);
+    }
 
     //Policy
     auto y = softmax(pos.policy());
@@ -73,13 +79,14 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
 #endif
 
     //‹t“`”d
-    Vec delta_h = Network::d_activationFunction(u0).array() * (params.w[1].transpose() * delta_o).array();
-
-    grad.w[1] += delta_o * z0.transpose();
-    grad.b[1] += delta_o;
-
-    grad.w[0] += delta_h * input_vec.transpose();
-    grad.b[0] += delta_h;
+    for (int32_t i = LAYER_NUM - 1; i >= 0; i--) {
+        grad.w[i] += delta_o * z[i].transpose();
+        grad.b[i] += delta_o;
+        if (i == 0) {
+            break;
+        }
+        delta_o = Network::d_activationFunction(u[i]).array() * (params.w[i].transpose() * delta_o).array();
+    }
 
     return { policy_loss, value_loss };
 }
@@ -106,6 +113,7 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
             for (int32_t k = 0; k < MATRIX_SIZE[i][1]; k++) {
 
                 eval_params->w[i](j, k) += eps;
+                pos.resetCalc();
                 double loss2 = 0.0;
                 auto y2 = softmax(pos.policy());
                 auto value2 = pos.valueForTurn();
@@ -117,7 +125,7 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
 
                 double grad = (loss2 - loss1) / eps;
 
-                if (abs(grad - grad_bp->w[i](j, k)) >= 0.005) {
+                if (abs(grad - grad_bp->w[i](j, k)) >= 0.0005) {
                     printf("Œù”z‚ª‚¨‚©‚µ‚¢\n");
                     std::cout << "(i, j, k) = (" << i << ", " << j << ", " << k << ")" << std::endl;
                     std::cout << "loss    = " << loss[0] + loss[1]  << std::endl;
@@ -129,6 +137,7 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
             }
 
             eval_params->b[i](j) += eps;
+            pos.resetCalc();
             double loss2 = 0.0;
             auto y2 = softmax(pos.policy());
             auto value2 = pos.valueForTurn();
@@ -140,7 +149,7 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
 
             double grad = (loss2 - loss1) / eps;
 
-            if (std::abs(grad - grad_bp->b[i](j)) >= 0.005) {
+            if (std::abs(grad - grad_bp->b[i](j)) >= 0.0005) {
                 printf("Œù”z‚ª‚¨‚©‚µ‚¢\n");
                 std::cout << "(i, j) = (" << i << ", " << j << ")" << std::endl;
                 std::cout << "loss    = " << loss[0] + loss[1] << std::endl;

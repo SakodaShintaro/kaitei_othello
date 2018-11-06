@@ -46,6 +46,7 @@ public:
     CalcType valueScoreForTurn();
     double valueForBlack();
     double valueForTurn();
+    void resetCalc();
 #ifdef USE_CATEGORICAL
     std::array<CalcType, BIN_SIZE> valueDist();
 #endif

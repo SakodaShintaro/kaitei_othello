@@ -106,6 +106,10 @@ double Position::valueForTurn() {
 #endif
 }
 
+void Position::resetCalc() {
+    already_calc_ = false;
+}
+
 #ifdef USE_CATEGORICAL
 std::array<CalcType, BIN_SIZE> Position::valueDist() {
     if (!already_calc_) {
