@@ -53,10 +53,10 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
     //Value‚ÌŒù”z
 #ifdef USE_CATEGORICAL
     for (int32_t i = 0; i < BIN_SIZE; i++) {
-        delta_o(POLICY_DIM + i) = (CalcType)(VALUE_COEFF * (v[i] - teacher[POLICY_DIM + i]));
+        delta_o(POLICY_DIM + i) = (CalcType)(VALUE_LOSS_COEFF * (v[i] - teacher[POLICY_DIM + i]));
     }
 #else
-    delta_o(POLICY_DIM) = (CalcType)(VALUE_COEFF * (v - teacher[POLICY_DIM]));
+    delta_o(POLICY_DIM) = (CalcType)(VALUE_LOSS_COEFF * (v - teacher[POLICY_DIM]));
 #endif
 
 #ifdef PRINT_DEBUG

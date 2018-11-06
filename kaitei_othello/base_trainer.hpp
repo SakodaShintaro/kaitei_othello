@@ -62,7 +62,7 @@ protected:
     double POLICY_LOSS_COEFF;
 
     //value_loss‚É‚©‚¯‚éŒW”
-    double VALUE_COEFF;
+    double VALUE_LOSS_COEFF;
 
     //--------------------------------
     //    ŠwK’†‚É—p‚¢‚éƒƒ“ƒo•Ï”

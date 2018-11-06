@@ -67,7 +67,7 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
         } else if (name == "evaluation_interval") {
             ifs >> EVALUATION_INTERVAL;
         } else if (name == "value_coeff") {
-            ifs >> VALUE_COEFF;
+            ifs >> VALUE_LOSS_COEFF;
 #ifdef USE_MCTS
         } else if (name == "playout_limit") {
             ifs >> usi_option.playout_limit;
@@ -185,7 +185,7 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
         //学習情報の出力
         timestamp();
         print(sum_learned_games_);
-        print(POLICY_LOSS_COEFF * loss[0] + VALUE_COEFF * loss[1]);
+        print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
         print(loss[0]);
         print(loss[1]);
         print(LEARN_RATE * grad->maxAbs());
@@ -557,7 +557,7 @@ void RootstrapTrainer::learnSync() {
         //学習情報の表示
         timestamp();
         print(sum_learned_games_);
-        print(POLICY_LOSS_COEFF * loss[0] + VALUE_COEFF * loss[1]);
+        print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
         print(loss[0]);
         print(loss[1]);
         print(LEARN_RATE * grad->maxAbs());
@@ -601,7 +601,7 @@ void RootstrapTrainer::testLearn() {
     std::vector<double> lrs = { 0.001 };
     for (int32_t i = 0; i < vcs.size(); i++) {
         for (int32_t j = 0; j < lrs.size(); j++) {
-            VALUE_COEFF = vcs[i];
+            VALUE_LOSS_COEFF = vcs[i];
             LEARN_RATE = lrs[j];
             eval_params->readFile();
 
@@ -609,8 +609,8 @@ void RootstrapTrainer::testLearn() {
 
             std::ofstream ofs("test_learn_log" + std::to_string(i) + "_" + std::to_string(j) + ".txt");
             ofs << "step";
-            ofs << "\tVALUE_COEFF = " << VALUE_COEFF << ", LEARN_RATE = " << LEARN_RATE;
-            ofs << "\tVALUE_COEFF = " << VALUE_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
+            ofs << "\tVALUE_COEFF = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE;
+            ofs << "\tVALUE_COEFF = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
 
             for (int64_t i = 0; i < 1000; i++) {
                 //損失・勾配・千日手数・長手数による引き分け数を計算
@@ -620,7 +620,7 @@ void RootstrapTrainer::testLearn() {
 
                 //パラメータ更新
                 updateParams(*eval_params, *grad);
-                std::cout << i << "\tloss[0] = " << loss[0] << ",\tloss[1] = " << loss[1] << "\t" << loss[1] * VALUE_COEFF << std::endl;
+                std::cout << i << "\tloss[0] = " << loss[0] << ",\tloss[1] = " << loss[1] << "\t" << loss[1] * VALUE_LOSS_COEFF << std::endl;
                 ofs << i << "\t" << loss[0] << "\t" << loss[1] << std::endl;
             }
 
