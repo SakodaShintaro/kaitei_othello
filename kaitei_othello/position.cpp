@@ -102,7 +102,7 @@ void Position::print() const {
     }
     printf("value = %f\n", value);
 #else
-    printf("value = %f\n", output(POLICY_DIM));
+    printf("value = %f\n", standardSigmoid(output(POLICY_DIM)));
 #endif
 
     printf("ハッシュ値:%lld\n", hash_value_);
