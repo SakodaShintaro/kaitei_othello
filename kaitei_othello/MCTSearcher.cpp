@@ -241,11 +241,7 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
 
     if (current_node.child_num == 0) {
 #ifdef USE_CATEGORICAL
-        std::array<CalcType, BIN_SIZE> lose_value_dist;
-        for (int32_t i = 0; i < BIN_SIZE; i++) {
-            lose_value_dist[i] = (i == 0 ? 1.0f : 0.0f);
-        }
-        return lose_value_dist;
+        return onehotDist(0.0);
 #else
         return 0.0;
 #endif
