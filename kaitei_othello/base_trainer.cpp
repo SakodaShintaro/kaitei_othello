@@ -49,7 +49,7 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
     double abs_max = 0.0;
 #endif
     for (int32_t i = 0; i < POLICY_DIM; i++) {
-        delta_o(i) = (CalcType)(POLICY_LOSS_COEFF * (y[i] - teacher[i]));
+        delta(i) = (CalcType)(POLICY_LOSS_COEFF * (y[i] - teacher[i]));
 #ifdef PRINT_DEBUG
         abs_sum += std::abs(delta(i));
         abs_max = std::max(abs_max, (double)(std::abs(delta(i))));
@@ -61,7 +61,7 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
         delta(POLICY_DIM + i) = (CalcType)(VALUE_LOSS_COEFF * (v[i] - teacher[POLICY_DIM + i]));
     }
 #else
-    delta_o(POLICY_DIM) = (CalcType)(VALUE_LOSS_COEFF * (v - teacher[POLICY_DIM]));
+    delta(POLICY_DIM) = (CalcType)(VALUE_LOSS_COEFF * (v - teacher[POLICY_DIM]));
 #endif
 
 #ifdef PRINT_DEBUG
