@@ -49,7 +49,7 @@ private:
     std::array<double, 2> learnGames(const std::vector<Game>& games, EvalParams<LearnEvalType>& grad);
 
     //棋譜を初手側から再生して損失・勾配を計算する関数:elmo絞りに対応
-    std::array<double, 2> learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad);
+    void learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t learn_position_num);
 
     //棋譜を最終手から再生して損失・勾配を計算する関数:Sarsaに対応?
     std::array<double, 2> learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad);

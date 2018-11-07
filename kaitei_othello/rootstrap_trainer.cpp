@@ -355,35 +355,41 @@ void RootstrapTrainer::evaluate() {
 }
 
 std::array<double, 2> RootstrapTrainer::learnGames(const std::vector<Game>& games, EvalParams<LearnEvalType>& grad) {
-    std::array<double, 2> loss{ 0.0, 0.0 };
+    std::array<double, 2> loss = { 0.0, 0.0 };
     grad.clear();
 
     //引き分けを除く場合があるのでこれはBATCH_SIZEに一致するとは限らない
-    int32_t learn_game_num = 0;
+    int32_t learn_position_num = 0;
 
     //一つ書き出してみる
     games.front().writeKifuFile("./learn_games/");
 
     for (const Game& game : games) {
         //学習
-        learn_game_num++;
+        learn_position_num++;
         if (LEARN_MODE == ELMO_LEARN) {
-            loss += learnOneGame(game, grad);
+            learnOneGame(game, grad, loss, learn_position_num);
         } else if (LEARN_MODE == N_STEP_SARSA) {
             loss += learnOneGameReverse(game, grad);
         } else { //ここには来ないはず
             assert(false);
         }
     }
-    (learn_game_num == 0 ? loss : loss /= learn_game_num);
+
+    assert(learn_position_num != 0);
+
+    //loss, gradをlearn_position_numで割る(局面について平均を取る)
+    loss /= learn_position_num;
+
+    grad.forEach([learn_position_num](CalcType& g) {
+        g /= learn_position_num;
+    });
+
     return loss;
 }
 
-std::array<double, 2> RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad) {
-    std::array<double, 2> loss = { 0.0, 0.0 };
+void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t learn_position_num) {
     Position pos(*eval_params);
-    uint64_t learn_num = 0;
-
 #ifndef USE_NN //これ探索手法の違いじゃね？
     auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
 #endif
@@ -395,7 +401,7 @@ std::array<double, 2> RootstrapTrainer::learnOneGame(const Game& game, EvalParam
         }
 
         //学習
-        learn_num++;
+        learn_position_num++;
         TeacherType teacher = game.teachers[i];
         //対局結果を用いてvalueを加工する
 #ifdef USE_CATEGORICAL
@@ -425,8 +431,6 @@ std::array<double, 2> RootstrapTrainer::learnOneGame(const Game& game, EvalParam
 
         pos.doMove(m);
     }
-
-    return (learn_num == 0 ? loss : loss / learn_num);
 }
 
 std::array<double, 2> RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad) {
