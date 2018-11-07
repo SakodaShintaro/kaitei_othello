@@ -359,14 +359,13 @@ std::array<double, 2> RootstrapTrainer::learnGames(const std::vector<Game>& game
     grad.clear();
 
     //引き分けを除く場合があるのでこれはBATCH_SIZEに一致するとは限らない
-    int32_t learn_position_num = 0;
+    uint64_t learn_position_num = 0;
 
     //一つ書き出してみる
     games.front().writeKifuFile("./learn_games/");
 
     for (const Game& game : games) {
         //学習
-        learn_position_num++;
         if (LEARN_MODE == ELMO_LEARN) {
             learnOneGame(game, grad, loss, learn_position_num);
         } else if (LEARN_MODE == N_STEP_SARSA) {
@@ -388,7 +387,7 @@ std::array<double, 2> RootstrapTrainer::learnGames(const std::vector<Game>& game
     return loss;
 }
 
-void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t learn_position_num) {
+void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t& learn_position_num) {
     Position pos(*eval_params);
 #ifndef USE_NN //これ探索手法の違いじゃね？
     auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
@@ -433,7 +432,7 @@ void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>&
     }
 }
 
-void RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t learn_position_num) {
+void RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t& learn_position_num) {
     auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
     Position pos(*eval_params);
 
