@@ -74,7 +74,7 @@ private:
 	//    内部メソッド
     //--------------------
     //評価値計算
-    void initScore();
+    void initPolicyAndValue();
 
     //ハッシュ値の初期化
     void initHashValue();

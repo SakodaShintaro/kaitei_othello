@@ -8,11 +8,11 @@
 #include<iostream>
 #include<fstream>
 
-void Position::initScore() {
+void Position::initPolicyAndValue() {
     std::vector<CalcType> input = makeFeature();
     Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());
-    Vec u[LAYER_NUM];
     Vec x[LAYER_NUM];
+    Vec u[LAYER_NUM];
     for (int32_t i = 0; i < LAYER_NUM; i++) {
         x[i] = (i == 0 ? input_vec : Network::activationFunction(u[i - 1]));
         u[i] = eval_params_.w[i] * x[i] + eval_params_.b[i];
@@ -55,7 +55,7 @@ Vec Position::makeOutput() const{
 
 std::vector<CalcType> Position::policy() {
     if (!already_calc_) {
-        initScore();
+        initPolicyAndValue();
     }
     std::vector<CalcType> policy(POLICY_DIM);
     for (int32_t i = 0; i < POLICY_DIM; i++) {
@@ -66,7 +66,7 @@ std::vector<CalcType> Position::policy() {
 
 std::vector<CalcType> Position::maskedPolicy() {
     if (!already_calc_) {
-        initScore();
+        initPolicyAndValue();
     }
     std::vector<CalcType> policy(POLICY_DIM);
     for (int32_t i = 0; i < POLICY_DIM; i++) {
@@ -87,7 +87,7 @@ std::vector<CalcType> Position::maskedPolicy() {
 
 CalcType Position::valueScoreForTurn() {
     if (!already_calc_) {
-        initScore();
+        initPolicyAndValue();
     }
 #ifdef USE_CATEGORICAL
     //CategoricalでScoreだけを返す方法がわからない
@@ -104,7 +104,7 @@ double Position::valueForBlack() {
 
 double Position::valueForTurn() {
     if (!already_calc_) {
-        initScore();
+        initPolicyAndValue();
     }
 #ifdef USE_CATEGORICAL
     std::vector<CalcType> categorical_distribution(BIN_SIZE);
@@ -129,7 +129,7 @@ void Position::resetCalc() {
 #ifdef USE_CATEGORICAL
 std::array<CalcType, BIN_SIZE> Position::valueDist() {
     if (!already_calc_) {
-        initScore();
+        initPolicyAndValue();
     }
     std::vector<CalcType> categorical_distribution(BIN_SIZE);
     for (int32_t i = 0; i < BIN_SIZE; i++) {

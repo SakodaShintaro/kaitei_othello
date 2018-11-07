@@ -43,7 +43,7 @@ void Position::init() {
     initHashValue();
 
     //局面の評価値
-    initScore();
+    initPolicyAndValue();
 
     kifu_.clear();
     kifu_.reserve(512);
@@ -327,7 +327,7 @@ std::vector<Move> Position::generateAllMoves() const {
 std::vector<Move> Position::scoredAllMoves() {
     auto moves = generateAllMoves();
     if (!already_calc_) {
-        initScore();
+        initPolicyAndValue();
     }
     for (Move& move : moves) {
         move.score = output_(move.toLabel());
