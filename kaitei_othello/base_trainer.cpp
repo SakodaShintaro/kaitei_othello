@@ -43,7 +43,7 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
 #endif
 
     //Policy‚ÌŒù”z
-    Vec delta_o(OUTPUT_DIM);
+    Vec delta(OUTPUT_DIM);
 #ifdef PRINT_DEBUG
     double abs_sum = 0.0;
     double abs_max = 0.0;
@@ -51,14 +51,14 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
     for (int32_t i = 0; i < POLICY_DIM; i++) {
         delta_o(i) = (CalcType)(POLICY_LOSS_COEFF * (y[i] - teacher[i]));
 #ifdef PRINT_DEBUG
-        abs_sum += std::abs(delta_o(i));
-        abs_max = std::max(abs_max, (double)(std::abs(delta_o(i))));
+        abs_sum += std::abs(delta(i));
+        abs_max = std::max(abs_max, (double)(std::abs(delta(i))));
 #endif
     }
     //Value‚ÌŒù”z
 #ifdef USE_CATEGORICAL
     for (int32_t i = 0; i < BIN_SIZE; i++) {
-        delta_o(POLICY_DIM + i) = (CalcType)(VALUE_LOSS_COEFF * (v[i] - teacher[POLICY_DIM + i]));
+        delta(POLICY_DIM + i) = (CalcType)(VALUE_LOSS_COEFF * (v[i] - teacher[POLICY_DIM + i]));
     }
 #else
     delta_o(POLICY_DIM) = (CalcType)(VALUE_LOSS_COEFF * (v - teacher[POLICY_DIM]));
@@ -79,12 +79,12 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
 
     //‹t“`”d
     for (int32_t i = LAYER_NUM - 1; i >= 0; i--) {
-        grad.w[i] += delta_o * x[i].transpose();
-        grad.b[i] += delta_o;
+        grad.w[i] += delta * x[i].transpose();
+        grad.b[i] += delta;
         if (i == 0) {
             break;
         }
-        delta_o = Network::d_activationFunction(u[i - 1]).array() * (params.w[i].transpose() * delta_o).array();
+        delta = Network::d_activationFunction(u[i - 1]).array() * (params.w[i].transpose() * delta).array();
     }
 
     return { policy_loss, value_loss };
