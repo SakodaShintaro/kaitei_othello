@@ -11,8 +11,7 @@
 void Position::initPolicyAndValue() {
     std::vector<CalcType> input = makeFeature();
     Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());
-    Vec x[LAYER_NUM];
-    Vec u[LAYER_NUM];
+    Vec x[LAYER_NUM], u[LAYER_NUM];
     for (int32_t i = 0; i < LAYER_NUM; i++) {
         x[i] = (i == 0 ? input_vec : Network::activationFunction(u[i - 1]));
         u[i] = eval_params_.w[i] * x[i] + eval_params_.b[i];
@@ -44,8 +43,7 @@ double Position::resultForTurn() const {
 Vec Position::makeOutput() const{
     std::vector<CalcType> input = makeFeature();
     Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());
-    Vec u[LAYER_NUM];
-    Vec x[LAYER_NUM];
+    Vec x[LAYER_NUM], u[LAYER_NUM];
     for (int32_t i = 0; i < LAYER_NUM; i++) {
         x[i] = (i == 0 ? input_vec : Network::activationFunction(u[i - 1]));
         u[i] = eval_params_.w[i] * x[i] + eval_params_.b[i];
@@ -95,7 +93,6 @@ CalcType Position::valueScoreForTurn() {
 #else
     return output_[POLICY_DIM];
 #endif
-
 }
 
 double Position::valueForBlack() {
