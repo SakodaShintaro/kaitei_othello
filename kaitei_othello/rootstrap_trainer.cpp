@@ -370,7 +370,7 @@ std::array<double, 2> RootstrapTrainer::learnGames(const std::vector<Game>& game
         if (LEARN_MODE == ELMO_LEARN) {
             learnOneGame(game, grad, loss, learn_position_num);
         } else if (LEARN_MODE == N_STEP_SARSA) {
-            loss += learnOneGameReverse(game, grad);
+            learnOneGameReverse(game, grad, loss, learn_position_num);
         } else { //ここには来ないはず
             assert(false);
         }
@@ -433,11 +433,9 @@ void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>&
     }
 }
 
-std::array<double, 2> RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad) {
-    std::array<double, 2> loss = { 0.0, 0.0 };
+void RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t learn_position_num) {
     auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
     Position pos(*eval_params);
-    uint64_t learn_num = 0;
 
     //まずは最終局面まで動かす
     for (auto move : game.moves) {
@@ -512,10 +510,8 @@ std::array<double, 2> RootstrapTrainer::learnOneGameReverse(const Game& game, Ev
         //verifyAddGrad(pos, teacher);
         
         //学習局面数を増やす
-        learn_num++;
+        learn_position_num++;
     }
-
-    return (learn_num == 0 ? loss : loss / learn_num);
 }
 
 void RootstrapTrainer::learnSync() {
