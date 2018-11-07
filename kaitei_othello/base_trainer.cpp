@@ -43,16 +43,8 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
 
     //Policy‚ÌŒù”z
     Vec delta(OUTPUT_DIM);
-#ifdef PRINT_DEBUG
-    double abs_sum = 0.0;
-    double abs_max = 0.0;
-#endif
     for (int32_t i = 0; i < POLICY_DIM; i++) {
         delta(i) = (CalcType)(POLICY_LOSS_COEFF * (y[i] - teacher[i]));
-#ifdef PRINT_DEBUG
-        abs_sum += std::abs(delta(i));
-        abs_max = std::max(abs_max, (double)(std::abs(delta(i))));
-#endif
     }
     //Value‚ÌŒù”z
 #ifdef USE_CATEGORICAL
@@ -64,9 +56,6 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
 #endif
 
 #ifdef PRINT_DEBUG
-    std::cout << "abs_sum = " << abs_sum << std::endl;
-    std::cout << "abs_max = " << abs_max << std::endl;
-
     pos.print();
     for (auto move : pos.generateAllMoves()) {
         auto index = move.toLabel();
