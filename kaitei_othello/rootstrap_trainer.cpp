@@ -170,9 +170,8 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
 #endif
 
         //損失・勾配・千日手数・長手数による引き分け数を計算
-        std::array<double, 2> loss;
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
-        learnGames(games, loss, *grad);
+        std::array<double, 2> loss = learnGames(games, *grad);
 
         MUTEX.lock();
         //パラメータ更新
@@ -355,8 +354,8 @@ void RootstrapTrainer::evaluate() {
     print(consecutive_fail_num_);
 }
 
-void RootstrapTrainer::learnGames(const std::vector<Game>& games, std::array<double, 2>& loss, EvalParams<LearnEvalType>& grad) {
-    loss[0] = loss[1] = 0.0;
+std::array<double, 2> RootstrapTrainer::learnGames(const std::vector<Game>& games, EvalParams<LearnEvalType>& grad) {
+    std::array<double, 2> loss{ 0.0, 0.0 };
     grad.clear();
 
     //引き分けを除く場合があるのでこれはBATCH_SIZEに一致するとは限らない
@@ -377,6 +376,7 @@ void RootstrapTrainer::learnGames(const std::vector<Game>& games, std::array<dou
         }
     }
     (learn_game_num == 0 ? loss : loss /= learn_game_num);
+    return loss;
 }
 
 std::array<double, 2> RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad) {
@@ -548,9 +548,8 @@ void RootstrapTrainer::learnSync() {
         auto games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
 #endif
         //損失・勾配・千日手数・長手数による引き分け数を計算
-        std::array<double, 2> loss;
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
-        learnGames(games, loss, *grad);
+        std::array<double, 2> loss = learnGames(games, *grad);
 
         //パラメータ更新
         updateParams(*eval_params, *grad);
@@ -613,9 +612,8 @@ void RootstrapTrainer::testLearn() {
 
     for (int64_t i = 0; i < 1000; i++) {
         //損失・勾配・千日手数・長手数による引き分け数を計算
-        std::array<double, 2> loss;
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
-        learnGames(games, loss, *grad);
+        std::array<double, 2> loss = learnGames(games, *grad);
 
         //パラメータ更新
         updateParams(*eval_params, *grad);

@@ -46,7 +46,7 @@ private:
     void evaluate();
 
     //棋譜群から損失・勾配・千日手数・長手数による引き分け数を計算する関数
-    void learnGames(const std::vector<Game>& games, std::array<double, 2>& loss, EvalParams<LearnEvalType>& grad);
+    std::array<double, 2> learnGames(const std::vector<Game>& games, EvalParams<LearnEvalType>& grad);
 
     //棋譜を初手側から再生して損失・勾配を計算する関数:elmo絞りに対応
     std::array<double, 2> learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad);
