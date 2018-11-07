@@ -10,8 +10,7 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
     const auto& params = pos.evalParams();
     const Vec input_vec = Eigen::Map<const Vec>(input.data(), input.size());
 
-    Vec u[LAYER_NUM];
-    Vec x[LAYER_NUM];
+    Vec x[LAYER_NUM], u[LAYER_NUM];
     for (int32_t i = 0; i < LAYER_NUM; i++) {
         x[i] = (i == 0 ? input_vec : Network::activationFunction(u[i - 1]));
         u[i] = params.w[i] * x[i] + params.b[i];
