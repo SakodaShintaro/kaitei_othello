@@ -359,22 +359,6 @@ Index MCTSearcher::expandNode(Position& pos) {
     } else {
         printf("‚±‚±‚É‚Í—ˆ‚È‚¢‚Í‚¸\n");
         assert(false);
-        //I—¹
-        int32_t num = pos.score();
-        double result;
-        if (num == 0) {
-            result = 0.5;
-        } else if (num > 0) {
-            result = 1.0;
-        } else {
-            result = 0.0;
-        }
-#ifdef USE_CATEGORICAL
-        current_node.value_dist = onehotDist(result);
-#else
-        current_node.value_win = (CalcType)result;
-#endif
-        current_node.evaled = true;
     }
 
     return index;
