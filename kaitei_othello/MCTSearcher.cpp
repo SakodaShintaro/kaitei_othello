@@ -31,13 +31,6 @@ void MCTSearcher::think() {
         return;
     }
 
-    //Alpha Zeroの論文と同じディリクレノイズ
-    constexpr double epsilon = 0.25;
-    auto dirichlet = dirichletDistribution(current_node.child_num, 0.015);
-    for (int32_t i = 0; i < current_node.child_num; i++) {
-        current_node.nn_rates[i] = (CalcType)((1.0 - epsilon) * current_node.nn_rates[i] + epsilon * dirichlet[i]);
-    }
-
     //合法手が1つだったらすぐ送る
     //これもUSIオプション化した方が良いか
     //if (child_num == 1) {
