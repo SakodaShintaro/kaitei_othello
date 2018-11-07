@@ -234,14 +234,7 @@ std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit)
         }
 
         //対局結果の設定
-        int32_t num = pos.score();
-        if (num == 0) {
-            game.result = 0.5;
-        } else if (num > 0) {
-            game.result = 1.0;
-        } else {
-            game.result = 0.0;
-        }
+        game.result = pos.resultForBlack();
     }
     return games;
 }
@@ -289,14 +282,7 @@ std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
                 }
 
                 //対局結果の設定
-                int32_t num = pos_c.score();
-                if (num == 0) {
-                    game.result = 0.5;
-                } else if (num > 0) {
-                    game.result = 1.0;
-                } else {
-                    game.result = 0.0;
-                }
+                game.result = pos_c.resultForBlack();
             }
         });
     }

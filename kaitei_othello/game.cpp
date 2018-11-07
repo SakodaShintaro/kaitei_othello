@@ -45,5 +45,5 @@ void Game::writeKifuFile(std::string dir_path) const {
         pos.doMove(m);
     }
     
-    ofs << pos.score() << std::endl;
+    ofs << pos.scoreForBlack() << std::endl;
 }

@@ -38,7 +38,8 @@ public:
     bool isFinish() const;
 
     //評価値計算
-    int32_t score() const;
+    int32_t scoreForBlack() const;
+    double resultForBlack() const;
     double resultForTurn() const;
     Vec makeOutput() const;
     std::vector<CalcType> policy();

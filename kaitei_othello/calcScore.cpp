@@ -21,7 +21,7 @@ void Position::initScore() {
     already_calc_ = true;
 }
 
-int32_t Position::score() const {
+int32_t Position::scoreForBlack() const {
     int32_t result = 0;
     for (Square sq : SquareList) {
         if (board_[sq] == EMPTY) {
@@ -32,9 +32,13 @@ int32_t Position::score() const {
     return result;
 }
 
-double Position::resultForTurn() const {
-    int32_t s = (color_ == BLACK ? score() : -score());
+double Position::resultForBlack() const {
+    int32_t s = scoreForBlack();
     return (s > 0 ? 1.0 : (s < 0 ? 0.0 : 0.5));
+}
+
+double Position::resultForTurn() const {
+    return (color_ == BLACK ? resultForBlack() : 1.0 - resultForBlack());
 }
 
 Vec Position::makeOutput() const{

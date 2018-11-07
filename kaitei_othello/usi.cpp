@@ -314,7 +314,7 @@ void USI::vsHuman() {
     while (true) {
         pos.print();
         if (pos.isFinish()) {
-            int32_t num = pos.score();
+            int32_t num = pos.scoreForBlack();
             if (num == 0) {
                 printf("引き分け\n");
             } else if (num > 0) {
