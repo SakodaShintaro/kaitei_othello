@@ -1,4 +1,4 @@
-batch_size 10
+batch_size 1
 search_depth 2
 optimizer MOMENTUM
 learn_rate 0.1
@@ -16,7 +16,7 @@ random_move_num 0
 draw_turn 512
 draw_score -100000
 USI_Hash 16
-evaluation_game_num 500
+evaluation_game_num 100
 evaluation_interval 1
 policy_loss_coeff 1.0
 value_loss_coeff 1.0

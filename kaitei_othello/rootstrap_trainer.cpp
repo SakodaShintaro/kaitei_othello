@@ -322,7 +322,6 @@ double RootstrapTrainer::calcCurrWinRate(const std::vector<Game>& games) {
         }
     }
     printf("%d\t", same_num);
-    (same_num == 0 ? usi_option.random_turn-- : usi_option.random_turn++);
     return win_rate / games.size();
 }
 
@@ -344,10 +343,9 @@ void RootstrapTrainer::evaluate() {
     usi_option.random_turn = copy;
 
     //いくつか出力
-    test_games[0].writeKifuFile("./test_games/");
-    test_games[1].writeKifuFile("./test_games/");
-    test_games[3].writeKifuFile("./test_games/");
-    test_games[4].writeKifuFile("./test_games/");
+    for (int32_t i = 0; i < std::min(4, (int32_t)test_games.size()); i++) {
+        test_games[i].writeKifuFile("./test_games/");
+    }
 
     double win_rate = calcCurrWinRate(test_games);
     if (win_rate >= THRESHOLD) {
