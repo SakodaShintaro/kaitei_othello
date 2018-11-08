@@ -301,6 +301,27 @@ double RootstrapTrainer::calcCurrWinRate(const std::vector<Game>& games) {
     for (int32_t i = 0; i < games.size(); i++) {
         win_rate += (i % 2 == 0 ? games[i].result : 1.0 - games[i].result);
     }
+
+    //重複の確認をしてみる
+    int32_t same_num = 0;
+    for (int32_t i = 0; i < games.size(); i++) {
+        for (int32_t j = i + 1; j < games.size(); j++) {
+            if (games[i].moves.size() != games[i].moves.size()) {
+                continue;
+            }
+            bool same = true;
+            for (int32_t k = 0; k < games[i].moves.size(); k++) {
+                if (games[i].moves[k] != games[j].moves[k]) {
+                    same = false;
+                    break;
+                }
+            }
+            if (same) {
+                same_num++;
+            }
+        }
+    }
+    printf("%d\t", same_num);
     return win_rate / games.size();
 }
 

@@ -139,7 +139,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
     //ノイズを加える
     //Alpha Zeroの論文と同じディリクレノイズ
     constexpr double epsilon = 0.25;
-    auto dirichlet = dirichletDistribution(current_node.child_num, 0.015);
+    auto dirichlet = dirichletDistribution(current_node.child_num, 0.5);
     for (int32_t i = 0; i < current_node.child_num; i++) {
         current_node.nn_rates[i] = (CalcType)((1.0 - epsilon) * current_node.nn_rates[i] + epsilon * dirichlet[i]);
     }
@@ -524,14 +524,15 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
     // ucb = Q(s, a) + U(s, a)
     // Q(s, a) = W(s, a) / N(s, a)
     // U(s, a) = C_PUCT * P(s, a) * sqrt(sum_b(B(s, b)) / (1 + N(s, a))
-    constexpr double C_PUCT = 1.0;
+    constexpr double C_PUCT = 0.5;
 
     int32_t max_index = -1;
     double max_value = INT_MIN;
     for (int32_t i = 0; i < current_node.child_num; i++) {
-        double Q = (child_move_counts[i] == 0 ? 0.5 : current_node.child_wins[i] / child_move_counts[i]);
+        double Q = (child_move_counts[i] == 0 ? 100.0 : current_node.child_wins[i] / child_move_counts[i]);
         double U = std::sqrt(current_node.move_count + 1) / (child_move_counts[i] + 1);
         double ucb = Q + C_PUCT * current_node.nn_rates[i] * U;
+        //std::cout << Q << " + " << current_node.nn_rates[i] << " * " << U << " = " << ucb << std::endl;
 
         //詰みだったらそれを選べばいいだろう
         if (Q == 1.0) {
