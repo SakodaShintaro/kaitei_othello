@@ -615,9 +615,7 @@ void RootstrapTrainer::testLearn() {
     }
 
     std::ofstream ofs("test_learn_log.txt");
-    ofs << "step";
-    ofs << "\tP = " << POLICY_LOSS_COEFF << ", V = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE;
-    ofs << "\tP = " << POLICY_LOSS_COEFF << ", V = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
+    ofs << "step\tP = " << POLICY_LOSS_COEFF << ", V = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
 
     for (int64_t i = 0; i < 1000; i++) {
         //損失・勾配・千日手数・長手数による引き分け数を計算
