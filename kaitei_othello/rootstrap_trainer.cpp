@@ -332,9 +332,11 @@ void RootstrapTrainer::evaluate() {
     }
     opponent_parameters_->readFile();
 
+    static int64_t eval_random_turn = 10;
+
     //random_turnは小さめにする
     auto copy = usi_option.random_turn;
-    usi_option.random_turn = 6;
+    usi_option.random_turn = eval_random_turn;
 #ifdef USE_MCTS
     auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, (int32_t)usi_option.playout_limit, false);
 #else
@@ -347,7 +349,33 @@ void RootstrapTrainer::evaluate() {
         test_games[i].writeKifuFile("./test_games/");
     }
 
-    double win_rate = calcCurrWinRate(test_games);
+    double win_rate = 0.0;
+    for (int32_t i = 0; i < test_games.size(); i++) {
+        win_rate += (i % 2 == 0 ? test_games[i].result : 1.0 - test_games[i].result);
+    }
+
+    //重複の確認をしてみる
+    int32_t same_num = 0;
+    for (int32_t i = 0; i < test_games.size(); i++) {
+        for (int32_t j = i + 1; j < test_games.size(); j++) {
+            if (test_games[i].moves.size() != test_games[i].moves.size()) {
+                continue;
+            }
+            bool same = true;
+            for (int32_t k = 0; k < test_games[i].moves.size(); k++) {
+                if (test_games[i].moves[k] != test_games[j].moves[k]) {
+                    same = false;
+                    break;
+                }
+            }
+            if (same) {
+                same_num++;
+            }
+        }
+    }
+    printf("%d\t%lld\t", same_num, (same_num == 0 ? --eval_random_turn : ++eval_random_turn));
+    win_rate /= test_games.size();
+
     if (win_rate >= THRESHOLD) {
         eval_params->writeFile();
         update_num_++;
