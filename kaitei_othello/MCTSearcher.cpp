@@ -496,9 +496,11 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node, double
     double max_value = INT_MIN;
     for (int32_t i = 0; i < current_node.child_num; i++) {
         double Q = 0.0;
-        for (int32_t j = (int32_t)(curr_best_winrate * BIN_SIZE); j < BIN_SIZE; j++) {
-            Q += (child_move_counts[i] == 0 ? 0.0 : current_node.child_wins[i][j] / child_move_counts[i]);
+        //for (int32_t j = (int32_t)(curr_best_winrate * BIN_SIZE); j < BIN_SIZE; j++) {
+        for (int32_t j = 0; j < BIN_SIZE; j++) {
+            Q += VALUE_WIDTH * (0.5 + j) * (child_move_counts[i] == 0 ? 0.0 : current_node.child_wins[i][j] / child_move_counts[i]);
         }
+        assert(0.0 <= Q && Q <= 1.0);
         double U = std::sqrt(current_node.move_count + 1) / (child_move_counts[i] + 1);
         double ucb = Q + C_PUCT * current_node.nn_rates[i] * U;
 
