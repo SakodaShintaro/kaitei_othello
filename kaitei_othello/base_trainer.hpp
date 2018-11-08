@@ -43,6 +43,9 @@ protected:
     //ŠwK—¦
     double LEARN_RATE;
 
+    //ŠwK—¦‚ğŒ¸Š‚³‚¹‚é‚Æ‚«‚ÌŒW”
+    double LEARN_RATE_DECAY;
+
     //Momentum‚É‚¨‚¯‚é¬‡”ä
     double MOMENTUM_DECAY;
 
