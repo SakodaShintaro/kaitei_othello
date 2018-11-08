@@ -166,7 +166,7 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
     while (!shared_data.stop_signal) {
         //棋譜を生成
 #ifdef USE_MCTS
-        auto games = play(BATCH_SIZE, (int32_t)usi_option.playout_limit);
+        auto games = play(BATCH_SIZE, (int32_t)usi_option.playout_limit, true);
 #else
         auto games = play(BATCH_SIZE, SEARCH_DEPTH);
 #endif
@@ -206,7 +206,7 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
     }
 }
 
-std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit) {
+std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit, bool add_noise) {
 #ifdef USE_MCTS
     auto searcher = std::make_unique<MCTSearcher>(usi_option.USI_Hash);
 #else
@@ -221,7 +221,7 @@ std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit)
 
         while (!pos.isFinish()) {
             //iが偶数のときpos_cが先手
-            auto move_and_teacher = searcher->thinkForGenerateLearnData(pos, search_limit);
+            auto move_and_teacher = searcher->thinkForGenerateLearnData(pos, search_limit, add_noise);
             Move best_move = move_and_teacher.first;
             TeacherType teacher = move_and_teacher.second;
 
@@ -241,7 +241,7 @@ std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit)
     return games;
 }
 
-std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, int32_t search_limit) {
+std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, int32_t search_limit, bool add_noise) {
     std::vector<Game> games(game_num);
     std::atomic<int32_t> index;
     index = 0;
@@ -267,8 +267,8 @@ std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
                 while (!pos_c.isFinish()) {
                     //iが偶数のときpos_cが先手
                     auto move_and_teacher = ((pos_c.turn_number() % 2) == (curr_index % 2) ?
-                        searcher->thinkForGenerateLearnData(pos_c, search_limit) :
-                        searcher->thinkForGenerateLearnData(pos_t, search_limit));
+                        searcher->thinkForGenerateLearnData(pos_c, search_limit, add_noise) :
+                        searcher->thinkForGenerateLearnData(pos_t, search_limit, add_noise));
                     Move best_move = move_and_teacher.first;
                     TeacherType teacher = move_and_teacher.second;
 
@@ -322,6 +322,7 @@ double RootstrapTrainer::calcCurrWinRate(const std::vector<Game>& games) {
         }
     }
     printf("%d\t", same_num);
+    (same_num == 0 ? usi_option.random_turn-- : usi_option.random_turn++);
     return win_rate / games.size();
 }
 
@@ -336,7 +337,7 @@ void RootstrapTrainer::evaluate() {
     auto copy = usi_option.random_turn;
     usi_option.random_turn = 6;
 #ifdef USE_MCTS
-    auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, (int32_t)usi_option.playout_limit);
+    auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, (int32_t)usi_option.playout_limit, false);
 #else
     auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, SEARCH_DEPTH);
 #endif
@@ -553,7 +554,7 @@ void RootstrapTrainer::learnSync() {
     while (true) {
         //自己対局による棋譜生成:並列化
 #ifdef USE_MCTS
-        auto games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, (int32_t)usi_option.playout_limit);
+        auto games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, (int32_t)usi_option.playout_limit, true);
 #else
         auto games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
 #endif
@@ -600,7 +601,7 @@ void RootstrapTrainer::testLearn() {
 
     //自己対局による棋譜生成:並列化
 #ifdef USE_MCTS
-    std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, (int32_t)usi_option.playout_limit);
+    std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, (int32_t)usi_option.playout_limit, true);
 #else
     std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
 #endif

@@ -115,7 +115,7 @@ void MCTSearcher::think() {
     }
 }
 
-std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& root, int32_t playout_limit) {
+std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& root, int32_t playout_limit, bool add_noise) {
     //思考開始時間をセット
     start_ = std::chrono::steady_clock::now();
 
@@ -136,12 +136,14 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
         return { NULL_MOVE, TeacherType() };
     }
 
-    //ノイズを加える
-    //Alpha Zeroの論文と同じディリクレノイズ
-    constexpr double epsilon = 0.25;
-    auto dirichlet = dirichletDistribution(current_node.child_num, 0.5);
-    for (int32_t i = 0; i < current_node.child_num; i++) {
-        current_node.nn_rates[i] = (CalcType)((1.0 - epsilon) * current_node.nn_rates[i] + epsilon * dirichlet[i]);
+    if (add_noise) {
+        //ノイズを加える
+        //Alpha Zeroの論文と同じディリクレノイズ
+        constexpr double epsilon = 0.25;
+        auto dirichlet = dirichletDistribution(current_node.child_num, 0.5);
+        for (int32_t i = 0; i < current_node.child_num; i++) {
+            current_node.nn_rates[i] = (CalcType)((1.0 - epsilon) * current_node.nn_rates[i] + epsilon * dirichlet[i]);
+        }
     }
 
     //初期化

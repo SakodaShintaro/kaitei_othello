@@ -19,7 +19,7 @@ public:
     void think();
 
     //学習用に一番良い指し手と学習データを返す
-    std::pair<Move, TeacherType> thinkForGenerateLearnData(Position& pos, int32_t playout_limit);
+    std::pair<Move, TeacherType> thinkForGenerateLearnData(Position& pos, int32_t playout_limit, bool add_noise);
 
 private:
     //再帰する探索関数

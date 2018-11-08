@@ -336,7 +336,7 @@ void USI::vsHuman() {
             std::cin >> file >> rank;
             pos.doMove(Move(FRToSquare[file][rank]));
         } else {
-            auto result = mctsearcher.thinkForGenerateLearnData(pos, (int32_t)usi_option.playout_limit);
+            auto result = mctsearcher.thinkForGenerateLearnData(pos, (int32_t)usi_option.playout_limit, false);
             pos.doMove(result.first);
         }
     }

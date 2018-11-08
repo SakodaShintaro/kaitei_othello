@@ -34,10 +34,10 @@ private:
     void learnAsyncSlave(int32_t id);
 
     //©ŒÈ‘Î‹Ç‚ğs‚¤ŠÖ”
-    static std::vector<Game> play(int32_t game_num, int32_t search_limit);
+    static std::vector<Game> play(int32_t game_num, int32_t search_limit, bool add_noise);
 
     //•À—ñ‰»‚µ‚Ä‘Î‹Ç‚ğs‚¤ŠÖ”
-    static std::vector<Game> parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, int32_t search_limit);
+    static std::vector<Game> parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, int32_t search_limit, bool add_noise);
 
     //Šû•ˆ‚©‚çŸ—¦‚ğŒvZ‚·‚éŠÖ”
     static double calcCurrWinRate(const std::vector<Game>& games);
