@@ -509,7 +509,7 @@ void RootstrapTrainer::learnSync() {
     //ログファイルを準備
     log_file_.open("learn_sync_log.txt");
     print("経過時間");
-    print("学習局数");
+    print("ステップ数");
     print("損失");
     print("Policy損失");
     print("Value損失");
@@ -523,6 +523,8 @@ void RootstrapTrainer::learnSync() {
     print("連続負け越し数");
     log_file_ << std::endl << std::fixed;
     std::cout << std::endl << std::fixed;
+
+    uint64_t step_num = 0;
 
     //ここから学習のメイン
     while (true) {
@@ -541,12 +543,9 @@ void RootstrapTrainer::learnSync() {
         //書き出し
         eval_params->writeFile("tmp.bin");
 
-        //学習局数を更新
-        sum_learned_games_ += BATCH_SIZE;
-
         //学習情報の表示
         timestamp();
-        print(sum_learned_games_);
+        print(++step_num);
         print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
         print(loss[0]);
         print(loss[1]);
@@ -556,7 +555,7 @@ void RootstrapTrainer::learnSync() {
         print(eval_params->sumAbs());
 
         //評価
-        if (sum_learned_games_ % (BATCH_SIZE * EVALUATION_INTERVAL) == 0) {
+        if (step_num % EVALUATION_INTERVAL == 0) {
             evaluate();
         }
 
