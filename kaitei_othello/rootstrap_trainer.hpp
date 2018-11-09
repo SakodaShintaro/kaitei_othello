@@ -39,9 +39,6 @@ private:
     //並列化して対局を行う関数
     static std::vector<Game> parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, int32_t search_limit, bool add_noise);
 
-    //棋譜から勝率を計算する関数
-    static double calcCurrWinRate(const std::vector<Game>& games);
-
     //今ファイルに保存されているパラメータと対局して強さを測定する関数
     void evaluate();
 
