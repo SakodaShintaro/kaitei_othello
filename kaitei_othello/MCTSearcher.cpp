@@ -387,7 +387,7 @@ void MCTSearcher::evalNode(Position& pos, Index index) {
 #ifdef USE_CATEGORICAL
     current_node.value_dist = pos.valueDist();
 #else
-    current_node.value_win = (CalcType)sigmoid(pos.valueScoreForTurn(), 1.0);
+    current_node.value_win = (CalcType)pos.valueForTurn();
 #endif
     current_node.evaled = true;
 }
