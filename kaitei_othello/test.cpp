@@ -113,7 +113,7 @@ void testNN() {
             printf("\n");
         }
 
-        auto result = pos.policy();
+        auto result = pos.policyScore();
         printf("valueForBlack = %f\n", pos.valueForBlack());
 
         sort(moves.begin(), moves.end(), std::greater<Move>());

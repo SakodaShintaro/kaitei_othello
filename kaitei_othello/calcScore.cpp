@@ -51,7 +51,7 @@ Vec Position::makeOutput() const{
     return u[LAYER_NUM - 1];
 }
 
-std::vector<CalcType> Position::policy() {
+std::vector<CalcType> Position::policyScore() {
     if (!already_calc_) {
         initPolicyAndValue();
     }

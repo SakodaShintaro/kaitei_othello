@@ -331,10 +331,26 @@ void USI::vsHuman() {
         }
 
         if (pos.turn_number() % 2 == human_turn) {
-            std::cout << "指し手を入力(将棋形式で筋と段をスペース区切り): ";
-            int32_t file, rank;
-            std::cin >> file >> rank;
-            pos.doMove(Move(FRToSquare[file][rank]));
+            while (true) {
+                std::cout << "指し手を入力(将棋形式で筋と段をスペース区切り): ";
+                int32_t file, rank;
+                std::cin >> file >> rank;
+                if (file == -1 && rank == -1) {
+                    pos.undo();
+                    pos.undo();
+                    break;
+                } else if (file < 0 || file > File8 || rank < 0 || rank > Rank8) {
+                    std::cout << "不正な入力" << std::endl;
+                } else {
+                    Move move(FRToSquare[file][rank]);
+                    if (rank == 0 && file == 0 || pos.isLegalMove(move)) {
+                        pos.doMove(move);
+                        break;
+                    } else {
+                        std::cout << "非合法な手" << std::endl;
+                    }
+                }
+            }
         } else {
             auto result = mctsearcher.thinkForGenerateLearnData(pos, (int32_t)usi_option.playout_limit, false);
             pos.doMove(result.first);

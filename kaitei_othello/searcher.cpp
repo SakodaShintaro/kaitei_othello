@@ -314,7 +314,7 @@ Move Searcher::softmaxChoice(Position& pos, double temperature) {
     if (moves.size() == 0) {
         return NULL_MOVE;
     }
-    auto policy = pos.policy();
+    auto policy = pos.policyScore();
     std::vector<double> score(moves.size());
     for (int i = 0; i < moves.size(); i++) {
         pos.doMove(moves[i]);

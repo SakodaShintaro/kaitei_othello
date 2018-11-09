@@ -42,7 +42,7 @@ public:
     double resultForBlack() const;
     double resultForTurn() const;
     Vec makeOutput() const;
-    std::vector<CalcType> policy();
+    std::vector<CalcType> policyScore();
     std::vector<CalcType> maskedPolicy();
     CalcType valueScoreForTurn();
     double valueForBlack();

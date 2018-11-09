@@ -370,10 +370,10 @@ void MCTSearcher::evalNode(Position& pos, Index index) {
 
     //Policy‚ÌŒvŽZ
     if (current_node.child_num != 1) {
-        auto policy_and_value = pos.policy();
+        auto policy_score = pos.policyScore();
 
         for (int32_t i = 0; i < current_node.child_num; i++) {
-            legal_move_policy[i] = policy_and_value[current_node.legal_moves[i].toLabel()];
+            legal_move_policy[i] = policy_score[current_node.legal_moves[i].toLabel()];
         }
 
         //softmax•ª•z‚É‚·‚é
