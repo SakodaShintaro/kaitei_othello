@@ -305,7 +305,7 @@ void RootstrapTrainer::evaluate() {
 
     //random_turnは小さめにする
     auto copy = usi_option.random_turn;
-    usi_option.random_turn = eval_random_turn;
+    usi_option.random_turn = (uint32_t)eval_random_turn;
 #ifdef USE_MCTS
     auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, (int32_t)usi_option.playout_limit, false);
 #else
