@@ -342,7 +342,7 @@ void RootstrapTrainer::evaluate() {
             }
         }
     }
-    printf("%d\t%lld\t", same_num, (same_num == 0 ? --eval_random_turn : ++eval_random_turn));
+    printf("%d\t%lld\t", same_num, (same_num == 0 ? eval_random_turn : ++eval_random_turn));
     win_rate /= test_games.size();
 
     if (win_rate >= THRESHOLD) {
