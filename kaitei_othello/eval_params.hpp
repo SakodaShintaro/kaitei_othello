@@ -42,7 +42,7 @@ constexpr std::array<int32_t, 2> MATRIX_SIZE[LAYER_NUM] = {
 };
 
 //活性化関数の種類:オフにするとsigmoid
-//#define USE_ACTIVATION_RELU
+#define USE_ACTIVATION_RELU
 
 using LearnEvalType = float;
 
