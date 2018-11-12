@@ -17,7 +17,7 @@ void MCTSearcher::think() {
     root.print();
 
     //古いハッシュを削除
-    hash_table_.deleteOldHash(root);
+    hash_table_.deleteOldHash(root, true);
 
     //ルートノードの展開
     current_root_index_ = expandNode(root);
@@ -120,7 +120,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
     start_ = std::chrono::steady_clock::now();
 
     //古いハッシュを削除
-    hash_table_.deleteOldHash(root);
+    hash_table_.deleteOldHash(root, add_noise);
 
     //ルートノードの展開
     current_root_index_ = expandNode(root);

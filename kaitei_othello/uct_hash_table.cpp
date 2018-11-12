@@ -75,8 +75,8 @@ void UctHashTable::saveUsedHash(Position& pos, Index index) {
     }
 }
 
-void UctHashTable::deleteOldHash(Position& pos) {
-    auto root = findSameHashIndex(pos.hash_value(), pos.turn_number());
+void UctHashTable::deleteOldHash(Position& root, bool leave_root) {
+    auto root_index = findSameHashIndex(root.hash_value(), root.turn_number());
 
     used_ = 0;
     age_++;
@@ -84,8 +84,8 @@ void UctHashTable::deleteOldHash(Position& pos) {
     //    table_[i].flag = false;
     //}
 
-    if (root != size_) { //Œ©‚Â‚©‚Á‚½‚Æ‚¢‚¤‚±‚Æ
-        saveUsedHash(pos, root);
+    if (leave_root && root_index != size_) { //Œ©‚Â‚©‚Á‚½‚Æ‚¢‚¤‚±‚Æ
+        saveUsedHash(root, root_index);
     }
 
     enough_size_ = true;

@@ -67,7 +67,7 @@ public:
     void saveUsedHash(Position& pos, Index index);
 
     // Œ»İ‚Ì‹Ç–Ê‚ğƒ‹[ƒg‚Æ‚·‚é‹Ç–ÊˆÈŠO‚ğíœ‚·‚é
-    void deleteOldHash(Position& pos);
+    void deleteOldHash(Position& root, bool leave_root);
 
     double getUsageRate() const {
         return (double)used_ / size_;
