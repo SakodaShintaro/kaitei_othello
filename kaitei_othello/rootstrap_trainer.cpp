@@ -68,6 +68,8 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
             ifs >> EVALUATION_GAME_NUM;
         } else if (name == "evaluation_interval") {
             ifs >> EVALUATION_INTERVAL;
+        } else if (name == "evaluation_random_turn") {
+            ifs >> EVALUATION_RANDOM_TURN;
         } else if (name == "policy_loss_coeff") {
             ifs >> POLICY_LOSS_COEFF;
         } else if (name == "value_loss_coeff") {
@@ -301,11 +303,9 @@ void RootstrapTrainer::evaluate() {
     }
     opponent_parameters_->readFile();
 
-    static int64_t eval_random_turn = 10;
-
     //random_turnは小さめにする
     auto copy = usi_option.random_turn;
-    usi_option.random_turn = (uint32_t)eval_random_turn;
+    usi_option.random_turn = (uint32_t)EVALUATION_RANDOM_TURN;
 #ifdef USE_MCTS
     auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, (int32_t)usi_option.playout_limit, false);
 #else
@@ -342,7 +342,7 @@ void RootstrapTrainer::evaluate() {
             }
         }
     }
-    printf("%d\t%lld\t", same_num, (same_num == 0 ? eval_random_turn : ++eval_random_turn));
+    printf("%d\t%lld\t", same_num, (same_num == 0 ? EVALUATION_RANDOM_TURN : ++EVALUATION_RANDOM_TURN));
     win_rate /= test_games.size();
 
     if (win_rate >= THRESHOLD) {
