@@ -606,10 +606,6 @@ void RootstrapTrainer::testLearn() {
     //ここから学習のメイン
     eval_params->readFile();
 
-    if (OPTIMIZER_NAME == "MOMENTUM") {
-        pre_update_->clear();
-    }
-
     std::ofstream ofs("test_learn_log.txt");
     ofs << "step\tP = " << POLICY_LOSS_COEFF << ", V = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
 
