@@ -14,7 +14,7 @@ void MCTSearcher::think() {
     Position root = shared_data.root;
 
     //思考する局面の表示
-    root.print();
+    //root.print();
 
     //古いハッシュを削除
     hash_table_.deleteOldHash(root, true);
@@ -26,24 +26,23 @@ void MCTSearcher::think() {
     auto root_moves = current_node.legal_moves;
 
     //合法手が0だったら投了
-    if (child_num == 0) {
-        std::cout << "bestmove resign" << std::endl;
-        return;
-    }
-
-    //合法手が1つだったらすぐ送る
-    //これもUSIオプション化した方が良いか
-    //if (child_num == 1) {
-    //    std::cout << "bestmove " << root_moves[0] << std::endl;
+    //if (child_num == 0) {
+    //    std::cout << "bestmove resign" << std::endl;
     //    return;
     //}
+
+    //合法手が1つだったらすぐ送る
+    if (child_num == 1) {
+        std::cout << "=== " << root_moves[0] << std::endl;
+        return;
+    }
 
     //指定された手数までソフトマックスランダムにより指し手を決定
     if (root.turn_number() < usi_option.random_turn) {
         auto prob = softmax(current_node.nn_rates, (CalcType)usi_option.temperature);
         int32_t index = randomChoise(prob);
         Move random_move = current_node.legal_moves[index];
-        std::cout << "bestmove " << random_move << std::endl;
+        std::cout << "=== " << random_move << std::endl;
         return;
     }
 
@@ -82,14 +81,14 @@ void MCTSearcher::think() {
         root_moves[i].print();
     }
 #else
-    for (int32_t i = 0; i < child_num; i++) {
-        printf("%3d: move_count = %6d, nn_rate = %.5f, win_rate = %7.5f, ", i, child_move_counts[i],
-            current_node.nn_rates[i], (child_move_counts[i] > 0 ? current_node.child_wins[i] / child_move_counts[i] : 0));
-        root_moves[i].print();
-    }
+    //for (int32_t i = 0; i < child_num; i++) {
+    //    printf("%3d: move_count = %6d, nn_rate = %.5f, win_rate = %7.5f, ", i, child_move_counts[i],
+    //        current_node.nn_rates[i], (child_move_counts[i] > 0 ? current_node.child_wins[i] / child_move_counts[i] : 0));
+    //    root_moves[i].print();
+    //}
 #endif
 
-    printUSIInfo();
+    //printUSIInfo();
 
     //訪問回数最大の手を選択
     int32_t best_index = (int32_t)(std::max_element(child_move_counts.begin(), child_move_counts.end()) - child_move_counts.begin());
@@ -109,9 +108,9 @@ void MCTSearcher::think() {
 
     //閾値未満の場合は投了
     if (best_wp < sigmoid(usi_option.resign_score, CP_GAIN)) {
-        std::cout << "bestmove resign" << std::endl;
+        std::cout << "=== PA" << std::endl;
     } else {
-        std::cout << "bestmove " << root_moves[best_index] << std::endl;
+        std::cout << "=== " << root_moves[best_index] << std::endl;
     }
 }
 
@@ -500,8 +499,8 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node, double
     double max_value = INT_MIN;
     for (int32_t i = 0; i < current_node.child_num; i++) {
         double Q = 0.0;
-        //for (int32_t j = (int32_t)(curr_best_winrate * BIN_SIZE); j < BIN_SIZE; j++) {
-        for (int32_t j = 0; j < BIN_SIZE; j++) {
+        for (int32_t j = (int32_t)(curr_best_winrate * BIN_SIZE); j < BIN_SIZE; j++) {
+        //for (int32_t j = 0; j < BIN_SIZE; j++) {
             Q += VALUE_WIDTH * (0.5 + j) * (child_move_counts[i] == 0 ? 0.0 : current_node.child_wins[i][j] / child_move_counts[i]);
         }
         assert(0.0 <= Q && Q <= 1.0);

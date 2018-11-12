@@ -15,6 +15,6 @@ int main()
 
     Bitboard::init();
 
-	USI usi;
+	NBoardProtocol usi;
 	usi.loop();
 }

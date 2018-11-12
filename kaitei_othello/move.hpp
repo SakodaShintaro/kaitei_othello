@@ -50,14 +50,18 @@ const Move NULL_MOVE(0);
 
 //sfen形式で出力するオーバーロード
 inline std::ostream& operator<<(std::ostream& os, Move m) {
-    os << m.move;
+    if (m == NULL_MOVE) {
+        os << "PA";
+    } else {
+        os << fileToString[SquareToFile[m.to()]] << SquareToRank[m.to()];
+    }
     return os;
 }
 
 //これコンストラクタとかで書いた方がいい気がするけどうまく書き直せなかった
 //まぁ動けばいいのかなぁ
 static Move stringToMove(std::string input) {
-    Square to = FRToSquare[input[0] - '0'][input[1] - 'a' + 1];
+    Square to = FRToSquare[File8 - (input[0] - 'A')][input[1] - '0'];
     return Move(to);
 }
 

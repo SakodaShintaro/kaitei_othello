@@ -51,15 +51,15 @@ int32_t mirrorSqNum(int32_t sq_num) {
 }
 
 const ArrayMap<std::string, FileNum> fileToString({
-    { File1, "１" },
-    { File2, "２" },
-    { File3, "３" },
-    { File4, "４" },
-    { File5, "５" },
-    { File6, "６" },
-    { File7, "７" },
-    { File8, "８" },
-    { File9, "９" }
+    { File1, "H" },
+    { File2, "G" },
+    { File3, "F" },
+    { File4, "E" },
+    { File5, "D" },
+    { File6, "C" },
+    { File7, "B" },
+    { File8, "A" },
+    { File9, "A" }
 });
 
 const ArrayMap<std::string, RankNum> rankToString({

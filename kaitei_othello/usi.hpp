@@ -8,19 +8,10 @@
 #include"thread.hpp"
 #include<string>
 
-class USI {
+class NBoardProtocol {
 public:
     void loop();
-    void usi();
-    void isready();
-    void setoption();
-    void usinewgame();
-    void position();
     void go();
-    void stop();
-    void ponderhit();
-    void quit();
-    void gameover();
     void vsHuman();
 };
 
