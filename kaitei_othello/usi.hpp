@@ -11,7 +11,6 @@
 class NBoardProtocol {
 public:
     void loop();
-    void go();
     void vsHuman();
 };
 

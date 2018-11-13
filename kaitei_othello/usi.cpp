@@ -44,7 +44,11 @@ void NBoardProtocol::loop() {
         std::cin >> input;
         log << input << std::endl;
         if (input == "go") {
-            go();
+            shared_data.stop_signal = false;
+#ifdef USE_MCTS
+            MCTSearcher mctsearcher(usi_option.USI_Hash);
+            mctsearcher.think();
+#endif
         } else if (input == "prepareForLearn") {
             eval_params->initRandom();
             eval_params->printHistgram();
@@ -125,14 +129,6 @@ void NBoardProtocol::loop() {
             std::cout << "Illegal input" << std::endl;
         }
     }
-}
-
-void NBoardProtocol::go() {
-    shared_data.stop_signal = false;
-#ifdef USE_MCTS
-    MCTSearcher mctsearcher(usi_option.USI_Hash);
-    mctsearcher.think();
-#endif
 }
 
 void NBoardProtocol::vsHuman() {
