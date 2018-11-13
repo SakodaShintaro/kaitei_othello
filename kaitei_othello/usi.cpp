@@ -94,13 +94,34 @@ void NBoardProtocol::loop() {
                 log << max_depth << std::endl;
                 //やることは特になし
             } else if (command == "game") {
-                //GGFってなんだろうか
-                std::string ggf_str;
-                std::cin >> ggf_str;
-                log << ggf_str << std::endl;
-                //ここで盤面をなんやかんやするんだけど初期局面に限定すれば余計なこと
-                //しなくてすむかもしれない
+                //盤面を初期化
                 shared_data.root.init();
+
+                while (true) {
+                    std::string ggf_str;
+                    std::cin >> ggf_str;
+                    log << ggf_str << std::endl;
+                    if (ggf_str.front() == '*') {
+                        //Moveをパースする
+                        for (int32_t i = 0; i < ggf_str.size(); i++) {
+                            if (ggf_str[i] == 'B' || ggf_str[i] == 'W') {
+                                //[から2文字を取ってMoveとして解釈し]まで飛ばす
+                                std::string s = ggf_str.substr(i + 2, 2);
+                                std::cout << s << std::endl;
+                                Move move = stringToMove(s);
+                                assert(shared_data.root.isLegalMove(move));
+                                shared_data.root.doMove(move);
+                                while (ggf_str[i] != ']') {
+                                    i++;
+                                }
+                            }
+                        }
+                    }
+                    if (ggf_str.substr(ggf_str.size() - 2) == ";)") {
+                        break;
+                    }
+                }
+
                 //置換表のリセット
                 shared_data.hash_table.clear();
                 shared_data.hash_table.setSize(usi_option.USI_Hash);
@@ -124,9 +145,10 @@ void NBoardProtocol::loop() {
         } else if (input == "ping") {
             int32_t ping;
             std::cin >> ping;
+            log << ping << std::endl;
             std::cout << "pong " << ping << std::endl;
         } else {
-            std::cout << "Illegal input" << std::endl;
+            std::cerr << "Illegal input" << std::endl;
         }
     }
 }

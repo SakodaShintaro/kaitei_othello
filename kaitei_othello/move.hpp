@@ -61,6 +61,9 @@ inline std::ostream& operator<<(std::ostream& os, Move m) {
 //これコンストラクタとかで書いた方がいい気がするけどうまく書き直せなかった
 //まぁ動けばいいのかなぁ
 static Move stringToMove(std::string input) {
+    if (input == "PA") {
+        return NULL_MOVE;
+    }
     Square to = FRToSquare[File8 - (input[0] - 'A')][input[1] - '0'];
     return Move(to);
 }
