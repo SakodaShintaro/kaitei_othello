@@ -63,10 +63,6 @@ void MCTSearcher::think() {
         if (shouldStop() || !hash_table_.hasEnoughSize()) {
             break;
         }
-
-        if (playout_num != 0 && playout_num % 30000 == 0) {
-            printUSIInfo();
-        }
     }
 
     const auto& child_move_counts = current_node.child_move_counts;

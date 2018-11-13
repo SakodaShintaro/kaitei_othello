@@ -31,14 +31,17 @@ void NBoardProtocol::loop() {
     usi_option.draw_turn = 256;
     usi_option.temperature = 10.0;
     usi_option.resign_score = MIN_SCORE;
-    usi_option.playout_limit = 800;
+    usi_option.playout_limit = 80000;
+    shared_data.limit_msec = 10000;
 
-    shared_data.limit_msec = 3000;
+    //これはαβ探索用なので当面は使わない
+    shared_data.hash_table.setSize(1);
 
-    shared_data.hash_table.setSize(usi_option.USI_Hash);
+    //評価関数のロード
     eval_params->readFile();
 
-    usi_option.USI_Hash = 256;
+    //探索クラスの準備
+    MCTSearcher mctsearcher(usi_option.USI_Hash);
 
     while (true) {
         std::cin >> input;
@@ -46,7 +49,6 @@ void NBoardProtocol::loop() {
         if (input == "go") {
             shared_data.stop_signal = false;
 #ifdef USE_MCTS
-            MCTSearcher mctsearcher(usi_option.USI_Hash);
             mctsearcher.think();
 #endif
         } else if (input == "prepareForLearn") {
@@ -107,9 +109,7 @@ void NBoardProtocol::loop() {
                             if (ggf_str[i] == 'B' || ggf_str[i] == 'W') {
                                 //[から2文字を取ってMoveとして解釈し]まで飛ばす
                                 std::string s = ggf_str.substr(i + 2, 2);
-                                std::cout << s << std::endl;
                                 Move move = stringToMove(s);
-                                assert(shared_data.root.isLegalMove(move));
                                 shared_data.root.doMove(move);
                                 while (ggf_str[i] != ']') {
                                     i++;
@@ -121,10 +121,6 @@ void NBoardProtocol::loop() {
                         break;
                     }
                 }
-
-                //置換表のリセット
-                shared_data.hash_table.clear();
-                shared_data.hash_table.setSize(usi_option.USI_Hash);
             } else if (command == "contempt") {
                 int32_t contempt;
                 std::cin >> contempt;
