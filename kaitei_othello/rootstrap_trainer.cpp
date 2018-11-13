@@ -576,8 +576,12 @@ void RootstrapTrainer::learnSync() {
         LEARN_RATE *= LEARN_RATE_DECAY;
 
         //評価
-        if (step_num <= EVALUATION_INTERVAL || step_num % EVALUATION_INTERVAL == 0) {
+        if (step_num % EVALUATION_INTERVAL == 0) {
             evaluate();
+        }
+
+        if (step_num % 100 == 0) {
+            eval_params->writeFile("tmp" + std::to_string(step_num) + ".bin");
         }
 
         std::cout << std::endl;
