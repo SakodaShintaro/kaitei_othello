@@ -576,7 +576,7 @@ void RootstrapTrainer::learnSync() {
         LEARN_RATE *= LEARN_RATE_DECAY;
 
         //評価
-        if (step_num % EVALUATION_INTERVAL == 0) {
+        if (step_num <= EVALUATION_INTERVAL || step_num % EVALUATION_INTERVAL == 0) {
             evaluate();
         }
 
