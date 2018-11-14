@@ -61,7 +61,7 @@ void Position::init() {
 
 void Position::print() const {
     //盤上
-    std::printf("87654321\n");
+    std::printf("ABCDEFGH\n");
     std::printf("--------\n");
     for (int r = Rank1; r <= Rank8; r++) {
         for (int f = File8; f >= File1; f--) {
