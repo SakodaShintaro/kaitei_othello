@@ -63,13 +63,13 @@ const ArrayMap<std::string, FileNum> fileToString({
 });
 
 const ArrayMap<std::string, RankNum> rankToString({
-    { Rank1, "一" },
-    { Rank2, "二" },
-    { Rank3, "三" },
-    { Rank4, "四" },
-    { Rank5, "五" },
-    { Rank6, "六" },
-    { Rank7, "七" },
-    { Rank8, "八" },
-    { Rank9, "九" }
+    { Rank1, "1" },
+    { Rank2, "2" },
+    { Rank3, "3" },
+    { Rank4, "4" },
+    { Rank5, "5" },
+    { Rank6, "6" },
+    { Rank7, "7" },
+    { Rank8, "8" },
+    { Rank9, "9" }
 });
