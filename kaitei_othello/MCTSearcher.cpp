@@ -102,12 +102,7 @@ void MCTSearcher::think() {
 #endif
     assert(0.0 <= best_wp && best_wp <= 1.0);
 
-    //è‡’l–¢–ž‚Ìê‡‚Í“Š—¹
-    if (best_wp < sigmoid(usi_option.resign_score, CP_GAIN)) {
-        std::cout << "=== PA" << std::endl;
-    } else {
-        std::cout << "=== " << root_moves[best_index] << std::endl;
-    }
+    std::cout << "=== " << root_moves[best_index] << std::endl;
 }
 
 std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& root, int32_t playout_limit, bool add_noise) {
