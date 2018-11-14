@@ -183,23 +183,27 @@ void NBoardProtocol::vsHuman() {
 
         if (pos.turn_number() % 2 == human_turn) {
             while (true) {
-                std::cout << "指し手を入力(将棋形式で筋と段をスペース区切り): ";
-                int32_t file, rank;
-                std::cin >> file >> rank;
-                if (file == -1 && rank == -1) {
+                std::cout << "指し手を入力: ";
+                std::string move_str;
+                std::cin >> move_str;
+                if (move_str == "undo") {
                     pos.undo();
                     pos.undo();
                     break;
-                } else if (file < 0 || file > File8 || rank < 0 || rank > Rank8) {
-                    std::cout << "不正な入力" << std::endl;
-                } else {
-                    Move move(FRToSquare[file][rank]);
-                    if (rank == 0 && file == 0 || pos.isLegalMove(move)) {
+                } else if (move_str == "PA") {
+                    pos.doMove(NULL_MOVE);
+                    break;
+                } else if (move_str.size() == 2 && 'A' <= move_str[0] && move_str[0] <= 'H'
+                    && '1' <= move_str[1] && move_str[1] <= '8') {
+                    Move move = stringToMove(move_str);
+                    if (pos.isLegalMove(move)) {
                         pos.doMove(move);
                         break;
                     } else {
-                        std::cout << "非合法な手" << std::endl;
+                        std::cout << "非合法手" << std::endl;
                     }
+                } else {
+                    std::cout << "不正な入力" << std::endl;
                 }
             }
         } else {
