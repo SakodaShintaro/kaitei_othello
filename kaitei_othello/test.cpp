@@ -97,32 +97,29 @@ void testNN() {
     eval_params->readFile();
     Position pos(*eval_params);
 
-    while (true) {
-        auto moves = pos.scoredAllMoves();
-        if (moves.size() == 0) {
-            break;
+    while (!pos.isFinish()) {
+        auto moves = pos.generateAllMoves();
+
+        if (moves.front() == NULL_MOVE) {
+            pos.doMove(moves.front());
+            continue;
         }
+
         pos.print();
 
-        auto feature = pos.makeFeature();
-        for (int32_t r = Rank1; r <= Rank9; r++) {
-            for (int32_t f = File9; f >= File1; f--) {
-                auto sq = FRToSquare[f][r];
-                printf("%5d ", (int)feature[SquareToNum[sq]]);
-            }
-            printf("\n");
+        auto policy = pos.maskedPolicy();
+
+        for (auto& move : moves) {
+            move.score = policy[move.toLabel()];
         }
-
-        auto result = pos.policyScore();
-        printf("valueForBlack = %f\n", pos.valueForBlack());
-
         sort(moves.begin(), moves.end(), std::greater<Move>());
-        for (auto move : moves) {
+        for (const auto& move : moves) {
             move.printWithScore();
         }
 
         pos.doMove(moves.front());
     }
+    pos.print();
 }
 
 void testKifuOutput() {
