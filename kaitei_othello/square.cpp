@@ -39,7 +39,7 @@ const Square InvSquare[] = {
 };
 
 std::ostream& operator<<(std::ostream& os, Square sq) {
-    os << SquareToFile[sq] << SquareToRank[sq];
+    os << fileToString[SquareToFile[sq]] << rankToString[SquareToRank[sq]];
     return os;
 }
 
