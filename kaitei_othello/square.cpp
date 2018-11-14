@@ -59,7 +59,6 @@ const ArrayMap<std::string, FileNum> fileToString({
     { File6, "C" },
     { File7, "B" },
     { File8, "A" },
-    { File9, "A" }
 });
 
 const ArrayMap<std::string, RankNum> rankToString({
@@ -71,5 +70,4 @@ const ArrayMap<std::string, RankNum> rankToString({
     { Rank6, "6" },
     { Rank7, "7" },
     { Rank8, "8" },
-    { Rank9, "9" }
 });
