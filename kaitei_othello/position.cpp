@@ -324,7 +324,7 @@ std::vector<Move> Position::generateAllMoves() const {
     return moves;
 }
 
-std::vector<Move> Position::scoredAllMoves() {
+std::vector<Move> Position::scoredAndSortedMoves() {
     auto moves = generateAllMoves();
     if (!already_calc_) {
         initPolicyAndValue();
@@ -332,6 +332,7 @@ std::vector<Move> Position::scoredAllMoves() {
     for (Move& move : moves) {
         move.score = output_(move.toLabel());
     }
+    sort(moves.begin(), moves.end(), std::greater<Move>());
     return moves;
 }
 
