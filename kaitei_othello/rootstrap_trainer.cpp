@@ -543,7 +543,6 @@ void RootstrapTrainer::learnSync() {
         print("連続負け越し数");
         log_file_ << std::endl << std::fixed;
         std::cout << std::endl << std::fixed;
-
         //変数の初期化
         sum_learned_games_ = 0;
         update_num_ = 0;
@@ -560,6 +559,20 @@ void RootstrapTrainer::learnSync() {
         
         //ステップ数
         uint64_t step_num = 0;
+
+        //0回目を入れてみる
+        timestamp();
+        print(0);
+        print(0.0);
+        print(0.0);
+        print(0.0);
+        print(0.0);
+        print(0.0);
+        print(eval_params->maxAbs());
+        print(eval_params->sumAbs());
+        evaluate();
+        std::cout << std::endl;
+        log_file_ << std::endl;
 
         //ここから学習のメイン
         while (true) {
