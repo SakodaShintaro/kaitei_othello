@@ -522,73 +522,95 @@ void RootstrapTrainer::learnSync() {
     //自己対局だけを並列化
     std::cout << "start learnSync()" << std::endl;
 
-    //時間を設定
-    start_time_ = std::chrono::steady_clock::now();
+    for (int32_t i = 1; ; i++) {
+        //時間を設定
+        start_time_ = std::chrono::steady_clock::now();
 
-    //ログファイルを準備
-    log_file_.open("learn_sync_log.txt");
-    print("経過時間");
-    print("ステップ数");
-    print("損失");
-    print("Policy損失");
-    print("Value損失");
-    print("最大更新量");
-    print("総和更新量");
-    print("最大パラメータ");
-    print("総和パラメータ");
-    print("勝率");
-    print("勝ち越し数");
-    print("負け越し数");
-    print("連続負け越し数");
-    log_file_ << std::endl << std::fixed;
-    std::cout << std::endl << std::fixed;
+        //ログファイルを準備
+        log_file_.open("learn_sync_log" + std::to_string(i) + ".txt");
+        print("経過時間");
+        print("ステップ数");
+        print("損失");
+        print("Policy損失");
+        print("Value損失");
+        print("最大更新量");
+        print("総和更新量");
+        print("最大パラメータ");
+        print("総和パラメータ");
+        print("勝率");
+        print("勝ち越し数");
+        print("負け越し数");
+        print("連続負け越し数");
+        log_file_ << std::endl << std::fixed;
+        std::cout << std::endl << std::fixed;
 
-    uint64_t step_num = 0;
+        //変数の初期化
+        sum_learned_games_ = 0;
+        update_num_ = 0;
+        fail_num_ = 0;
+        consecutive_fail_num_ = 0;
+        win_average_ = 0.5;
 
-    //ここから学習のメイン
-    while (true) {
-        //自己対局による棋譜生成:並列化
+        //パラメータを初期化
+        eval_params->initRandom();
+        eval_params->writeFile("before_learn" + std::to_string(i) + ".bin");
+
+        //慣性を初期化しておく
+        pre_update_->clear();
+        
+        //ステップ数
+        uint64_t step_num = 0;
+
+        //ここから学習のメイン
+        while (true) {
+            //自己対局による棋譜生成:並列化
 #ifdef USE_MCTS
-        auto games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, (int32_t)usi_option.playout_limit, true);
+            auto games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, (int32_t)usi_option.playout_limit, true);
 #else
-        auto games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
+            auto games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
 #endif
-        //損失・勾配・千日手数・長手数による引き分け数を計算
-        auto grad = std::make_unique<EvalParams<LearnEvalType>>();
-        std::array<double, 2> loss = learnGames(games, *grad);
+            //損失・勾配・千日手数・長手数による引き分け数を計算
+            auto grad = std::make_unique<EvalParams<LearnEvalType>>();
+            std::array<double, 2> loss = learnGames(games, *grad);
 
-        //パラメータ更新
-        updateParams(*eval_params, *grad);
-        //書き出し
-        eval_params->writeFile("tmp.bin");
+            //パラメータ更新
+            updateParams(*eval_params, *grad);
+            //書き出し
+            eval_params->writeFile("tmp" + std::to_string(i) + ".bin");
 
-        //学習情報の表示
-        timestamp();
-        print(++step_num);
-        print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
-        print(loss[0]);
-        print(loss[1]);
-        print(LEARN_RATE * grad->maxAbs());
-        print(LEARN_RATE * grad->sumAbs());
-        print(eval_params->maxAbs());
-        print(eval_params->sumAbs());
+            //学習情報の表示
+            timestamp();
+            print(++step_num);
+            print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
+            print(loss[0]);
+            print(loss[1]);
+            print(LEARN_RATE * grad->maxAbs());
+            print(LEARN_RATE * grad->sumAbs());
+            print(eval_params->maxAbs());
+            print(eval_params->sumAbs());
 
-        LEARN_RATE *= LEARN_RATE_DECAY;
+            //減衰を一度抜く
+            //LEARN_RATE *= LEARN_RATE_DECAY;
 
-        //評価
-        if (step_num % EVALUATION_INTERVAL == 0) {
-            evaluate();
+            //評価
+            if (step_num % EVALUATION_INTERVAL == 0) {
+                evaluate();
+            }
+
+            if (step_num % 100 == 0) {
+                eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
+            }
+
+            std::cout << std::endl;
+            log_file_ << std::endl;
+
+            if (step_num == 500) {
+                break;
+            }
         }
 
-        if (step_num % 100 == 0) {
-            eval_params->writeFile("tmp" + std::to_string(step_num) + ".bin");
-        }
-
-        std::cout << std::endl;
-        log_file_ << std::endl;
+        log_file_.close();
     }
-
-    log_file_.close();
     std::cout << "finish learnAsync()" << std::endl;
 }
 
