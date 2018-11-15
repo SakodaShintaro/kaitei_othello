@@ -8,6 +8,7 @@
 #include"thread.hpp"
 #include"operate_params.hpp"
 #include<iomanip>
+#include<algorithm>
 #include<experimental/filesystem>
 #ifdef _MSC_VER
 #include<direct.h>
@@ -147,17 +148,66 @@ void AlphaZeroTrainer::learn() {
         slave_threads[i] = std::thread(&AlphaZeroTrainer::learnSlave, this);
     }
 
-    //stopコマンドの入力だけ監視する
     //学習する
-    assert(false);
-    while (true) {
-        std::string input;
-        std::cin >> input;
-        if (input == "stop") {
-            shared_data.stop_signal = true;
-            break;
+    std::random_device seed;
+    std::default_random_engine engine(seed());
+
+    Position pos(*eval_params);
+    for (int32_t step_num = 1; step_num <= 500; step_num++) {
+        //ミニバッチ分勾配を貯める
+        auto grad = std::make_unique<EvalParams<LearnEvalType>>();
+        std::array<double, 2> loss;
+        for (int32_t j = 0; j < BATCH_SIZE; j++) {
+            //ランダムに選ぶ
+            MUTEX.lock();
+            int32_t random = engine() % position_stack_.size();
+            auto data = position_stack_[random];
+            MUTEX.unlock();
+            //ここで勾配を計算
+            //pos.loadOFEN(data.first);
+            assert(false);
+            //局面を復元
+            loss += addGrad(*grad, pos, data.second);
         }
+
+        MUTEX.lock();
+        //学習
+        updateParams(*eval_params, *grad);
+
+        //パラメータ更新
+        updateParams(*eval_params, *grad);
+        //書き出し
+        eval_params->writeFile("tmp" + std::to_string(step_num) + ".bin");
+
+        //学習情報の表示
+        timestamp();
+        print(step_num);
+        print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
+        print(loss[0]);
+        print(loss[1]);
+        print(LEARN_RATE * grad->maxAbs());
+        print(LEARN_RATE * grad->sumAbs());
+        print(eval_params->maxAbs());
+        print(eval_params->sumAbs());
+
+        //減衰を一度抜く
+        //LEARN_RATE *= LEARN_RATE_DECAY;
+
+        //評価
+        if (step_num % EVALUATION_INTERVAL == 0) {
+            evaluate();
+        }
+
+        if (step_num % 100 == 0) {
+            eval_params->writeFile("tmp" + std::to_string(0) + "_" + std::to_string(step_num) + ".bin");
+        }
+
+        std::cout << std::endl;
+        log_file_ << std::endl;
+
+        MUTEX.unlock();
     }
+
     for (uint32_t i = 0; i < THREAD_NUM; i++) {
         slave_threads[i].join();
         printf("%2dスレッドをjoin\n", i);
