@@ -27,6 +27,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="alphazero_trainer.cpp" />
     <ClCompile Include="base_trainer.cpp" />
     <ClCompile Include="bitboard.cpp" />
     <ClCompile Include="calcScore.cpp" />
@@ -48,6 +49,7 @@
     <ClCompile Include="usi.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="alhpazero_trainer.hpp" />
     <ClInclude Include="array_map.hpp" />
     <ClInclude Include="base_trainer.hpp" />
     <ClInclude Include="bitboard.hpp" />
