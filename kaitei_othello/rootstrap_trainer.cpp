@@ -552,6 +552,7 @@ void RootstrapTrainer::learnSync() {
 
         //パラメータを初期化
         eval_params->initRandom();
+        eval_params->writeFile();
         eval_params->writeFile("before_learn" + std::to_string(i) + ".bin");
 
         //慣性を初期化しておく
