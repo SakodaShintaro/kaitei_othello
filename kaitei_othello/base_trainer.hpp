@@ -33,6 +33,9 @@ protected:
     //log_file_に経過時間を出力する関数
     void timestamp();
 
+    //標準出力とlog_file_の両方に出力する関数
+    template<class T> void print(T t);
+
     //optimizerとして入力されたものが正当か判定する関数
     bool isLegalOptimizer();
 
@@ -79,5 +82,11 @@ protected:
 
     std::unique_ptr<EvalParams<LearnEvalType>> pre_update_;
 };
+
+template<class T>
+inline void BaseTrainer::print(T t) {
+    std::cout << t << "\t";
+    log_file_ << t << "\t";
+}
 
 #endif // !TRAINER_HPP

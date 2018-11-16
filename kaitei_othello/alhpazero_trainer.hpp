@@ -46,9 +46,6 @@ private:
     //棋譜を最終手から再生して損失・勾配を計算する関数:Sarsaに対応?
     void learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t& learn_position_num);
 
-    //標準出力とlog_file_の両方に出力する関数
-    template<class T> void print(T t);
-
     //---------------------------------------------
     //    ファイルから読み込むためconst化はして
     //    いないがほぼ定数であるもの
@@ -107,6 +104,5 @@ private:
     //平均勝率
     double win_average_;
 };
-
 
 #endif
