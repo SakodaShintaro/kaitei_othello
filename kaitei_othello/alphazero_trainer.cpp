@@ -147,8 +147,8 @@ void AlphaZeroTrainer::learn() {
     std::cout << std::endl << std::fixed;
 
     //自己対局スレッドの作成
-    std::vector<std::thread> slave_threads(THREAD_NUM);
-    for (uint32_t i = 0; i < THREAD_NUM; i++) {
+    std::vector<std::thread> slave_threads(THREAD_NUM - 1);
+    for (uint32_t i = 0; i < THREAD_NUM - 1; i++) {
         slave_threads[i] = std::thread(&AlphaZeroTrainer::learnSlave, this);
     }
 
@@ -166,7 +166,7 @@ void AlphaZeroTrainer::learn() {
     for (int32_t step_num = 1; step_num <= MAX_STEP_NUM; step_num++) {
         //ミニバッチ分勾配を貯める
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
-        std::array<double, 2> loss;
+        std::array<double, 2> loss{ 0.0, 0.0 };
         for (int32_t j = 0; j < BATCH_SIZE; j++) {
             if (position_stack_.size() == 0) {
                 j--;
@@ -229,7 +229,7 @@ void AlphaZeroTrainer::learn() {
         MUTEX.unlock();
     }
 
-    for (uint32_t i = 0; i < THREAD_NUM; i++) {
+    for (uint32_t i = 0; i < THREAD_NUM - 1; i++) {
         slave_threads[i].join();
         printf("%2dスレッドをjoin\n", i);
     }
