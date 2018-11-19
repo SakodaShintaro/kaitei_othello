@@ -75,8 +75,10 @@ void NBoardProtocol::loop() {
             eval_params->printHistgram();
         } else if (input == "testMakeRandomPosition") {
             testMakeRandomPosition();
+#ifdef USE_CATEGORICAL
         } else if (input == "testOneHotDist") {
             testOneHotDist();
+#endif
         } else if (input == "testNN") {
             testNN();
         } else if (input == "testLearn") {

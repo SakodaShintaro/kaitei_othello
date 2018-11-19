@@ -168,7 +168,7 @@ void AlphaZeroTrainer::learn() {
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
         std::array<double, 2> loss{ 0.0, 0.0 };
         for (int32_t j = 0; j < BATCH_SIZE; j++) {
-            if (position_stack_.size() == 0) {
+            if (position_stack_.size() <= BATCH_SIZE * 20) {
                 j--;
                 continue;
             }
@@ -229,6 +229,7 @@ void AlphaZeroTrainer::learn() {
         MUTEX.unlock();
     }
 
+    shared_data.stop_signal = true;
     for (uint32_t i = 0; i < THREAD_NUM - 1; i++) {
         slave_threads[i].join();
         printf("%2dƒXƒŒƒbƒh‚ðjoin\n", i);

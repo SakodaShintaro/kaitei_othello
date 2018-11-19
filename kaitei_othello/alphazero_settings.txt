@@ -17,9 +17,9 @@ draw_turn 512
 draw_score -100000
 USI_Hash 16
 evaluation_game_num 1000
-evaluation_interval 100
+evaluation_interval 1000
 evaluation_random_turn 10
 policy_loss_coeff 1.0
 value_loss_coeff 1.0
-max_stack_size 100000
-max_step_num 500
+max_stack_size 1000000
+max_step_num 50000

@@ -6,6 +6,9 @@
 void testMakeRandomPosition();
 void testNN();
 void testKifuOutput();
+
+#ifdef USE_CATEGORICAL
 void testOneHotDist();
+#endif
 
 #endif // !TEST_HPP

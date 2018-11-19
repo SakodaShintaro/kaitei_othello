@@ -158,6 +158,7 @@ void testKifuOutput() {
     printf("finish testKifuOutput()\n");
 }
 
+#ifdef USE_CATEGORICAL
 void testOneHotDist() {
     std::cout << std::fixed;
     for (double w = 0.0; w <= 1.0; w += 0.01) {
@@ -168,3 +169,4 @@ void testOneHotDist() {
         }
     }
 }
+#endif
