@@ -229,7 +229,22 @@ void AlphaZeroTrainer::learnSlave() {
 
         MUTEX.lock();
         //生成した棋譜を学習用データに加工してstackへ詰め込む
-        assert(false);
+        for (const auto& game : games) {
+            Position pos(*eval_params);
+            for (int32_t i = 0; !pos.isFinish(); i++) {
+                if (game.moves[i] == NULL_MOVE) {
+                    //学習には使わない.局面を進めて次へ
+                    pos.doMove(game.moves[i]);
+                    continue;
+                }
+
+                //この局面について局面を再現できるデータと教師データを組みにしてstack_に送る
+                position_stack_.push_back({ pos.data(), game.teachers[i] });
+
+                //次の局面へ
+                pos.doMove(game.moves[i]);
+            }
+        }
         MUTEX.unlock();
     }
 }

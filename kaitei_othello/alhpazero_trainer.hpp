@@ -90,7 +90,7 @@ private:
     //uint64_t sum_learned_games_;
 
     //学習用に加工済の局面スタック
-    std::vector<std::pair<std::string, TeacherType>> position_stack_;
+    std::vector<std::pair<std::array<int64_t, 2>, TeacherType>> position_stack_;
     
     //強くなって世代が進んだ回数
     uint64_t update_num_;
