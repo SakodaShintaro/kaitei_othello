@@ -343,3 +343,41 @@ void Position::initHashValue() {
     }
     hash_value_ &= ~1; //これで1bit目が0になる(先手番を表す)
 }
+
+void Position::loadData(std::array<int64_t, 3> bb) {
+    //盤上の初期化
+    for (int32_t i = 0; i < SquareNum; i++) {
+        board_[i] = WALL;
+    }
+    for (Square sq : SquareList) {
+        board_[sq] = EMPTY;
+    }
+
+    //bbに従って駒を配置する
+    for (int32_t c : { BLACK, WHITE }) {
+        for (Square sq : SquareList) {
+            if (bb[c] & SQUARE_BB[sq]) {
+                board_[sq] = Piece(c);
+            }
+        }
+        occupied_bb_[c] = bb[c];
+    }
+
+    //手番
+    color_ = BLACK;
+
+    //手数
+    turn_number_ = 0;
+
+    //ハッシュ値の初期化
+    initHashValue();
+
+    //局面の評価値
+    initPolicyAndValue();
+
+    kifu_.clear();
+    kifu_.reserve(512);
+
+    //Bitboard
+    occupied_all_ = occupied_bb_[BLACK] | occupied_bb_[WHITE];
+}

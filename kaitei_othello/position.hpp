@@ -69,9 +69,10 @@ public:
     int64_t hash_value() const { return hash_value_; }
     Piece on(const Square sq) const { return board_[sq]; }
     const EvalParams<DefaultEvalType>& evalParams() { return eval_params_; }
-    std::array<int64_t, 2> data() {
-        return { occupied_bb_[BLACK], occupied_bb_[WHITE] };
+    std::array<int64_t, 3> data() {
+        return { occupied_bb_[BLACK], occupied_bb_[WHITE], color_ };
     }
+    void loadData(std::array<int64_t, 3> bb);
 private:
     //--------------------
 	//    内部メソッド

@@ -78,6 +78,10 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
             ifs >> POLICY_LOSS_COEFF;
         } else if (name == "value_loss_coeff") {
             ifs >> VALUE_LOSS_COEFF;
+        } else if (name == "max_stack_size") {
+            ifs >> MAX_STACK_SIZE;
+        } else if (name == "max_step_num") {
+            ifs >> MAX_STEP_NUM;
 #ifdef USE_MCTS
         } else if (name == "playout_limit") {
             ifs >> usi_option.playout_limit;
@@ -148,25 +152,30 @@ void AlphaZeroTrainer::learn() {
         slave_threads[i] = std::thread(&AlphaZeroTrainer::learnSlave, this);
     }
 
+    //棋譜が十分溜まるまで待つ
+    //busy wait!
+    while (position_stack_.size() <= MAX_STACK_SIZE / 10) {
+        continue;
+    }
+
     //学習する
     std::random_device seed;
     std::default_random_engine engine(seed());
 
     Position pos(*eval_params);
-    for (int32_t step_num = 1; step_num <= 500; step_num++) {
+    for (int32_t step_num = 1; step_num <= MAX_STEP_NUM; step_num++) {
         //ミニバッチ分勾配を貯める
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
         std::array<double, 2> loss;
         for (int32_t j = 0; j < BATCH_SIZE; j++) {
             //ランダムに選ぶ
-            MUTEX.lock();
             int32_t random = engine() % position_stack_.size();
             auto data = position_stack_[random];
-            MUTEX.unlock();
-            //ここで勾配を計算
-            //pos.loadOFEN(data.first);
-            assert(false);
+
             //局面を復元
+            pos.loadData(data.first);
+            
+            //勾配を計算
             loss += addGrad(*grad, pos, data.second);
         }
 
@@ -176,6 +185,7 @@ void AlphaZeroTrainer::learn() {
 
         //パラメータ更新
         updateParams(*eval_params, *grad);
+
         //書き出し
         eval_params->writeFile("tmp" + std::to_string(step_num) + ".bin");
 
@@ -244,6 +254,10 @@ void AlphaZeroTrainer::learnSlave() {
                 //次の局面へ
                 pos.doMove(game.moves[i]);
             }
+        }
+        if (position_stack_.size() >= MAX_STACK_SIZE) {
+            auto diff = position_stack_.size() - MAX_STACK_SIZE;
+            position_stack_.erase(position_stack_.begin(), position_stack_.begin() + diff);
         }
         MUTEX.unlock();
     }

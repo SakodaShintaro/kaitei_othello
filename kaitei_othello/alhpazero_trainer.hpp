@@ -78,6 +78,12 @@ private:
     //評価するときのランダム手数
     int32_t EVALUATION_RANDOM_TURN;
 
+    //スタックサイズの上限
+    int64_t MAX_STACK_SIZE;
+
+    //ステップ数
+    int64_t MAX_STEP_NUM;
+
     //------------
     //    変数
     //------------
@@ -90,7 +96,7 @@ private:
     //uint64_t sum_learned_games_;
 
     //学習用に加工済の局面スタック
-    std::vector<std::pair<std::array<int64_t, 2>, TeacherType>> position_stack_;
+    std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> position_stack_;
     
     //強くなって世代が進んだ回数
     uint64_t update_num_;
