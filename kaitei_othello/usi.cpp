@@ -71,8 +71,8 @@ void NBoardProtocol::loop() {
             eval_params->printHistgram();
         } else if (input == "testMakeRandomPosition") {
             testMakeRandomPosition();
-        } else if (input == "testKifuOutput") {
-            testKifuOutput();
+        } else if (input == "testOneHotDist") {
+            testOneHotDist();
         } else if (input == "testNN") {
             testNN();
         } else if (input == "testLearn") {

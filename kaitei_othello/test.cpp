@@ -5,6 +5,7 @@
 #include"position.hpp"
 #include"game.hpp"
 #include"network.hpp"
+#include"operate_params.hpp"
 #include<cassert>
 #include<numeric>
 
@@ -155,4 +156,15 @@ void testKifuOutput() {
 
     game.writeKifuFile("./");
     printf("finish testKifuOutput()\n");
+}
+
+void testOneHotDist() {
+    std::cout << std::fixed;
+    for (double w = 0.0; w <= 1.0; w += 0.01) {
+        std::cout << "w = " << w << std::endl;
+        auto onehot = onehotDist(w);
+        for (int32_t i = 0; i < BIN_SIZE; i++) {
+            std::cout << VALUE_WIDTH * i << " ~ " << VALUE_WIDTH * (i + 1) << " : " << onehot[i] << std::endl;
+        }
+    }
 }

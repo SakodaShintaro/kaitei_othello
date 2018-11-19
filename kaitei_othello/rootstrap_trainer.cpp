@@ -472,30 +472,19 @@ void RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEva
         TeacherType teacher = game.teachers[i];
 
 #ifdef USE_CATEGORICAL
-        //teacherから分布を得る
-        std::array<CalcType, BIN_SIZE> curr_dist;
-        for (int32_t j = 0; j < BIN_SIZE; j++) {
-            curr_dist[j] = teacher[POLICY_DIM + j];
-        }
-
-        //手番を考慮して先手から見た分布にする
-        if (pos.color() == WHITE) {
-            std::reverse(curr_dist.begin(), curr_dist.end());
-        }
+        //先手から見た値を得る
+        double curr_win_rate = (pos.color() == BLACK ? game.moves[i].score : 1.0 - game.moves[i].score);
 
         //混合する
-        for (int32_t j = 0; j < BIN_SIZE; j++) {
-            dist_for_black[j] = (CalcType)(DECAY_RATE * dist_for_black[j] + (1.0 - DECAY_RATE) * curr_dist[j]);
-        }
+        win_rate_for_black = DECAY_RATE * win_rate_for_black + (1.0 - DECAY_RATE) * curr_win_rate;
+
+        //teacherから分布を得る
+        std::array<CalcType, BIN_SIZE> curr_dist = onehotDist(pos.color() == BLACK 
+            ? win_rate_for_black : 1.0 - win_rate_for_black);
 
         //teacherにコピーする
         for (int32_t j = 0; j < BIN_SIZE; j++) {
-            teacher[POLICY_DIM + j] = dist_for_black[j];
-        }
-
-        //手番に合わせて反転する
-        if (pos.color() == WHITE) {
-            std::reverse(teacher.begin() + POLICY_DIM, teacher.end());
+            teacher[POLICY_DIM + j] = curr_dist[j];
         }
 #else
         //先手から見た値を得る
