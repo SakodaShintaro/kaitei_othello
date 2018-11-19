@@ -265,3 +265,5 @@ __pycache__/
 /kaitei_othello/test_learn_log*.txt
 /kaitei_othello/test_games
 /kaitei_othello/log.txt
+/kaitei_othello/alphazero_log.txt
+/kaitei_othello/learn_async_log.txt

@@ -125,13 +125,13 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
 }
 
 void AlphaZeroTrainer::learn() {
-    std::cout << "start learnAsync()" << std::endl;
+    std::cout << "start alphaZero()" << std::endl;
     start_time_ = std::chrono::steady_clock::now();
 
     //ログファイルの設定
-    log_file_.open("learn_async_log.txt");
+    log_file_.open("alphazero_log.txt");
     print("経過時間");
-    print("学習局数");
+    print("ステップ数");
     print("損失");
     print("Policy損失");
     print("Value損失");
@@ -154,9 +154,9 @@ void AlphaZeroTrainer::learn() {
 
     //棋譜が十分溜まるまで待つ
     //busy wait!
-    while (position_stack_.size() <= MAX_STACK_SIZE / 10) {
-        continue;
-    }
+    //while (position_stack_.size() <= 0) {
+    //    continue;
+    //}
 
     //学習する
     std::random_device seed;
@@ -168,9 +168,16 @@ void AlphaZeroTrainer::learn() {
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
         std::array<double, 2> loss;
         for (int32_t j = 0; j < BATCH_SIZE; j++) {
+            if (position_stack_.size() == 0) {
+                j--;
+                continue;
+            }
+
             //ランダムに選ぶ
+            MUTEX.lock();
             int32_t random = engine() % position_stack_.size();
             auto data = position_stack_[random];
+            MUTEX.unlock();
 
             //局面を復元
             pos.loadData(data.first);
@@ -178,6 +185,10 @@ void AlphaZeroTrainer::learn() {
             //勾配を計算
             loss += addGrad(*grad, pos, data.second);
         }
+        loss /= BATCH_SIZE;
+        grad->forEach([this](CalcType& g) {
+            g /= BATCH_SIZE;
+        });
 
         MUTEX.lock();
         //学習
@@ -232,9 +243,9 @@ void AlphaZeroTrainer::learnSlave() {
     while (!shared_data.stop_signal) {
         //棋譜を生成
 #ifdef USE_MCTS
-        auto games = play(BATCH_SIZE, (int32_t)usi_option.playout_limit, true);
+        auto games = play(1, (int32_t)usi_option.playout_limit, true);
 #else
-        auto games = play(BATCH_SIZE, SEARCH_DEPTH);
+        auto games = play(1, SEARCH_DEPTH);
 #endif
 
         MUTEX.lock();
@@ -248,7 +259,7 @@ void AlphaZeroTrainer::learnSlave() {
                     continue;
                 }
 
-                //この局面について局面を再現できるデータと教師データを組みにしてstack_に送る
+                //この局面について局面を再現できるデータと教師データを組みにしてstackに送る
                 position_stack_.push_back({ pos.data(), game.teachers[i] });
 
                 //次の局面へ
@@ -282,7 +293,7 @@ std::vector<Game> AlphaZeroTrainer::play(int32_t game_num, int32_t search_limit,
             Move best_move = move_and_teacher.first;
             TeacherType teacher = move_and_teacher.second;
 
-            if (!pos.isLegalMove(best_move)) {
+            if (best_move != NULL_MOVE && !pos.isLegalMove(best_move)) {
                 pos.printForDebug();
                 best_move.printWithScore();
                 assert(false);

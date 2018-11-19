@@ -1,10 +1,10 @@
-batch_size 1
+batch_size 128
 search_depth 2
 optimizer MOMENTUM
 learn_rate 0.1
 learn_rate_decay 0.999
 momentum_decay 0.9
-thread_num 1
+thread_num 4
 threshold(0.0~1.0)  0.90
 random_move_temperature 200
 learn_mode(0or1) 1
@@ -16,8 +16,8 @@ random_move_num 0
 draw_turn 512
 draw_score -100000
 USI_Hash 16
-evaluation_game_num 100
-evaluation_interval 1
+evaluation_game_num 1000
+evaluation_interval 100
 evaluation_random_turn 10
 policy_loss_coeff 1.0
 value_loss_coeff 1.0
