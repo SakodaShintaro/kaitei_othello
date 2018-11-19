@@ -79,6 +79,7 @@
     <ClInclude Include="usi_options.hpp" />
   </ItemGroup>
   <ItemGroup>
+    <Text Include="alphazero_settings.txt" />
     <Text Include="rootstrap_settings.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

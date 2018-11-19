@@ -8,6 +8,7 @@
 #include"game.hpp"
 #include"rootstrap_trainer.hpp"
 #include"treestrap_trainer.hpp"
+#include"alhpazero_trainer.hpp"
 #include"test.hpp"
 #include"network.hpp"
 #include"MCTSearcher.hpp"
@@ -66,6 +67,9 @@ void NBoardProtocol::loop() {
         } else if (input == "treeStrap") {
             TreestrapTrainer trainer("treestrap_settings.txt");
             trainer.startLearn();
+        } else if (input == "alphaZero") {
+            AlphaZeroTrainer trainer("alphazero_settings.txt");
+            trainer.learn();
         } else if (input == "printEvalParams") {
             eval_params->readFile();
             eval_params->printHistgram();

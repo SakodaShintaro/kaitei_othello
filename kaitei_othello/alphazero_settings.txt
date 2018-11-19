@@ -21,3 +21,5 @@ evaluation_interval 1
 evaluation_random_turn 10
 policy_loss_coeff 1.0
 value_loss_coeff 1.0
+max_stack_size 10000
+max_step_num 500
