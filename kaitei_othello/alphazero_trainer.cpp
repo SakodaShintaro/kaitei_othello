@@ -80,6 +80,7 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
             ifs >> VALUE_LOSS_COEFF;
         } else if (name == "max_stack_size") {
             ifs >> MAX_STACK_SIZE;
+            position_stack_.reserve(MAX_STACK_SIZE);
         } else if (name == "max_step_num") {
             ifs >> MAX_STEP_NUM;
 #ifdef USE_MCTS
@@ -168,6 +169,7 @@ void AlphaZeroTrainer::learn() {
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
         std::array<double, 2> loss{ 0.0, 0.0 };
         for (int32_t j = 0; j < BATCH_SIZE; j++) {
+            //std::this_thread::sleep_for(std::chrono::microseconds(50));
             if (position_stack_.size() <= BATCH_SIZE * 20) {
                 j--;
                 continue;
@@ -251,7 +253,7 @@ void AlphaZeroTrainer::learnSlave() {
 
         MUTEX.lock();
         //生成した棋譜を学習用データに加工してstackへ詰め込む
-        for (const auto& game : games) {
+        for (auto& game : games) {
             Position pos(*eval_params);
             for (int32_t i = 0; !pos.isFinish(); i++) {
                 if (game.moves[i] == NULL_MOVE) {
@@ -260,6 +262,12 @@ void AlphaZeroTrainer::learnSlave() {
                     continue;
                 }
 
+#ifdef USE_CATEGORICAL
+                assert(false);
+#else
+                game.teachers[i][POLICY_DIM] = (CalcType)(pos.color() == BLACK ? game.result : 1.0 - game.result);
+#endif
+
                 //この局面について局面を再現できるデータと教師データを組みにしてstackに送る
                 position_stack_.push_back({ pos.data(), game.teachers[i] });
 
@@ -267,6 +275,7 @@ void AlphaZeroTrainer::learnSlave() {
                 pos.doMove(game.moves[i]);
             }
         }
+
         if (position_stack_.size() >= MAX_STACK_SIZE) {
             auto diff = position_stack_.size() - MAX_STACK_SIZE;
             position_stack_.erase(position_stack_.begin(), position_stack_.begin() + diff);

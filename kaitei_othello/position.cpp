@@ -364,7 +364,7 @@ void Position::loadData(std::array<int64_t, 3> bb) {
     }
 
     //手番
-    color_ = BLACK;
+    color_ = Color(bb[2]);
 
     //手数
     turn_number_ = 0;
