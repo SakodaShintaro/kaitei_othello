@@ -148,7 +148,7 @@ void AlphaZeroTrainer::learn() {
         //パラメータの初期化
         eval_params->initRandom();
         eval_params->writeFile();
-        eval_params->writeFile("before_learn" + std::to_string(i) + ".txt");
+        eval_params->writeFile("before_learn" + std::to_string(i) + ".bin");
 
         //ログファイルの設定
         log_file_.open("alphazero_log" + std::to_string(i) + ".txt");
@@ -426,7 +426,6 @@ void AlphaZeroTrainer::evaluate() {
 
 void AlphaZeroTrainer::pushOneGame(Game& game) {
     Position pos(*eval_params);
-    double result_for_turn = (pos.color() == BLACK ? game.result : 1.0 - game.result);
 
     for (int32_t i = 0; i < game.moves.size(); i++) {
         const Move& move = game.moves[i];
@@ -435,10 +434,8 @@ void AlphaZeroTrainer::pushOneGame(Game& game) {
             continue;
         }
 
-        //学習
-        TeacherType& teacher = game.teachers[i];
-
         //教師信号を計算
+        double result_for_turn = (pos.color() == BLACK ? game.result : 1.0 - game.result);
         double teacher_signal = DEEP_COEFFICIENT * game.moves[i].score + (1 - DEEP_COEFFICIENT) * result_for_turn;
 
 #ifdef USE_CATEGORICAL
@@ -447,11 +444,11 @@ void AlphaZeroTrainer::pushOneGame(Game& game) {
             teacher[POLICY_DIM + i] = teacher_dist[i];
         }
 #else
-        teacher[POLICY_DIM] = (CalcType)teacher_signal;
+        game.teachers[i][POLICY_DIM] = (CalcType)teacher_signal;
 #endif
 
         //スタックに詰める
-        position_stack_.emplace_back(pos.data(), teacher);
+        position_stack_.push_back({ pos.data(), game.teachers[i] });
 
         if (!pos.isLegalMove(move)) {
             pos.printForDebug();
@@ -484,14 +481,10 @@ void AlphaZeroTrainer::pushOneGameReverse(Game& game) {
             continue;
         }
 
-        //先手から見た勝率について指数移動平均を取り,教師データにセットする
-        //教師データをコピーする gameをconstで受け取ってしまっているので
-        TeacherType& teacher = game.teachers[i];
-
-        //先手から見た値を得る
+        //探索結果を先手から見た値に変換
         double curr_win_rate = (pos.color() == BLACK ? game.moves[i].score : 1.0 - game.moves[i].score);
 
-        //混合する
+        //混合
         win_rate_for_black = DECAY_RATE * win_rate_for_black + (1.0 - DECAY_RATE) * curr_win_rate;
 
 #ifdef USE_CATEGORICAL
@@ -504,10 +497,10 @@ void AlphaZeroTrainer::pushOneGameReverse(Game& game) {
         }
 #else
         //teacherにコピーする
-        teacher[POLICY_DIM] = (CalcType)(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
+        game.teachers[i][POLICY_DIM] = (CalcType)(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
 #endif
 
         //スタックに詰める
-        position_stack_.emplace_back(pos.data(), teacher);
+        position_stack_.emplace_back(pos.data(), game.teachers[i]);
     }
 }
