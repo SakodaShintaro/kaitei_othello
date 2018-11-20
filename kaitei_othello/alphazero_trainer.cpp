@@ -145,6 +145,10 @@ void AlphaZeroTrainer::learn() {
 
     //学習
     for (int32_t i = 0; ; i++) {
+        //パラメータの初期化
+        eval_params->initRandom();
+        eval_params->writeFile("before_learn" + std::to_string(i) + ".txt");
+
         //ログファイルの設定
         log_file_.open("alphazero_log" + std::to_string(i) + ".txt");
         print("経過時間");
