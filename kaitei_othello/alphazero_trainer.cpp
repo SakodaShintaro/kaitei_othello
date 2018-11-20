@@ -440,9 +440,7 @@ void AlphaZeroTrainer::pushOneGame(Game& game) {
 
 #ifdef USE_CATEGORICAL
         auto teacher_dist = onehotDist(teacher_signal);
-        for (int32_t i = 0; i < BIN_SIZE; i++) {
-            teacher[POLICY_DIM + i] = teacher_dist[i];
-        }
+        std::copy(teacher_dist.begin(), teacher_dist.end(), &game.teachers[i][POLICY_DIM]);
 #else
         game.teachers[i][POLICY_DIM] = (CalcType)teacher_signal;
 #endif
@@ -493,7 +491,7 @@ void AlphaZeroTrainer::pushOneGameReverse(Game& game) {
 
         //teacherにコピーする
         for (int32_t j = 0; j < BIN_SIZE; j++) {
-            teacher[POLICY_DIM + j] = teacher_dist[j];
+            game.teachers[i][POLICY_DIM + j] = teacher_dist[j];
         }
 #else
         //teacherにコピーする
