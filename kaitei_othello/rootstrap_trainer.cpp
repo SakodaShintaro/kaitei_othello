@@ -450,9 +450,6 @@ void RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEva
 
     //先手から見た勝率,分布.指数移動平均で動かしていく.最初は結果によって初期化(0 or 0.5 or 1)
     double win_rate_for_black = game.result;
-#ifdef USE_CATEGORICAL
-    auto dist_for_black = onehotDist(win_rate_for_black);
-#endif
 
     for (int32_t i = (int32_t)game.moves.size() - 1; i >= 0; i--) {
         if (game.moves[i].score == MIN_SCORE) { //ランダムムーブということなので学習はしない
@@ -471,13 +468,13 @@ void RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEva
         //教師データをコピーする gameをconstで受け取ってしまっているので
         TeacherType teacher = game.teachers[i];
 
-#ifdef USE_CATEGORICAL
         //先手から見た値を得る
         double curr_win_rate = (pos.color() == BLACK ? game.moves[i].score : 1.0 - game.moves[i].score);
 
         //混合する
         win_rate_for_black = DECAY_RATE * win_rate_for_black + (1.0 - DECAY_RATE) * curr_win_rate;
 
+#ifdef USE_CATEGORICAL
         //teacherから分布を得る
         std::array<CalcType, BIN_SIZE> curr_dist = onehotDist(pos.color() == BLACK 
             ? win_rate_for_black : 1.0 - win_rate_for_black);
@@ -487,12 +484,6 @@ void RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEva
             teacher[POLICY_DIM + j] = curr_dist[j];
         }
 #else
-        //先手から見た値を得る
-        double curr_win_rate = (pos.color() == BLACK ? teacher[POLICY_DIM] : 1.0 - teacher[POLICY_DIM]);
-
-        //混合する
-        win_rate_for_black = DECAY_RATE * win_rate_for_black + (1.0 - DECAY_RATE) * curr_win_rate;
-
         //teacherにコピーする
         teacher[POLICY_DIM] = (CalcType)(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
 #endif
