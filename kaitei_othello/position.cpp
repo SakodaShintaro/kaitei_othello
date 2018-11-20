@@ -223,7 +223,14 @@ void Position::undo() {
     }
     stack_.pop_back();
 
-    //occupied_all_を更新
+    //Bitboard
+    occupied_bb_[BLACK] = Bitboard(0);
+    occupied_bb_[WHITE] = Bitboard(0);
+    for (Square sq : SquareList) {
+        if (board_[sq] != EMPTY) {
+            occupied_bb_[board_[sq]] |= SQUARE_BB[sq];
+        }
+    }
     occupied_all_ = occupied_bb_[BLACK] | occupied_bb_[WHITE];
 
     //ハッシュの更新

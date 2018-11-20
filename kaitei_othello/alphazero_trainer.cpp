@@ -499,6 +499,6 @@ void AlphaZeroTrainer::pushOneGameReverse(Game& game) {
 #endif
 
         //スタックに詰める
-        position_stack_.emplace_back(pos.data(), game.teachers[i]);
+        position_stack_.push_back({ pos.data(), game.teachers[i] });
     }
 }
