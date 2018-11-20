@@ -70,7 +70,7 @@ public:
     Piece on(const Square sq) const { return board_[sq]; }
     const EvalParams<DefaultEvalType>& evalParams() { return eval_params_; }
     std::array<int64_t, 3> data() {
-        return { occupied_bb_[BLACK], occupied_bb_[WHITE], color_ };
+        return { (int64_t)occupied_bb_[BLACK], (int64_t)occupied_bb_[WHITE], color_ };
     }
     void loadData(std::array<int64_t, 3> bb);
 private:

@@ -70,6 +70,9 @@ void Position::print() const {
         printf("|%d\n", r);
     }
 
+    std::cout << occupied_bb_[BLACK] << std::endl;
+    std::cout << occupied_bb_[WHITE] << std::endl;
+
     //手番
     printf("手番:");
     if (color_ == BLACK) printf("先手\n");
@@ -153,6 +156,7 @@ void Position::doMove(const Move move) {
     //実際に動かす
     //8方向を一つずつ見ていって反転できる駒があったら反転する
     Piece p = board_[move.to()] = (Piece)color_;
+    occupied_bb_[p] |= SQUARE_BB[move.to()];
 
     hash_values_.push_back(hash_value_);
 
@@ -356,7 +360,7 @@ void Position::loadData(std::array<int64_t, 3> bb) {
     //bbに従って駒を配置する
     for (int32_t c : { BLACK, WHITE }) {
         for (Square sq : SquareList) {
-            if (bb[c] & SQUARE_BB[sq]) {
+            if (bb[c] & (int64_t)SQUARE_BB[sq]) {
                 board_[sq] = Piece(c);
             }
         }

@@ -21,6 +21,10 @@ public:
 
 	//Stockfishとの互換性がなんちゃら
 	//普通にあった方が便利そうだけども
+    operator int64_t() const {
+        return board_;
+    }
+
     operator bool() const {
         return !(board_ == 0);
     }

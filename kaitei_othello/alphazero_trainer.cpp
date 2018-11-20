@@ -170,7 +170,7 @@ void AlphaZeroTrainer::learn() {
         std::array<double, 2> loss{ 0.0, 0.0 };
         for (int32_t j = 0; j < BATCH_SIZE; j++) {
             //std::this_thread::sleep_for(std::chrono::microseconds(50));
-            if (position_stack_.size() <= BATCH_SIZE * 20) {
+            if (position_stack_.size() <= BATCH_SIZE * 1) {
                 j--;
                 continue;
             }

@@ -7,8 +7,8 @@ Bitboard RANK_BB[RankNum];
 Bitboard BETWEEN_BB[SquareNum][SquareNum];
 
 std::ostream& operator << (std::ostream& os, const Bitboard& rhs) {
-    for (int r = Rank1; r <= Rank9; ++r) {
-        for (int f = File9; f >= File1; --f) {
+    for (int r = Rank1; r <= Rank8; ++r) {
+        for (int f = File8; f >= File1; --f) {
             Bitboard target = rhs & SQUARE_BB[FRToSquare[f][r]];
             os << (target ? " *" : " .");
         }
