@@ -211,17 +211,15 @@ void AlphaZeroTrainer::learn() {
             updateParams(*eval_params, *grad);
 
             //ŠwKî•ñ‚Ì•\Ž¦
-            if (step_num % 10 == 0) {
-                timestamp();
-                print(step_num);
-                print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
-                print(loss[0]);
-                print(loss[1]);
-                print(LEARN_RATE * grad->maxAbs());
-                print(LEARN_RATE * grad->sumAbs());
-                print(eval_params->maxAbs());
-                print(eval_params->sumAbs());
-            }
+            timestamp();
+            print(step_num);
+            print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
+            print(loss[0]);
+            print(loss[1]);
+            print(LEARN_RATE * grad->maxAbs());
+            print(LEARN_RATE * grad->sumAbs());
+            print(eval_params->maxAbs());
+            print(eval_params->sumAbs());
 
             //Œ¸Š‚ðˆê“x”²‚­
             //LEARN_RATE *= LEARN_RATE_DECAY;
