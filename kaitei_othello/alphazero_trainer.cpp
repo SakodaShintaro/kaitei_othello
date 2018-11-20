@@ -129,23 +129,6 @@ void AlphaZeroTrainer::learn() {
     std::cout << "start alphaZero()" << std::endl;
     start_time_ = std::chrono::steady_clock::now();
 
-    //ログファイルの設定
-    log_file_.open("alphazero_log.txt");
-    print("経過時間");
-    print("ステップ数");
-    print("損失");
-    print("Policy損失");
-    print("Value損失");
-    print("最大更新量");
-    print("総和更新量");
-    print("最大パラメータ");
-    print("総和パラメータ");
-    print("勝率");
-    print("勝ち越し数");
-    print("負け越し数");
-    print("連続負け越し数");
-    log_file_ << std::endl << std::fixed;
-    std::cout << std::endl << std::fixed;
 
     //自己対局スレッドの作成
     std::vector<std::thread> slave_threads(THREAD_NUM - 1);
@@ -162,6 +145,24 @@ void AlphaZeroTrainer::learn() {
 
     //学習
     for (int32_t i = 0; ; i++) {
+        //ログファイルの設定
+        log_file_.open("alphazero_log" + std::to_string(i) + ".txt");
+        print("経過時間");
+        print("ステップ数");
+        print("損失");
+        print("Policy損失");
+        print("Value損失");
+        print("最大更新量");
+        print("総和更新量");
+        print("最大パラメータ");
+        print("総和パラメータ");
+        print("勝率");
+        print("勝ち越し数");
+        print("負け越し数");
+        print("連続負け越し数");
+        log_file_ << std::endl << std::fixed;
+        std::cout << std::endl << std::fixed;
+
         position_stack_.clear();
         position_stack_.reserve(MAX_STACK_SIZE);
 
@@ -225,6 +226,8 @@ void AlphaZeroTrainer::learn() {
 
             MUTEX.unlock();
         }
+
+        log_file_.close();
     }
 
     shared_data.stop_signal = true;
