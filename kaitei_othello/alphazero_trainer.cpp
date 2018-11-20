@@ -153,82 +153,78 @@ void AlphaZeroTrainer::learn() {
         slave_threads[i] = std::thread(&AlphaZeroTrainer::learnSlave, this);
     }
 
-    //棋譜が十分溜まるまで待つ
-    //busy wait!
-    //while (position_stack_.size() <= 0) {
-    //    continue;
-    //}
-
-    //学習する
+    //乱数の準備
     std::random_device seed;
     std::default_random_engine engine(seed());
 
+    //局面もインスタンスは一つ用意して都度局面を構成
     Position pos(*eval_params);
-    for (int32_t step_num = 1; step_num <= MAX_STEP_NUM; step_num++) {
-        //ミニバッチ分勾配を貯める
-        auto grad = std::make_unique<EvalParams<LearnEvalType>>();
-        std::array<double, 2> loss{ 0.0, 0.0 };
-        for (int32_t j = 0; j < BATCH_SIZE; j++) {
-            //std::this_thread::sleep_for(std::chrono::microseconds(50));
-            if (position_stack_.size() <= BATCH_SIZE * 1) {
-                j--;
-                continue;
+
+    //学習
+    for (int32_t i = 0; ; i++) {
+        position_stack_.clear();
+        position_stack_.reserve(MAX_STACK_SIZE);
+
+        for (int32_t step_num = 1; step_num <= MAX_STEP_NUM; step_num++) {
+            //ミニバッチ分勾配を貯める
+            auto grad = std::make_unique<EvalParams<LearnEvalType>>();
+            std::array<double, 2> loss{ 0.0, 0.0 };
+            for (int32_t j = 0; j < BATCH_SIZE; j++) {
+                //std::this_thread::sleep_for(std::chrono::microseconds(50));
+                if (position_stack_.size() <= BATCH_SIZE * 1) {
+                    j--;
+                    continue;
+                }
+
+                //ランダムに選ぶ
+                MUTEX.lock();
+                int32_t random = engine() % position_stack_.size();
+                auto data = position_stack_[random];
+                MUTEX.unlock();
+
+                //局面を復元
+                pos.loadData(data.first);
+
+                //勾配を計算
+                loss += addGrad(*grad, pos, data.second);
+            }
+            loss /= BATCH_SIZE;
+            grad->forEach([this](CalcType& g) {
+                g /= BATCH_SIZE;
+            });
+
+            MUTEX.lock();
+            //学習
+            updateParams(*eval_params, *grad);
+
+            //パラメータ更新
+            updateParams(*eval_params, *grad);
+
+            //学習情報の表示
+            timestamp();
+            print(step_num);
+            print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
+            print(loss[0]);
+            print(loss[1]);
+            print(LEARN_RATE * grad->maxAbs());
+            print(LEARN_RATE * grad->sumAbs());
+            print(eval_params->maxAbs());
+            print(eval_params->sumAbs());
+
+            //減衰を一度抜く
+            //LEARN_RATE *= LEARN_RATE_DECAY;
+
+            //評価と書き出し
+            if (step_num % EVALUATION_INTERVAL == 0) {
+                evaluate();
+                eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
             }
 
-            //ランダムに選ぶ
-            MUTEX.lock();
-            int32_t random = engine() % position_stack_.size();
-            auto data = position_stack_[random];
+            std::cout << std::endl;
+            log_file_ << std::endl;
+
             MUTEX.unlock();
-
-            //局面を復元
-            pos.loadData(data.first);
-            
-            //勾配を計算
-            loss += addGrad(*grad, pos, data.second);
         }
-        loss /= BATCH_SIZE;
-        grad->forEach([this](CalcType& g) {
-            g /= BATCH_SIZE;
-        });
-
-        MUTEX.lock();
-        //学習
-        updateParams(*eval_params, *grad);
-
-        //パラメータ更新
-        updateParams(*eval_params, *grad);
-
-        //書き出し
-        eval_params->writeFile("tmp" + std::to_string(step_num) + ".bin");
-
-        //学習情報の表示
-        timestamp();
-        print(step_num);
-        print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
-        print(loss[0]);
-        print(loss[1]);
-        print(LEARN_RATE * grad->maxAbs());
-        print(LEARN_RATE * grad->sumAbs());
-        print(eval_params->maxAbs());
-        print(eval_params->sumAbs());
-
-        //減衰を一度抜く
-        //LEARN_RATE *= LEARN_RATE_DECAY;
-
-        //評価
-        if (step_num % EVALUATION_INTERVAL == 0) {
-            evaluate();
-        }
-
-        if (step_num % 100 == 0) {
-            eval_params->writeFile("tmp" + std::to_string(0) + "_" + std::to_string(step_num) + ".bin");
-        }
-
-        std::cout << std::endl;
-        log_file_ << std::endl;
-
-        MUTEX.unlock();
     }
 
     shared_data.stop_signal = true;
