@@ -100,9 +100,6 @@ private:
 
     //‹­‚­‚È‚Á‚Ä‚¢‚È‚¢‚±‚Æ‚ª‘±‚¢‚Ä‚¢‚é‰ñ”
     uint64_t consecutive_fail_num_;
-
-    //•½‹ÏŸ—¦
-    double win_average_;
 };
 
 #endif

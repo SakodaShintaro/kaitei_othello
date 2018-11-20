@@ -100,7 +100,6 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
     update_num_ = 0;
     fail_num_ = 0;
     consecutive_fail_num_ = 0;
-    win_average_ = 0.5;
 
     //評価関数読み込み
     eval_params->readFile("tmp.bin");
@@ -149,6 +148,11 @@ void AlphaZeroTrainer::learn() {
         eval_params->initRandom();
         eval_params->writeFile();
         eval_params->writeFile("before_learn" + std::to_string(i) + ".bin");
+
+        //変数の初期化
+        update_num_ = 0;
+        fail_num_ = 0;
+        consecutive_fail_num_ = 0;
 
         //ログファイルの設定
         log_file_.open("alphazero_log" + std::to_string(i) + ".txt");
@@ -207,15 +211,17 @@ void AlphaZeroTrainer::learn() {
             updateParams(*eval_params, *grad);
 
             //学習情報の表示
-            timestamp();
-            print(step_num);
-            print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
-            print(loss[0]);
-            print(loss[1]);
-            print(LEARN_RATE * grad->maxAbs());
-            print(LEARN_RATE * grad->sumAbs());
-            print(eval_params->maxAbs());
-            print(eval_params->sumAbs());
+            if (step_num % 10 == 0) {
+                timestamp();
+                print(step_num);
+                print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
+                print(loss[0]);
+                print(loss[1]);
+                print(LEARN_RATE * grad->maxAbs());
+                print(LEARN_RATE * grad->sumAbs());
+                print(eval_params->maxAbs());
+                print(eval_params->sumAbs());
+            }
 
             //減衰を一度抜く
             //LEARN_RATE *= LEARN_RATE_DECAY;
