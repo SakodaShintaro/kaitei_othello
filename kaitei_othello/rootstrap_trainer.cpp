@@ -394,13 +394,10 @@ std::array<double, 2> RootstrapTrainer::learnGames(const std::vector<Game>& game
 
 void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t& learn_position_num) {
     Position pos(*eval_params);
-#ifndef USE_NN //これ探索手法の違いじゃね？
-    auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
-#endif
     for (int32_t i = 0; i < game.moves.size(); i++) {
-        Move m = game.moves[i];
-        if (m == NULL_MOVE) {
-            pos.doMove(m);
+        const Move& move = game.moves[i];
+        if (move == NULL_MOVE) {
+            pos.doMove(move);
             continue;
         }
 
@@ -408,18 +405,13 @@ void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>&
         learn_position_num++;
         TeacherType teacher = game.teachers[i];
         //対局結果を用いてvalueを加工する
+        double result_for_turn = (pos.color() == BLACK ? game.result : 1.0 - game.result);
+        double teacher_signal = DEEP_COEFFICIENT * move.score + (1 - DEEP_COEFFICIENT) * result_for_turn;
+
 #ifdef USE_CATEGORICAL
-        double result_for_turn = (pos.color() == BLACK ? game.result : 1.0 - game.result);
-        auto dist_for_turn = onehotDist(result_for_turn);
-        for (int32_t i = 0; i < BIN_SIZE; i++) {
-            teacher[POLICY_DIM + i] =
-                (CalcType)(DEEP_COEFFICIENT * teacher[POLICY_DIM + i] +
-                (1.0 - DEEP_COEFFICIENT) * dist_for_turn[i]);
-        }
+        auto teacher_dist = onehotDist(teacher_signal);
+        std::copy(teacher_dist.begin(), teacher_dist.end(), &teacher[POLICY_DIM]);
 #else
-        double deep_win_rate = teacher[POLICY_DIM];
-        double result_for_turn = (pos.color() == BLACK ? game.result : 1.0 - game.result);
-        double teacher_signal = DEEP_COEFFICIENT * deep_win_rate + (1 - DEEP_COEFFICIENT) * result_for_turn;
         teacher[POLICY_DIM] = (CalcType)teacher_signal;
 #endif
         //損失・勾配の計算
@@ -428,12 +420,12 @@ void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>&
         //数値微分による誤差逆伝播の検証
         //verifyAddGrad(pos, teacher);
 
-        if (!pos.isLegalMove(m)) {
+        if (!pos.isLegalMove(move)) {
             pos.printForDebug();
-            m.printWithScore();
+            move.printWithScore();
         }
 
-        pos.doMove(m);
+        pos.doMove(move);
     }
 }
 
