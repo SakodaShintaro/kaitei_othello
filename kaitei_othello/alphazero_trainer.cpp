@@ -147,6 +147,7 @@ void AlphaZeroTrainer::learn() {
     for (int32_t i = 0; ; i++) {
         //パラメータの初期化
         eval_params->initRandom();
+        eval_params->writeFile();
         eval_params->writeFile("before_learn" + std::to_string(i) + ".txt");
 
         //ログファイルの設定
@@ -257,25 +258,12 @@ void AlphaZeroTrainer::learnSlave() {
         MUTEX.lock();
         //生成した棋譜を学習用データに加工してstackへ詰め込む
         for (auto& game : games) {
-            Position pos(*eval_params);
-            for (int32_t i = 0; !pos.isFinish(); i++) {
-                if (game.moves[i] == NULL_MOVE) {
-                    //学習には使わない.局面を進めて次へ
-                    pos.doMove(game.moves[i]);
-                    continue;
-                }
-
-#ifdef USE_CATEGORICAL
+            if (LEARN_MODE == ELMO_LEARN) {
+                pushOneGame(game);
+            } else if (LEARN_MODE == N_STEP_SARSA) {
+                pushOneGameReverse(game);
+            } else { //ここには来ないはず
                 assert(false);
-#else
-                game.teachers[i][POLICY_DIM] = (CalcType)(pos.color() == BLACK ? game.result : 1.0 - game.result);
-#endif
-
-                //この局面について局面を再現できるデータと教師データを組みにしてstackに送る
-                position_stack_.push_back({ pos.data(), game.teachers[i] });
-
-                //次の局面へ
-                pos.doMove(game.moves[i]);
             }
         }
 
@@ -353,11 +341,11 @@ std::vector<Game> AlphaZeroTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
                     Move best_move = move_and_teacher.first;
                     TeacherType teacher = move_and_teacher.second;
 
-                    //if (!pos_c.isLegalMove(best_move)) {
-                    //    pos_c.printForDebug();
-                    //    best_move.printWithScore();
-                    //    assert(false);
-                    //}
+                    if (best_move != NULL_MOVE && !pos_c.isLegalMove(best_move)) {
+                        pos_c.printForDebug();
+                        best_move.printWithScore();
+                        assert(false);
+                    }
                     pos_c.doMove(best_move);
                     pos_t.doMove(best_move);
                     game.moves.push_back(best_move);
@@ -436,86 +424,45 @@ void AlphaZeroTrainer::evaluate() {
     print(consecutive_fail_num_);
 }
 
-std::array<double, 2> AlphaZeroTrainer::learnGames(const std::vector<Game>& games, EvalParams<LearnEvalType>& grad) {
-    std::array<double, 2> loss = { 0.0, 0.0 };
-    grad.clear();
-
-    //引き分けを除く場合があるのでこれはBATCH_SIZEに一致するとは限らない
-    uint64_t learn_position_num = 0;
-
-    //一つ書き出してみる
-    games.front().writeKifuFile("./learn_games/");
-
-    for (const Game& game : games) {
-        //学習
-        if (LEARN_MODE == ELMO_LEARN) {
-            learnOneGame(game, grad, loss, learn_position_num);
-        } else if (LEARN_MODE == N_STEP_SARSA) {
-            learnOneGameReverse(game, grad, loss, learn_position_num);
-        } else { //ここには来ないはず
-            assert(false);
-        }
-    }
-
-    assert(learn_position_num != 0);
-
-    //loss, gradをlearn_position_numで割る(局面について平均を取る)
-    loss /= learn_position_num;
-
-    grad.forEach([learn_position_num](CalcType& g) {
-        g /= learn_position_num;
-    });
-
-    return loss;
-}
-
-void AlphaZeroTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t& learn_position_num) {
+void AlphaZeroTrainer::pushOneGame(Game& game) {
     Position pos(*eval_params);
-#ifndef USE_NN //これ探索手法の違いじゃね？
-    auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
-#endif
+    double result_for_turn = (pos.color() == BLACK ? game.result : 1.0 - game.result);
+
     for (int32_t i = 0; i < game.moves.size(); i++) {
-        Move m = game.moves[i];
-        if (m == NULL_MOVE) {
-            pos.doMove(m);
+        const Move& move = game.moves[i];
+        if (move == NULL_MOVE) {
+            pos.doMove(move);
             continue;
         }
 
         //学習
-        learn_position_num++;
-        TeacherType teacher = game.teachers[i];
-        //対局結果を用いてvalueを加工する
+        TeacherType& teacher = game.teachers[i];
+
+        //教師信号を計算
+        double teacher_signal = DEEP_COEFFICIENT * game.moves[i].score + (1 - DEEP_COEFFICIENT) * result_for_turn;
+
 #ifdef USE_CATEGORICAL
-        double result_for_turn = (pos.color() == BLACK ? game.result : 1.0 - game.result);
-        auto dist_for_turn = onehotDist(result_for_turn);
+        auto teacher_dist = onehotDist(teacher_signal);
         for (int32_t i = 0; i < BIN_SIZE; i++) {
-            teacher[POLICY_DIM + i] =
-                (CalcType)(DEEP_COEFFICIENT * teacher[POLICY_DIM + i] +
-                (1.0 - DEEP_COEFFICIENT) * dist_for_turn[i]);
+            teacher[POLICY_DIM + i] = teacher_dist[i];
         }
 #else
-        double deep_win_rate = teacher[POLICY_DIM];
-        double result_for_turn = (pos.color() == BLACK ? game.result : 1.0 - game.result);
-        double teacher_signal = DEEP_COEFFICIENT * deep_win_rate + (1 - DEEP_COEFFICIENT) * result_for_turn;
         teacher[POLICY_DIM] = (CalcType)teacher_signal;
 #endif
-        //損失・勾配の計算
-        loss += addGrad(grad, pos, teacher);
 
-        //数値微分による誤差逆伝播の検証
-        //verifyAddGrad(pos, teacher);
+        //スタックに詰める
+        position_stack_.emplace_back(pos.data(), teacher);
 
-        if (!pos.isLegalMove(m)) {
+        if (!pos.isLegalMove(move)) {
             pos.printForDebug();
-            m.printWithScore();
+            move.printWithScore();
         }
 
-        pos.doMove(m);
+        pos.doMove(move);
     }
 }
 
-void AlphaZeroTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t& learn_position_num) {
-    auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
+void AlphaZeroTrainer::pushOneGameReverse(Game& game) {
     Position pos(*eval_params);
 
     //まずは最終局面まで動かす
@@ -527,121 +474,40 @@ void AlphaZeroTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEva
 
     //先手から見た勝率,分布.指数移動平均で動かしていく.最初は結果によって初期化(0 or 0.5 or 1)
     double win_rate_for_black = game.result;
-#ifdef USE_CATEGORICAL
-    auto dist_for_black = onehotDist(win_rate_for_black);
-#endif
 
     for (int32_t i = (int32_t)game.moves.size() - 1; i >= 0; i--) {
-        if (game.moves[i].score == MIN_SCORE) { //ランダムムーブということなので学習はしない
-            //ランダムムーブは1局の最初の方に行っているのでもう学習終了
-            break;
-        }
-
-        //この指し手が対応するのは1手戻した局面
+        //i番目の指し手が対応するのは1手戻した局面
         pos.undo();
 
-        if (isMatedScore(game.moves[i].score) || game.moves[i] == NULL_MOVE) { //詰みの値だったら学習を飛ばす
+        if (game.moves[i] == NULL_MOVE) { 
+            //パスだったら学習を飛ばす
             continue;
         }
 
         //先手から見た勝率について指数移動平均を取り,教師データにセットする
         //教師データをコピーする gameをconstで受け取ってしまっているので
-        TeacherType teacher = game.teachers[i];
+        TeacherType& teacher = game.teachers[i];
 
-#ifdef USE_CATEGORICAL
-        //teacherから分布を得る
-        std::array<CalcType, BIN_SIZE> curr_dist;
-        for (int32_t j = 0; j < BIN_SIZE; j++) {
-            curr_dist[j] = teacher[POLICY_DIM + j];
-        }
-
-        //手番を考慮して先手から見た分布にする
-        if (pos.color() == WHITE) {
-            std::reverse(curr_dist.begin(), curr_dist.end());
-        }
-
-        //混合する
-        for (int32_t j = 0; j < BIN_SIZE; j++) {
-            dist_for_black[j] = (CalcType)(DECAY_RATE * dist_for_black[j] + (1.0 - DECAY_RATE) * curr_dist[j]);
-        }
-
-        //teacherにコピーする
-        for (int32_t j = 0; j < BIN_SIZE; j++) {
-            teacher[POLICY_DIM + j] = dist_for_black[j];
-        }
-
-        //手番に合わせて反転する
-        if (pos.color() == WHITE) {
-            std::reverse(teacher.begin() + POLICY_DIM, teacher.end());
-        }
-#else
         //先手から見た値を得る
-        double curr_win_rate = (pos.color() == BLACK ? teacher[POLICY_DIM] : 1.0 - teacher[POLICY_DIM]);
+        double curr_win_rate = (pos.color() == BLACK ? game.moves[i].score : 1.0 - game.moves[i].score);
 
         //混合する
         win_rate_for_black = DECAY_RATE * win_rate_for_black + (1.0 - DECAY_RATE) * curr_win_rate;
 
+#ifdef USE_CATEGORICAL
+        //手番から見た分布を得る
+        auto teacher_dist = onehotDist(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
+
+        //teacherにコピーする
+        for (int32_t j = 0; j < BIN_SIZE; j++) {
+            teacher[POLICY_DIM + j] = teacher_dist[j];
+        }
+#else
         //teacherにコピーする
         teacher[POLICY_DIM] = (CalcType)(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
 #endif
-        //損失・勾配の計算
-        loss += addGrad(grad, pos, teacher);
 
-        //数値微分による誤差逆伝播の検証
-        //verifyAddGrad(pos, teacher);
-
-        //学習局面数を増やす
-        learn_position_num++;
+        //スタックに詰める
+        position_stack_.emplace_back(pos.data(), teacher);
     }
-}
-
-void AlphaZeroTrainer::testLearn() {
-    std::cout << "start testLearn()" << std::endl;
-
-    //時間を設定
-    start_time_ = std::chrono::steady_clock::now();
-
-    //自己対局による棋譜生成:並列化
-#ifdef USE_MCTS
-    std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, (int32_t)usi_option.playout_limit, true);
-#else
-    std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
-#endif
-
-    std::cout << std::fixed;
-
-    //ここから学習のメイン
-    eval_params->readFile();
-
-    std::ofstream ofs("test_learn_log.txt");
-    ofs << "step\tP = " << POLICY_LOSS_COEFF << ", V = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
-
-    for (int64_t i = 0; i < 1000; i++) {
-        //損失・勾配・千日手数・長手数による引き分け数を計算
-        auto grad = std::make_unique<EvalParams<LearnEvalType>>();
-        std::array<double, 2> loss = learnGames(games, *grad);
-
-        //パラメータ更新
-        updateParams(*eval_params, *grad);
-        std::cout << i << "\tloss[0] = " << loss[0] << ",\tloss[1] = " << loss[1] << std::endl;
-        ofs << i << "\t" << loss[0] << "\t" << loss[1] << std::endl;
-    }
-
-    for (auto game : games) {
-        Position pos(*eval_params);
-        std::cout << "game.result = " << game.result << std::endl;
-
-        for (int32_t i = 0; i < game.moves.size(); i++) {
-            auto move = game.moves[i];
-            if (move != NULL_MOVE) {
-                auto policy = pos.maskedPolicy();
-                std::cout << "policy[" << std::setw(4) << move << "] = " << policy[move.toLabel()]
-                    << ", value = " << pos.valueForTurn()
-                    << ", teacher = " << game.teachers[i][POLICY_DIM] << std::endl;
-            }
-            pos.doMove(move);
-        }
-    }
-
-    std::cout << "finish testLearn()" << std::endl;
 }

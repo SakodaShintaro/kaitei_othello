@@ -18,9 +18,6 @@ public:
     //これらは並列に行われる
     void learn();
 
-    //1局だけ生成してそれを繰り返し学習してみるテスト用の関数
-    void testLearn();
-
 private:
     //--------------------
     //    内部メソッド
@@ -31,20 +28,17 @@ private:
     //並列化して対局を行う関数
     static std::vector<Game> parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, int32_t search_limit, bool add_noise);
 
-    //
+    //棋譜生成を行う関数
     void learnSlave();
 
     //今ファイルに保存されているパラメータと対局して強さを測定する関数
     void evaluate();
 
-    //棋譜群から損失・勾配・千日手数・長手数による引き分け数を計算する関数
-    std::array<double, 2> learnGames(const std::vector<Game>& games, EvalParams<LearnEvalType>& grad);
+    //勝敗と探索結果を混合して教師とする関数:elmo絞りに対応
+    void pushOneGame(Game& game);
 
-    //棋譜を初手側から再生して損失・勾配を計算する関数:elmo絞りに対応
-    void learnOneGame(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t& learn_position_num);
-
-    //棋譜を最終手から再生して損失・勾配を計算する関数:Sarsaに対応?
-    void learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t& learn_position_num);
+    //指数減衰をかけながらnステップ後の探索の値を教師とする関数
+    void pushOneGameReverse(Game& game);
 
     //---------------------------------------------
     //    ファイルから読み込むためconst化はして
