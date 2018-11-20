@@ -144,6 +144,8 @@ void AlphaZeroTrainer::learn() {
 
     //学習
     for (int32_t i = 0; ; i++) {
+        MUTEX.lock();
+
         //パラメータの初期化
         eval_params->initRandom();
         eval_params->writeFile();
@@ -175,13 +177,15 @@ void AlphaZeroTrainer::learn() {
         position_stack_.clear();
         position_stack_.reserve(MAX_STACK_SIZE);
 
+        MUTEX.unlock();
+
         for (int32_t step_num = 1; step_num <= MAX_STEP_NUM; step_num++) {
             //ミニバッチ分勾配を貯める
             auto grad = std::make_unique<EvalParams<LearnEvalType>>();
             std::array<double, 2> loss{ 0.0, 0.0 };
             for (int32_t j = 0; j < BATCH_SIZE; j++) {
                 //std::this_thread::sleep_for(std::chrono::microseconds(50));
-                if (position_stack_.size() <= BATCH_SIZE * 1) {
+                if (position_stack_.size() <= BATCH_SIZE * 10) {
                     j--;
                     continue;
                 }
@@ -205,9 +209,6 @@ void AlphaZeroTrainer::learn() {
 
             MUTEX.lock();
             //学習
-            updateParams(*eval_params, *grad);
-
-            //パラメータ更新
             updateParams(*eval_params, *grad);
 
             //学習情報の表示
