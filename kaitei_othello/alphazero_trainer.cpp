@@ -126,8 +126,6 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
 
 void AlphaZeroTrainer::learn() {
     std::cout << "start alphaZero()" << std::endl;
-    start_time_ = std::chrono::steady_clock::now();
-
 
     //自己対局スレッドの作成
     std::vector<std::thread> slave_threads(THREAD_NUM - 1);
@@ -144,6 +142,9 @@ void AlphaZeroTrainer::learn() {
 
     //学習
     for (int32_t i = 1; ; i++) {
+        //時間を初期化
+        start_time_ = std::chrono::steady_clock::now();
+
         MUTEX.lock();
 
         //パラメータの初期化

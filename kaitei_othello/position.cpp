@@ -70,9 +70,6 @@ void Position::print() const {
         printf("|%d\n", r);
     }
 
-    std::cout << occupied_bb_[BLACK] << std::endl;
-    std::cout << occupied_bb_[WHITE] << std::endl;
-
     //手番
     printf("手番:");
     if (color_ == BLACK) printf("先手\n");
