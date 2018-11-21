@@ -243,7 +243,6 @@ void AlphaZeroTrainer::learn() {
             //•]‰¿‚Æ‘‚«o‚µ
             if (step_num % EVALUATION_INTERVAL == 0) {
                 evaluate();
-                eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
             }
 
             std::cout << std::endl;
@@ -252,6 +251,7 @@ void AlphaZeroTrainer::learn() {
             MUTEX.unlock();
         }
 
+        eval_params->writeFile("tmp" + std::to_string(i) + ".bin");
         log_file_.close();
     }
 
