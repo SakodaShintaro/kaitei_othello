@@ -143,7 +143,7 @@ void AlphaZeroTrainer::learn() {
     Position pos(*eval_params);
 
     //学習
-    for (int32_t i = 0; ; i++) {
+    for (int32_t i = 1; ; i++) {
         MUTEX.lock();
 
         //パラメータの初期化
@@ -173,6 +173,20 @@ void AlphaZeroTrainer::learn() {
         print("連続負け越し数");
         log_file_ << std::endl << std::fixed;
         std::cout << std::endl << std::fixed;
+
+        //0回目を入れてみる
+        timestamp();
+        print(0);
+        print(0.0);
+        print(0.0);
+        print(0.0);
+        print(0.0);
+        print(0.0);
+        print(eval_params->maxAbs());
+        print(eval_params->sumAbs());
+        evaluate();
+        std::cout << std::endl;
+        log_file_ << std::endl;
 
         position_stack_.clear();
         position_stack_.reserve(MAX_STACK_SIZE);
