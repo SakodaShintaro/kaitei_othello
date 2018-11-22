@@ -140,6 +140,9 @@ void AlphaZeroTrainer::learn() {
     //局面もインスタンスは一つ用意して都度局面を構成
     Position pos(*eval_params);
 
+    EVALUATION_INTERVAL = 1;
+    auto start_learning_rate = LEARN_RATE;
+
     //学習
     for (int32_t i = 1; ; i++) {
         //時間を初期化
@@ -156,6 +159,9 @@ void AlphaZeroTrainer::learn() {
         update_num_ = 0;
         fail_num_ = 0;
         consecutive_fail_num_ = 0;
+
+        //学習率の初期化
+        LEARN_RATE = start_learning_rate;
 
         //ログファイルの設定
         log_file_.open("alphazero_log" + std::to_string(i) + ".txt");
@@ -237,12 +243,13 @@ void AlphaZeroTrainer::learn() {
             print(eval_params->maxAbs());
             print(eval_params->sumAbs());
 
-            //減衰を一度抜く
-            //LEARN_RATE *= LEARN_RATE_DECAY;
+            //学習率の減衰
+            LEARN_RATE *= LEARN_RATE_DECAY;
 
             //評価と書き出し
             if (step_num % EVALUATION_INTERVAL == 0) {
                 evaluate();
+                EVALUATION_INTERVAL *= 2;
             }
 
             std::cout << std::endl;
