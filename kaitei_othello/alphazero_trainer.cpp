@@ -71,7 +71,7 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
         } else if (name == "evaluation_game_num") {
             ifs >> EVALUATION_GAME_NUM;
         } else if (name == "evaluation_interval") {
-            ifs >> EVALUATION_INTERVAL;
+            ifs >> EVALUATION_INTERVAL_EXP;
         } else if (name == "evaluation_random_turn") {
             ifs >> EVALUATION_RANDOM_TURN;
         } else if (name == "policy_loss_coeff") {
@@ -140,7 +140,6 @@ void AlphaZeroTrainer::learn() {
     //局面もインスタンスは一つ用意して都度局面を構成
     Position pos(*eval_params);
 
-    EVALUATION_INTERVAL = 1;
     auto start_learning_rate = LEARN_RATE;
 
     //学習
@@ -156,6 +155,7 @@ void AlphaZeroTrainer::learn() {
         eval_params->writeFile("before_learn" + std::to_string(i) + ".bin");
 
         //変数の初期化
+        int64_t evaluation_interval = 1;
         update_num_ = 0;
         fail_num_ = 0;
         consecutive_fail_num_ = 0;
@@ -247,9 +247,12 @@ void AlphaZeroTrainer::learn() {
             LEARN_RATE *= LEARN_RATE_DECAY;
 
             //評価と書き出し
-            if (step_num % EVALUATION_INTERVAL == 0) {
+            if (step_num % evaluation_interval == 0 || step_num == MAX_STEP_NUM) {
                 evaluate();
-                EVALUATION_INTERVAL *= 2;
+                evaluation_interval = (int64_t)ceil(evaluation_interval * EVALUATION_INTERVAL_EXP);
+                if (step_num >= 10000) {
+                    eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
+                }
             }
 
             std::cout << std::endl;
