@@ -75,14 +75,6 @@ private:
     //------------
     //    変数
     //------------
-    //自己対局で相手になる1世代前のパラメータ
-    //これ実は要らないのかもしれない
-    //std::unique_ptr<EvalParams<DefaultEvalType>> opponent_parameters_;
-
-    //学習した局面数
-    //これはstep_num * BATCH_SIZEに等しいはず
-    //uint64_t sum_learned_games_;
-
     //学習用に加工済の局面スタック
     std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> position_stack_;
     
