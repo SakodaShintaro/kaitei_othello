@@ -22,12 +22,6 @@ private:
     //--------------------
     //    内部メソッド
     //--------------------
-    //自己対局を行う関数
-    static std::vector<Game> play(int32_t game_num, int32_t search_limit, bool add_noise);
-
-    //並列化して対局を行う関数
-    static std::vector<Game> parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, int32_t search_limit, bool add_noise);
-
     //棋譜生成を行う関数
     void learnSlave();
 

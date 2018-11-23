@@ -1,7 +1,7 @@
 #pragma once
 
 #include"alphazero_trainer.hpp"
-
+#include"rootstrap_trainer.hpp"
 #include"position.hpp"
 #include"searcher.hpp"
 #include"eval_params.hpp"
@@ -280,9 +280,9 @@ void AlphaZeroTrainer::learnSlave() {
     while (!shared_data.stop_signal) {
         //ä˚ïàÇê∂ê¨
 #ifdef USE_MCTS
-        auto games = play(1, (int32_t)usi_option.playout_limit, true);
+        auto games = RootstrapTrainer::play(1, (int32_t)usi_option.playout_limit, true);
 #else
-        auto games = play(1, SEARCH_DEPTH);
+        auto games = RootstrapTrainer::play(1, SEARCH_DEPTH);
 #endif
 
         MUTEX.lock();
@@ -305,94 +305,6 @@ void AlphaZeroTrainer::learnSlave() {
     }
 }
 
-std::vector<Game> AlphaZeroTrainer::play(int32_t game_num, int32_t search_limit, bool add_noise) {
-#ifdef USE_MCTS
-    auto searcher = std::make_unique<MCTSearcher>(usi_option.USI_Hash);
-#else
-    auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
-#endif
-
-    std::vector<Game> games(game_num);
-
-    for (int32_t i = 0; i < game_num; i++) {
-        Game& game = games[i];
-        Position pos(*eval_params);
-
-        while (!pos.isFinish()) {
-            //iÇ™ãÙêîÇÃÇ∆Ç´pos_cÇ™êÊéË
-            auto move_and_teacher = searcher->thinkForGenerateLearnData(pos, search_limit, add_noise);
-            Move best_move = move_and_teacher.first;
-            TeacherType teacher = move_and_teacher.second;
-
-            if (best_move != NULL_MOVE && !pos.isLegalMove(best_move)) {
-                pos.printForDebug();
-                best_move.printWithScore();
-                assert(false);
-            }
-            pos.doMove(best_move);
-            game.moves.push_back(best_move);
-            game.teachers.push_back(teacher);
-        }
-
-        //ëŒã«åãâ ÇÃê›íË
-        game.result = pos.resultForBlack();
-    }
-    return games;
-}
-
-std::vector<Game> AlphaZeroTrainer::parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, int32_t search_limit, bool add_noise) {
-    std::vector<Game> games(game_num);
-    std::atomic<int32_t> index;
-    index = 0;
-
-    std::vector<std::thread> threads;
-    for (int32_t i = 0; i < (int32_t)usi_option.thread_num; i++) {
-        threads.emplace_back([&]() {
-#ifdef USE_MCTS
-            auto searcher = std::make_unique<MCTSearcher>(usi_option.USI_Hash);
-#else
-            auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
-#endif
-            while (true) {
-                int32_t curr_index = index++;
-                if (curr_index >= game_num) {
-                    return;
-                }
-                Game& game = games[curr_index];
-                game.moves.reserve(usi_option.draw_turn);
-                game.teachers.reserve(usi_option.draw_turn);
-                Position pos_c(curr), pos_t(target);
-
-                while (!pos_c.isFinish()) {
-                    //iÇ™ãÙêîÇÃÇ∆Ç´pos_cÇ™êÊéË
-                    auto move_and_teacher = ((pos_c.turn_number() % 2) == (curr_index % 2) ?
-                        searcher->thinkForGenerateLearnData(pos_c, search_limit, add_noise) :
-                        searcher->thinkForGenerateLearnData(pos_t, search_limit, add_noise));
-                    Move best_move = move_and_teacher.first;
-                    TeacherType teacher = move_and_teacher.second;
-
-                    if (best_move != NULL_MOVE && !pos_c.isLegalMove(best_move)) {
-                        pos_c.printForDebug();
-                        best_move.printWithScore();
-                        assert(false);
-                    }
-                    pos_c.doMove(best_move);
-                    pos_t.doMove(best_move);
-                    game.moves.push_back(best_move);
-                    game.teachers.push_back(teacher);
-                }
-
-                //ëŒã«åãâ ÇÃê›íË
-                game.result = pos_c.resultForBlack();
-            }
-        });
-    }
-    for (int32_t i = 0; i < (int32_t)usi_option.thread_num; i++) {
-        threads[i].join();
-    }
-    return games;
-}
-
 void AlphaZeroTrainer::evaluate() {
     //ëŒã«Ç∑ÇÈÉpÉâÉÅÅ[É^ÇèÄîı
     auto opponent_parameters_ = std::make_unique<EvalParams<DefaultEvalType>>();
@@ -402,9 +314,9 @@ void AlphaZeroTrainer::evaluate() {
     auto copy = usi_option.random_turn;
     usi_option.random_turn = (uint32_t)EVALUATION_RANDOM_TURN;
 #ifdef USE_MCTS
-    auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, (int32_t)usi_option.playout_limit, false);
+    auto test_games = RootstrapTrainer::parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, (int32_t)usi_option.playout_limit, false);
 #else
-    auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, SEARCH_DEPTH);
+    auto test_games = RootstrapTrainer::parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, SEARCH_DEPTH);
 #endif
     usi_option.random_turn = copy;
 

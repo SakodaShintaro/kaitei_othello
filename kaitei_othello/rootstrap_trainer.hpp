@@ -25,6 +25,12 @@ public:
     //1局だけ生成してそれを繰り返し学習してみるテスト用の関数
     void testLearn();
 
+    //自己対局を行う関数
+    static std::vector<Game> play(int32_t game_num, int32_t search_limit, bool add_noise);
+
+    //並列化して対局を行う関数
+    static std::vector<Game> parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, int32_t search_limit, bool add_noise);
+
 private:
     //--------------------
     //    内部メソッド
@@ -32,12 +38,6 @@ private:
     //棋譜生成・パラメータ更新を行う1スレッド分の関数
     //定期的にチェックを挟む
     void learnAsyncSlave(int32_t id);
-
-    //自己対局を行う関数
-    static std::vector<Game> play(int32_t game_num, int32_t search_limit, bool add_noise);
-
-    //並列化して対局を行う関数
-    static std::vector<Game> parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, int32_t search_limit, bool add_noise);
 
     //今ファイルに保存されているパラメータと対局して強さを測定する関数
     void evaluate();
