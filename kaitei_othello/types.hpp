@@ -22,12 +22,11 @@ enum Depth {
 
 using Score = float;
 constexpr Score MAX_SCORE = 1000000.0f;
-constexpr Score SCORE_ZERO = 0;
-constexpr Score DRAW_SCORE = 0;
+constexpr Score SCORE_ZERO = 0.0f;
+constexpr Score DRAW_SCORE = 0.0f;
 constexpr Score MIN_SCORE = -MAX_SCORE;
-constexpr Score MATE_SCORE_LOWER_BOUND = MAX_SCORE - static_cast<int>(MATE_DEPTH_MAX);
-constexpr Score MATE_SCORE_UPPER_BOUND = MIN_SCORE + static_cast<int>(MATE_DEPTH_MAX);
-constexpr Score SCORE_NONE = MAX_SCORE + 1;
+constexpr Score MATE_SCORE_LOWER_BOUND = MAX_SCORE - (Score)MATE_DEPTH_MAX;
+constexpr Score MATE_SCORE_UPPER_BOUND = MIN_SCORE + (Score)MATE_DEPTH_MAX;
 
 constexpr double CP_GAIN = 1.0 / 600.0;
 

@@ -297,7 +297,7 @@ void AlphaZeroTrainer::learnSlave() {
             }
         }
 
-        if (position_stack_.size() >= MAX_STACK_SIZE) {
+        if ((int64_t)position_stack_.size() >= MAX_STACK_SIZE) {
             auto diff = position_stack_.size() - MAX_STACK_SIZE;
             position_stack_.erase(position_stack_.begin(), position_stack_.begin() + diff);
         }
