@@ -280,6 +280,11 @@ void Position::undoNullMove() {
 }
 
 bool Position::isLegalMove(const Move move) const {
+    if (move == NULL_MOVE) {
+        auto moves = generateAllMoves();
+        return (moves.size() == 1 && moves[0] == NULL_MOVE);
+    }
+
     //間に敵駒がありその先に自駒があれば良い
     if (board_[move.to()] != EMPTY) {
         return false;

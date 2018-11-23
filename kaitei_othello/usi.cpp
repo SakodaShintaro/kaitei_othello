@@ -86,6 +86,8 @@ void NBoardProtocol::loop() {
             trainer.testLearn();
         } else if (input == "vsHuman") {
             vsHuman();
+        } else if (input == "vsAI") {
+            vsAI();
         } else if (input == "nboard") {
             int32_t version;
             std::cin >> version;
@@ -216,5 +218,63 @@ void NBoardProtocol::vsHuman() {
             auto result = mctsearcher.thinkForGenerateLearnData(pos, (int32_t)usi_option.playout_limit, false);
             pos.doMove(result.first);
         }
+    }
+}
+
+void NBoardProtocol::vsAI() {
+    std::cout << "対局数: ";
+    int64_t game_num;
+    std::cin >> game_num;
+
+    std::cout << "1局目の先後(0 or 1): ";
+    int64_t turn;
+    std::cin >> turn;
+
+    //ランダム手を増やす
+    usi_option.random_turn = 10;
+
+    shared_data.stop_signal = false;
+    shared_data.limit_msec = LLONG_MAX;
+#ifdef USE_MCTS
+    MCTSearcher mctsearcher(usi_option.USI_Hash);
+#endif
+
+    Position pos(*eval_params);
+
+    const std::string file_name = "move.txt";
+
+    for (int64_t i = 0; i < game_num; i++) {
+        pos.init();
+        Game game;
+        while (!pos.isFinish()) {
+            Move move;
+            if ((pos.turn_number() + i) % 2 == turn) {
+                //思考する
+                auto result = mctsearcher.thinkForGenerateLearnData(pos, (int32_t)usi_option.playout_limit, false);
+                move = result.first;
+
+                //ファイルに手を書き出す
+                std::ofstream ofs(file_name);
+                ofs << move << std::endl;
+            } else {
+                //相手の番
+                //正しい手が書き込まれるまで待つ
+                while (true) {
+                    std::this_thread::sleep_for(std::chrono::seconds(1));
+
+                    std::ifstream ifs(file_name);
+                    std::string move_str;
+                    ifs >> move_str;
+                    move = stringToMove(move_str);
+                    if (pos.isLegalMove(move)) {
+                        break;
+                    }
+                    std::cerr << "不正な入力: " << move_str << std::endl;
+                }
+            }
+            pos.doMove(move);
+            game.moves.push_back(move);
+        }
+        game.writeKifuFile("./");
     }
 }

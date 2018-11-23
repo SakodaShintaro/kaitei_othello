@@ -35,13 +35,6 @@ void Game::writeKifuFile(std::string dir_path) const {
         ofs << "scoreForBlack = " << (i % 2 == 0 ? m.score : 1.0 - m.score) << std::endl;
         ofs << "valueForBlack = " << pos.valueForBlack() << std::endl;
 
-        if (i == 0) {
-            auto p = pos.maskedPolicy();
-            for (auto& move : pos.generateAllMoves()) {
-                ofs << "*" << move << " " << teachers[i][move.toLabel()] << " " << p[move.toLabel()] << std::endl;
-            }
-        }
-
         pos.doMove(m);
     }
     

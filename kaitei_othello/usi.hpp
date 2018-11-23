@@ -12,6 +12,7 @@ class NBoardProtocol {
 public:
     void loop();
     void vsHuman();
+    void vsAI();
 };
 
 #endif
