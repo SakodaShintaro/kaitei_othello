@@ -49,7 +49,7 @@
     <ClCompile Include="usi.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="alhpazero_trainer.hpp" />
+    <ClInclude Include="alphazero_trainer.hpp" />
     <ClInclude Include="array_map.hpp" />
     <ClInclude Include="base_trainer.hpp" />
     <ClInclude Include="bitboard.hpp" />

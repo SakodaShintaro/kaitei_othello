@@ -8,7 +8,7 @@
 #include"game.hpp"
 #include"rootstrap_trainer.hpp"
 #include"treestrap_trainer.hpp"
-#include"alhpazero_trainer.hpp"
+#include"alphazero_trainer.hpp"
 #include"test.hpp"
 #include"network.hpp"
 #include"MCTSearcher.hpp"

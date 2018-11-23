@@ -158,7 +158,7 @@
     <ClInclude Include="history.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="alhpazero_trainer.hpp">
+    <ClInclude Include="alphazero_trainer.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

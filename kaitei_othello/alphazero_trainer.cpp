@@ -1,6 +1,6 @@
 #pragma once
 
-#include"alhpazero_trainer.hpp"
+#include"alphazero_trainer.hpp"
 
 #include"position.hpp"
 #include"searcher.hpp"
