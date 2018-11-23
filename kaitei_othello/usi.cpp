@@ -16,6 +16,7 @@
 #include<iostream>
 #include<string>
 #include<thread>
+#include<Windows.h>
 
 USIOption usi_option;
 
@@ -222,13 +223,45 @@ void NBoardProtocol::vsHuman() {
 }
 
 void NBoardProtocol::vsAI() {
-    std::cout << "対局数: ";
-    int64_t game_num;
-    std::cin >> game_num;
+#ifdef USE_CATEGORICAL
+    eval_params->readFile("model_Categorical.bin");
+#else
+    eval_params->readFile("model_Release.bin");
+#endif
+
+    //std::cout << "対局数: ";
+    int64_t game_num = 100;
+    //std::cin >> game_num;
 
     std::cout << "1局目の先後(0 or 1): ";
     int64_t turn;
     std::cin >> turn;
+
+    char sendBuffer[256];
+    HANDLE pipe_handle;
+
+    if (turn == 0) {
+        pipe_handle = CreateNamedPipe(
+            "\\\\.\\pipe\\mypipe",
+            PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE,
+            1,
+            sizeof(sendBuffer),
+            sizeof(sendBuffer),
+            1000, NULL);
+        if (pipe_handle == INVALID_HANDLE_VALUE) {
+            std::cout << "パイプ作成に失敗" << std::endl;
+            return;
+        }
+
+        std::cout << "後手の起動待ち..." << std::endl;
+        ConnectNamedPipe(pipe_handle, NULL);
+    } else {
+        pipe_handle = CreateFile("\\\\.\\pipe\\mypipe", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+        if (pipe_handle == INVALID_HANDLE_VALUE) {
+            std::cout << "パイプ作成に失敗" << std::endl;
+            return;
+        }
+    }
 
     //ランダム手を増やす
     usi_option.random_turn = 10;
@@ -241,8 +274,6 @@ void NBoardProtocol::vsAI() {
 
     Position pos(*eval_params);
 
-    const std::string file_name = "move.txt";
-
     for (int64_t i = 0; i < game_num; i++) {
         pos.init();
         Game game;
@@ -253,23 +284,29 @@ void NBoardProtocol::vsAI() {
                 auto result = mctsearcher.thinkForGenerateLearnData(pos, (int32_t)usi_option.playout_limit, false);
                 move = result.first;
 
-                //ファイルに手を書き出す
-                std::ofstream ofs(file_name);
-                ofs << move << std::endl;
+                DWORD dwBytesWritten;
+                std::string buffer = fileToString[SquareToFile[move.to()]] + rankToString[SquareToRank[move.to()]];
+                if (!WriteFile(pipe_handle, buffer.data(), 10, &dwBytesWritten, NULL)) {
+                    fprintf(stderr, "Couldn't write NamedPipe.");
+                    std::this_thread::sleep_for(std::chrono::seconds(100));
+                    return;
+                }
             } else {
                 //相手の番
-                //正しい手が書き込まれるまで待つ
-                while (true) {
-                    std::this_thread::sleep_for(std::chrono::seconds(1));
-
-                    std::ifstream ifs(file_name);
-                    std::string move_str;
-                    ifs >> move_str;
-                    move = stringToMove(move_str);
-                    if (pos.isLegalMove(move)) {
-                        break;
-                    }
-                    std::cerr << "不正な入力: " << move_str << std::endl;
+                //入力を待つ
+                DWORD dwBytesRead;
+                char buffer[10];
+                if (!ReadFile(pipe_handle, buffer, 10, &dwBytesRead, NULL)) {
+                    fprintf(stderr, "Couldn't read NamedPipe.");
+                    std::this_thread::sleep_for(std::chrono::seconds(100));
+                    return;
+                }
+                std::string move_str(buffer);
+                move = stringToMove(move_str);
+                if (!pos.isLegalMove(move)) {
+                    std::cerr << "非合法手: " << move_str << std::endl;
+                    std::this_thread::sleep_for(std::chrono::seconds(100));
+                    return;
                 }
             }
             pos.doMove(move);
