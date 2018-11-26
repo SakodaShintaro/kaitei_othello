@@ -4,7 +4,7 @@ optimizer MOMENTUM
 learn_rate 0.01
 learn_rate_decay 0.99993
 momentum_decay 0.9
-thread_num 5
+thread_num 2
 threshold(0.0~1.0)  0.90
 random_move_temperature 200
 learn_mode(0or1) 1

@@ -131,10 +131,11 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
         //ノイズを加える
         //Alpha Zeroの論文と同じディリクレノイズ
         constexpr double epsilon = 0.25;
-        auto dirichlet = dirichletDistribution(current_node.child_num, 0.5);
+        auto dirichlet = dirichletDistribution(current_node.child_num, 0.05);
         nn_rates_copy = current_node.nn_rates;
         for (int32_t i = 0; i < current_node.child_num; i++) {
             current_node.nn_rates[i] = (CalcType)((1.0 - epsilon) * current_node.nn_rates[i] + epsilon * dirichlet[i]);
+            std::cout << current_node.nn_rates[i] << std::endl;
         }
     }
 
