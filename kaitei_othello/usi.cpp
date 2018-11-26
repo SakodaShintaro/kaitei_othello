@@ -16,13 +16,15 @@
 #include<iostream>
 #include<string>
 #include<thread>
+#ifdef _MSC_VER
 #include<Windows.h>
+#include<direct.h>
+#endif
 
 USIOption usi_option;
 
 void NBoardProtocol::loop() {
     std::string input;
-    std::ofstream log("log.txt");
 
     //設定してしまう
     usi_option.USI_Hash = 256;
@@ -33,7 +35,7 @@ void NBoardProtocol::loop() {
     usi_option.draw_turn = 256;
     usi_option.temperature = 10.0;
     usi_option.resign_score = MIN_SCORE;
-    usi_option.playout_limit = 80000;
+    usi_option.playout_limit = 8000;
     shared_data.limit_msec = 10000;
 
     //これはαβ探索用なので当面は使わない
@@ -47,7 +49,6 @@ void NBoardProtocol::loop() {
 
     while (true) {
         std::cin >> input;
-        log << input << std::endl;
         if (input == "go") {
             shared_data.stop_signal = false;
 #ifdef USE_MCTS
@@ -59,6 +60,11 @@ void NBoardProtocol::loop() {
             eval_params->writeFile();
             eval_params->writeFile("tmp.bin");
             std::cout << "0初期化したパラメータを出力" << std::endl;
+        } else if (input == "loadFile") {
+            std::string file_name;
+            std::cout << "読み込む評価関数: ";
+            std::cin >> file_name;
+            eval_params->readFile(file_name);
         } else if (input == "learnAsync") {
             RootstrapTrainer trainer("rootstrap_settings.txt");
             trainer.learnAsync();
@@ -92,17 +98,14 @@ void NBoardProtocol::loop() {
         } else if (input == "nboard") {
             int32_t version;
             std::cin >> version;
-            log << version << std::endl;
             //さて何かやることはあるだろうか
             std::cout << "set myname kaitei_othello" << std::endl;
         } else if (input == "set") {
             std::string command;
             std::cin >> command;
-            log << command << std::endl;
             if (command == "depth") {
                 int32_t max_depth;
                 std::cin >> max_depth;
-                log << max_depth << std::endl;
                 //やることは特になし
             } else if (command == "game") {
                 //盤面を初期化
@@ -111,7 +114,6 @@ void NBoardProtocol::loop() {
                 while (true) {
                     std::string ggf_str;
                     std::cin >> ggf_str;
-                    log << ggf_str << std::endl;
                     if (ggf_str.front() == '*') {
                         //Moveをパースする
                         for (int32_t i = 0; i < ggf_str.size(); i++) {
@@ -133,24 +135,20 @@ void NBoardProtocol::loop() {
             } else if (command == "contempt") {
                 int32_t contempt;
                 std::cin >> contempt;
-                log << contempt << std::endl;
                 //意味があまりよくわからない
             }
         } else if (input == "move") {
             std::string move_str;
             std::cin >> move_str;
-            log << move_str << std::endl;
             //変換
             Move move = stringToMove(move_str);
             shared_data.root.doMove(move);
         } else if (input == "hint") {
             int32_t n;
             std::cin >> n;
-            log << n << std::endl;
         } else if (input == "ping") {
             int32_t ping;
             std::cin >> ping;
-            log << ping << std::endl;
             std::cout << "pong " << ping << std::endl;
         } else {
             std::cerr << "Illegal input" << std::endl;
@@ -223,15 +221,20 @@ void NBoardProtocol::vsHuman() {
 }
 
 void NBoardProtocol::vsAI() {
-#ifdef USE_CATEGORICAL
-    eval_params->readFile("model_Categorical.bin");
-#else
-    eval_params->readFile("model_Release.bin");
-#endif
+    //棋譜を保存するディレクトリの削除
+    std::experimental::filesystem::remove_all("./games");
 
-    //std::cout << "対局数: ";
-    int64_t game_num = 100;
-    //std::cin >> game_num;
+    //棋譜を保存するディレクトリの作成
+    _mkdir("./games");
+
+    std::cout << "使用する評価パラメータ: ";
+    std::string file_name;
+    std::cin >> file_name;
+    eval_params->readFile(file_name);
+
+    std::cout << "対局数: ";
+    int64_t game_num;
+    std::cin >> game_num;
 
     std::cout << "1局目の先後(0 or 1): ";
     int64_t turn;
@@ -263,8 +266,8 @@ void NBoardProtocol::vsAI() {
         }
     }
 
-    //ランダム手を増やす
-    usi_option.random_turn = 10;
+    //ランダム手
+    usi_option.random_turn = 0;
 
     shared_data.stop_signal = false;
     shared_data.limit_msec = LLONG_MAX;
@@ -274,6 +277,9 @@ void NBoardProtocol::vsAI() {
 
     Position pos(*eval_params);
 
+    std::vector<Game> games;
+
+    double win_point = 0.0;
     for (int64_t i = 0; i < game_num; i++) {
         pos.init();
         Game game;
@@ -312,6 +318,49 @@ void NBoardProtocol::vsAI() {
             pos.doMove(move);
             game.moves.push_back(move);
         }
-        game.writeKifuFile("./");
+
+        //過去の対局と比較して同一でないかを確認する
+        bool ok = true;
+        for (const auto& g : games) {
+            if (g.moves.size() != game.moves.size()) {
+                continue;
+            }
+
+            bool same = true;
+            for (int64_t j = 0; j < g.moves.size(); j++) {
+                if (g.moves[j] != game.moves[j]) {
+                    same = false;
+                    break;
+                }
+            }
+            if (same) {
+                ok = false;
+                break;
+            }
+        }
+        if (!ok) {
+            std::cout << "重複あり ";
+            usi_option.random_turn += 2;
+            std::cout << "random_turn -> " << usi_option.random_turn << std::endl;
+            i--;
+            continue;
+        }
+
+        std::cout << i << "局目: ";
+        auto result = pos.resultForBlack();
+        if (i % 2 == turn) {
+            //先手だった
+            win_point += result;
+            std::cout << result << std::endl;
+        } else {
+            win_point += 1.0 - result;
+            std::cout << 1.0 - result << std::endl;
+        }
+
+        if (turn == 0) {
+            game.writeKifuFile("./games/");
+        }
     }
+
+    std::cout << "勝率 : " << win_point / game_num << std::endl;
 }
