@@ -32,7 +32,6 @@ void NBoardProtocol::loop() {
     usi_option.random_turn = 0;
     usi_option.thread_num = 1;
     usi_option.draw_score = -1;
-    usi_option.draw_turn = 256;
     usi_option.temperature = 10.0;
     usi_option.resign_score = MIN_SCORE;
     usi_option.playout_limit = 8000;

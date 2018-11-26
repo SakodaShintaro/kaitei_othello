@@ -24,8 +24,6 @@ void testMakeRandomPosition() {
     std::cin >> temperature;
     std::cout << std::endl;
 
-    usi_option.draw_turn = 256;
-
     //同一局面の登場回数
     std::map<uint64_t, uint64_t> appear_num;
 
@@ -128,7 +126,6 @@ void testKifuOutput() {
     eval_params->readFile();
     Position pos_c(*eval_params), pos_t(*eval_params);
     auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
-    usi_option.draw_turn = 512;
 
     while (true) {
         //iが偶数のときpos_cが先手

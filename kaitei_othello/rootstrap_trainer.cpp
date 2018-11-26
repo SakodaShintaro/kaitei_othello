@@ -50,8 +50,6 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
             ifs >> usi_option.temperature;
         } else if (name == "random_move_num") {
             ifs >> usi_option.random_turn;
-        } else if (name == "draw_turn") {
-            ifs >> usi_option.draw_turn;
         } else if (name == "draw_score") {
             ifs >> usi_option.draw_score;
         } else if (name == "learn_mode(0or1)") {
@@ -262,8 +260,8 @@ std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
                     return;
                 }
                 Game& game = games[curr_index];
-                game.moves.reserve(usi_option.draw_turn);
-                game.teachers.reserve(usi_option.draw_turn);
+                game.moves.reserve(70);
+                game.teachers.reserve(70);
                 Position pos_c(curr), pos_t(target);
 
                 while (!pos_c.isFinish()) {

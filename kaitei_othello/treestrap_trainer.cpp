@@ -43,9 +43,6 @@ void TreestrapTrainer::startLearn() {
     std::cout << "start treeStrap" << std::endl;
     eval_params->readFile();
 
-    //学習用にオプションを変更
-    usi_option.draw_turn = 256;
-
     //勾配の準備
     grad_ = std::make_unique<EvalParams<LearnEvalType>>();
 
