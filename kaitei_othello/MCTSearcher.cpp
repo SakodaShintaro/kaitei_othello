@@ -265,7 +265,8 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
     if (pos.isFinish()) {
         //I—¹
 #ifdef USE_CATEGORICAL
-        result = reverseDist(onehotDist(pos.resultForTurn()));
+        result = onehotDist(pos.resultForTurn());
+        std::reverse(result.begin(), result.end());
 #else
         result = (CalcType)(1.0 - pos.resultForTurn());
 #endif
@@ -274,15 +275,16 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
         auto index = expandNode(pos);
         child_indices[next_index] = index;
 #ifdef USE_CATEGORICAL
-        result = reverseDist(hash_table_[index].value_dist);
+        result = hash_table_[index].value_dist;
+        std::reverse(result.begin(), result.end());
 #else
         result = 1.0f - hash_table_[index].value_win;
 #endif
     } else {
         // è”Ô‚ğ“ü‚ê‘Ö‚¦‚Ä1è[‚­“Ç‚Ş
 #ifdef USE_CATEGORICAL
-        auto retval = uctSearch(pos, child_indices[next_index]);
-        result = reverseDist(retval);
+        result = uctSearch(pos, child_indices[next_index]);
+        std::reverse(result.begin(), result.end());
 #else
         result = 1.0f - uctSearch(pos, child_indices[next_index]);
 #endif

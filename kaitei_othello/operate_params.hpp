@@ -18,12 +18,6 @@ inline std::array<CalcType, BIN_SIZE> onehotDist(double value) {
     return result;
 }
 
-//•ª•z‚É‚¨‚¢‚Äè”Ô‚ğ”½“]<=>”z—ñ‚Ì‡˜‚ğ”½“]
-inline std::array<CalcType, BIN_SIZE> reverseDist(std::array<CalcType, BIN_SIZE> dist) {
-    std::reverse(dist.begin(), dist.end());
-    return dist;
-}
-
 #endif
 
 #endif
