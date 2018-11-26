@@ -9,6 +9,7 @@ void testKifuOutput();
 
 #ifdef USE_CATEGORICAL
 void testOneHotDist();
+void testDistEffect();
 #endif
 
 #endif // !TEST_HPP

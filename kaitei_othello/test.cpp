@@ -6,6 +6,7 @@
 #include"game.hpp"
 #include"network.hpp"
 #include"operate_params.hpp"
+#include"rootstrap_trainer.hpp"
 #include<cassert>
 #include<numeric>
 
@@ -163,6 +164,46 @@ void testOneHotDist() {
         auto onehot = onehotDist(w);
         for (int32_t i = 0; i < BIN_SIZE; i++) {
             std::cout << VALUE_WIDTH * i << " ~ " << VALUE_WIDTH * (i + 1) << " : " << onehot[i] << std::endl;
+        }
+    }
+}
+
+void testDistEffect() {
+    std::cout << "使う評価パラメータ: ";
+    std::string file_name;
+    std::cin >> file_name;
+    eval_params->readFile(file_name);
+
+    std::cout << std::fixed;
+    auto games = RootstrapTrainer::parallelPlay(*eval_params, *eval_params, 1, 800, false);
+    for (const auto& game : games) {
+        Position pos(*eval_params);
+        for (auto move : game.moves) {
+            if (move == NULL_MOVE) {
+                pos.doMove(move);
+                continue;
+            }
+
+            pos.print();
+
+            //move.scoreとPositionのvalueDistの期待値を比べる
+            std::cout << "move.score = " << move.score << std::endl;
+
+            auto value_dist = pos.valueDist();
+            
+            double value = 0.0;
+            for (int32_t i = 0; i < BIN_SIZE; i++) {
+                value += VALUE_WIDTH * (i + 0.5) * value_dist[i];
+            }
+            std::cout << "value = " << value << std::endl;
+
+            double sigma = 0.0;
+            for (int32_t i = 0; i < BIN_SIZE; i++) {
+                sigma += value_dist[i] * pow(VALUE_WIDTH * (i + 0.5) - value, 2);
+            }
+            std::cout << "sigma = " << sigma << std::endl;
+
+            pos.doMove(move);
         }
     }
 }

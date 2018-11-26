@@ -82,6 +82,8 @@ void NBoardProtocol::loop() {
 #ifdef USE_CATEGORICAL
         } else if (input == "testOneHotDist") {
             testOneHotDist();
+        } else if (input == "testDist") {
+            testDistEffect();
 #endif
         } else if (input == "testNN") {
             testNN();
