@@ -247,6 +247,7 @@ void AlphaZeroTrainer::learn() {
                 evaluate();
                 evaluation_interval = (int64_t)ceil(evaluation_interval * EVALUATION_INTERVAL_EXP);
                 evaluation_step += evaluation_interval;
+                eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
             }
 
             std::cout << std::endl;
@@ -255,7 +256,6 @@ void AlphaZeroTrainer::learn() {
             MUTEX.unlock();
         }
 
-        eval_params->writeFile("tmp" + std::to_string(i) + ".bin");
         log_file_.close();
     }
 

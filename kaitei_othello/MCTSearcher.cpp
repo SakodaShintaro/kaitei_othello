@@ -135,7 +135,6 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
         nn_rates_copy = current_node.nn_rates;
         for (int32_t i = 0; i < current_node.child_num; i++) {
             current_node.nn_rates[i] = (CalcType)((1.0 - epsilon) * current_node.nn_rates[i] + epsilon * dirichlet[i]);
-            std::cout << current_node.nn_rates[i] << std::endl;
         }
     }
 
