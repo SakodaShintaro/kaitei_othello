@@ -81,7 +81,6 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
     shared_data.limit_msec = LLONG_MAX;
     shared_data.stop_signal = false;
     usi_option.byoyomi_margin = 0LL;
-    usi_option.resign_score = MIN_SCORE;
 
     //変数の初期化
     sum_learned_games_ = 0;

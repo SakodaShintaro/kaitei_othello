@@ -32,7 +32,6 @@ void NBoardProtocol::loop() {
     usi_option.random_turn = 0;
     usi_option.thread_num = 1;
     usi_option.temperature = 10.0;
-    usi_option.resign_score = MIN_SCORE;
     usi_option.playout_limit = 8000;
     shared_data.limit_msec = 10000;
 

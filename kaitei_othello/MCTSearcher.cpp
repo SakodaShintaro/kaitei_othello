@@ -185,46 +185,40 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
 #endif
     assert(0.0 <= best_wp && best_wp <= 1.0);
 
-    if (best_wp < sigmoid(usi_option.resign_score, CP_GAIN)) {
-        //閾値未満の場合は投了
-        return { NULL_MOVE, TeacherType() };
-    } else {
-        //投了しない場合教師データを作成
-        TeacherType teacher(OUTPUT_DIM, 0.0);
+    TeacherType teacher(OUTPUT_DIM, 0.0);
 
-        //valueのセット
+    //valueのセット
 #ifdef USE_CATEGORICAL
-        for (int32_t i = 0; i < BIN_SIZE; i++) {
-            teacher[POLICY_DIM + i] = current_node.child_wins[best_index][i] / child_move_counts[best_index];
-        }
+    for (int32_t i = 0; i < BIN_SIZE; i++) {
+        teacher[POLICY_DIM + i] = current_node.child_wins[best_index][i] / child_move_counts[best_index];
+    }
 #else
-        teacher[POLICY_DIM] = (CalcType)best_wp;
+    teacher[POLICY_DIM] = (CalcType)best_wp;
 #endif
 
-        //最善手
-        Move best_move = current_node.legal_moves[best_index];
+    //最善手
+    Move best_move = current_node.legal_moves[best_index];
 
-        if (root.turn_number() < usi_option.random_turn) {
-            //ランダムなら訪問回数に基づいた分布を得る
-            std::vector<CalcType> distribution(current_node.child_num);
-            for (int32_t i = 0; i < current_node.child_num; i++) {
-                distribution[i] = (CalcType)child_move_counts[i] / current_node.move_count;
-                assert(0.0 <= distribution[i] && distribution[i] <= 1.0);
+    if (root.turn_number() < usi_option.random_turn) {
+        //ランダムなら訪問回数に基づいた分布を得る
+        std::vector<CalcType> distribution(current_node.child_num);
+        for (int32_t i = 0; i < current_node.child_num; i++) {
+            distribution[i] = (CalcType)child_move_counts[i] / current_node.move_count;
+            assert(0.0 <= distribution[i] && distribution[i] <= 1.0);
 
-                //分布を教師データにセット
-                teacher[current_node.legal_moves[i].toLabel()] = distribution[i];
-            }
-            //分布に基づいて指し手を選択
-            best_move = current_node.legal_moves[randomChoise(distribution)];
-        } else {
-            //訪問回数最大のもの = best_moveを選ぶような分布
-            teacher[best_move.toLabel()] = 1.0;
+            //分布を教師データにセット
+            teacher[current_node.legal_moves[i].toLabel()] = distribution[i];
         }
-        
-        best_move.score = (Score)best_wp;
-
-        return { best_move, teacher };
+        //分布に基づいて指し手を選択
+        best_move = current_node.legal_moves[randomChoise(distribution)];
+    } else {
+        //訪問回数最大のもの = best_moveを選ぶような分布
+        teacher[best_move.toLabel()] = 1.0;
     }
+
+    best_move.score = (Score)best_wp;
+
+    return { best_move, teacher };
 }
 
 #ifdef USE_CATEGORICAL
