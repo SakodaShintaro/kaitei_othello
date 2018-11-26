@@ -278,6 +278,7 @@ void NBoardProtocol::vsAI() {
     Position pos(*eval_params);
 
     std::vector<Game> games;
+    std::cout << std::fixed;
 
     double win_point = 0.0;
     for (int64_t i = 0; i < game_num; i++) {
@@ -339,27 +340,28 @@ void NBoardProtocol::vsAI() {
             }
         }
         if (!ok) {
-            std::cout << "重複あり ";
             usi_option.random_turn += 2;
-            std::cout << "random_turn -> " << usi_option.random_turn << std::endl;
+            std::cout << "重複あり random_turn -> " << usi_option.random_turn << std::endl;
             i--;
             continue;
         }
 
-        std::cout << i << "局目: ";
+        std::cout << std::setw(4) << i << "局目: ";
         auto result = pos.resultForBlack();
         if (i % 2 == turn) {
             //先手だった
             win_point += result;
-            std::cout << result << std::endl;
+            std::cout << result << " 計: " << win_point / (i + 1) << std::endl;
         } else {
             win_point += 1.0 - result;
-            std::cout << 1.0 - result << std::endl;
+            std::cout << 1.0 - result << " 計: " << win_point / (i + 1) << std::endl;
         }
 
         if (turn == 0) {
             game.writeKifuFile("./games/");
         }
+
+        games.push_back(game);
     }
 
     std::cout << "勝率 : " << win_point / game_num << std::endl;
