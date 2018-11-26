@@ -50,8 +50,6 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
             ifs >> usi_option.temperature;
         } else if (name == "random_move_num") {
             ifs >> usi_option.random_turn;
-        } else if (name == "draw_score") {
-            ifs >> usi_option.draw_score;
         } else if (name == "learn_mode(0or1)") {
             ifs >> LEARN_MODE;
         } else if (name == "deep_coefficient") {

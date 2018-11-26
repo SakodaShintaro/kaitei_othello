@@ -10,7 +10,6 @@ public:
 	uint32_t random_turn;
     uint64_t USI_Hash;
     uint32_t thread_num;
-    int32_t draw_score;
     int32_t resign_score;
     double temperature;
 
