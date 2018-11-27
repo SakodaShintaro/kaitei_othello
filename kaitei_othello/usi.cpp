@@ -84,6 +84,8 @@ void NBoardProtocol::loop() {
             testOneHotDist();
         } else if (input == "testDist") {
             testDistEffect();
+        } else if (input == "testTreeDist") {
+            testTreeDist();
 #endif
         } else if (input == "testNN") {
             testNN();

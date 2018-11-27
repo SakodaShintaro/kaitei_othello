@@ -9,6 +9,7 @@
 #include"rootstrap_trainer.hpp"
 #include<cassert>
 #include<numeric>
+#include<set>
 
 void testMakeRandomPosition() {
     std::unique_ptr<Searcher> s(new Searcher(Searcher::SLAVE));
@@ -169,13 +170,68 @@ void testOneHotDist() {
 }
 
 void testDistEffect() {
-    std::cout << "使う評価パラメータ: ";
-    std::string file_name;
-    std::cin >> file_name;
-    eval_params->readFile(file_name);
+    eval_params->readFile();
 
+    std::ofstream result_fs("dist_effect.txt");
+
+    result_fs << std::fixed;
     std::cout << std::fixed;
+
+    usi_option.random_turn = 30;
+    usi_option.thread_num = 1;
+    
+    auto games = RootstrapTrainer::parallelPlay(*eval_params, *eval_params, 500, 800, false);
+    std::set<int64_t> hash_values;
+
+    for (const auto& game : games) {
+        Position pos(*eval_params);
+        for (auto move : game.moves) {
+            if (move == NULL_MOVE) {
+                pos.doMove(move);
+                continue;
+            }
+
+            //move.scoreとPositionのvalueDistの期待値を比べる
+            auto value_dist = pos.valueDist();
+            
+            double value = 0.0;
+            for (int32_t i = 0; i < BIN_SIZE; i++) {
+                value += VALUE_WIDTH * (i + 0.5) * value_dist[i];
+            }
+
+            double sigma = 0.0;
+            for (int32_t i = 0; i < BIN_SIZE; i++) {
+                sigma += value_dist[i] * pow(VALUE_WIDTH * (i + 0.5) - value, 2);
+            }
+
+            if (hash_values.count(pos.hash_value()) == 0) {
+                result_fs << move.score << "\t" << value << "\t" << sigma << "\t" << pos.turn_number() << std::endl;
+                std::cout << move.score << "\t" << value << "\t" << sigma << "\t" << pos.turn_number() << std::endl;
+                hash_values.insert(pos.hash_value());
+            }
+
+            pos.doMove(move);
+        }
+    }
+    exit(0);
+}
+
+void testTreeDist() {
+    eval_params->readFile();
+
+    std::ofstream result_fs("dist_effect.txt");
+
+    result_fs << std::fixed;
+    std::cout << std::fixed;
+
+    usi_option.random_turn = 0;
+    usi_option.thread_num = 5;
+
     auto games = RootstrapTrainer::parallelPlay(*eval_params, *eval_params, 1, 800, false);
+    std::set<int64_t> hash_values;
+
+    MCTSearcher searcher(16);
+
     for (const auto& game : games) {
         Position pos(*eval_params);
         for (auto move : game.moves) {
@@ -186,25 +242,28 @@ void testDistEffect() {
 
             pos.print();
 
-            //move.scoreとPositionのvalueDistの期待値を比べる
-            std::cout << "move.score = " << move.score << std::endl;
+            auto curr_moves = pos.generateAllMoves();
+            for (auto curr_move : curr_moves) {
+                //各指し手について探索してみる
+                pos.doMove(curr_move);
+                auto result = searcher.thinkForGenerateLearnData(pos, 800, false);
+                result.first.score = 1.0 - result.first.score;
 
-            auto value_dist = pos.valueDist();
-            
-            double value = 0.0;
-            for (int32_t i = 0; i < BIN_SIZE; i++) {
-                value += VALUE_WIDTH * (i + 0.5) * value_dist[i];
-            }
-            std::cout << "value = " << value << std::endl;
+                double value = 0.0;
+                auto value_dist = pos.valueDist();
+                for (int32_t i = 0; i < BIN_SIZE; i++) {
+                    value += VALUE_WIDTH * (i + 0.5) * value_dist[i];
+                }
+                value = 1.0 - value;
 
-            double sigma = 0.0;
-            for (int32_t i = 0; i < BIN_SIZE; i++) {
-                sigma += value_dist[i] * pow(VALUE_WIDTH * (i + 0.5) - value, 2);
+                std::cout << "  " << curr_move << ": " << value << ", " << result.first.score << ", " << std::abs(value - result.first.score) << std::endl;
+
+                pos.undo();
             }
-            std::cout << "sigma = " << sigma << std::endl;
 
             pos.doMove(move);
         }
     }
+    exit(0);
 }
 #endif
