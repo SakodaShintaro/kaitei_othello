@@ -169,5 +169,8 @@
     <Text Include="alphazero_settings.txt">
       <Filter>リソース ファイル</Filter>
     </Text>
+    <Text Include="settings.txt">
+      <Filter>リソース ファイル</Filter>
+    </Text>
   </ItemGroup>
 </Project>

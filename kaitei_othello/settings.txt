@@ -1,0 +1,6 @@
+hash_size 16
+random_turn 0
+thread_num 1
+temperature 10
+playout_limit 8000
+limit_msec 100000

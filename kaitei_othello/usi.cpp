@@ -24,27 +24,41 @@
 USIOption usi_option;
 
 void NBoardProtocol::loop() {
+    //評価関数のロード
+    eval_params->readFile();
+
     //設定ファイルを読み込む
     std::ifstream ifs("settings.txt");
 
-    std::string input;
-    while (ifs >> input) {
-
+    if (!ifs) {
+        std::cerr << "There is not settings.txt" << std::endl;
+        std::this_thread::sleep_for(std::chrono::seconds(100));
+        assert(false);
     }
 
-    //設定してしまう
-    usi_option.USI_Hash = 256;
-    usi_option.random_turn = 0;
-    usi_option.thread_num = 1;
-    usi_option.temperature = 10.0;
-    usi_option.playout_limit = 8000;
-    shared_data.limit_msec = 10000;
+    std::string input;
+    while (ifs >> input) {
+        if (input == "hash_size") {
+            ifs >> usi_option.USI_Hash;
+        } else if (input == "random_turn") {
+            ifs >> usi_option.random_turn;
+        } else if (input == "thread_num") {
+            ifs >> usi_option.thread_num;
+        } else if (input == "temperature") {
+            ifs >> usi_option.temperature;
+        } else if (input == "playout_limit") {
+            ifs >> usi_option.playout_limit;
+        } else if (input == "limit_msec") {
+            ifs >> shared_data.limit_msec;
+        } else if (input == "eval_params_file") {
+            std::string file_name;
+            ifs >> file_name;
+            eval_params->readFile(file_name);
+        }
+    }
 
     //これはαβ探索用なので当面は使わない
     shared_data.hash_table.setSize(1);
-
-    //評価関数のロード
-    eval_params->readFile();
 
     //探索クラスの準備
     MCTSearcher mctsearcher(usi_option.USI_Hash);
