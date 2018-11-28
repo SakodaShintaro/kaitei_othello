@@ -24,11 +24,16 @@
 USIOption usi_option;
 
 void NBoardProtocol::loop() {
+    //設定ファイルを読み込む
+    std::ifstream ifs("settings.txt");
+
     std::string input;
+    while (ifs >> input) {
+
+    }
 
     //設定してしまう
     usi_option.USI_Hash = 256;
-    usi_option.byoyomi_margin = 0;
     usi_option.random_turn = 0;
     usi_option.thread_num = 1;
     usi_option.temperature = 10.0;

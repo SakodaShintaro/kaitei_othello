@@ -89,7 +89,6 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
     //その他オプションを学習用に設定
     shared_data.limit_msec = LLONG_MAX;
     shared_data.stop_signal = false;
-    usi_option.byoyomi_margin = 0LL;
 
     //変数の初期化
     update_num_ = 0;

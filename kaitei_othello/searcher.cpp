@@ -357,7 +357,7 @@ inline bool Searcher::shouldStop() {
     if (role_ == MAIN) { //MainThreadなら時間の確認と停止信号の確認
         auto now_time = std::chrono::steady_clock::now();
         auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now_time - start_);
-        if ((elapsed.count() >= shared_data.limit_msec - usi_option.byoyomi_margin)
+        if ((elapsed.count() >= shared_data.limit_msec)
             || shared_data.stop_signal) {
             //停止信号をオンにする
             shared_data.stop_signal = true;

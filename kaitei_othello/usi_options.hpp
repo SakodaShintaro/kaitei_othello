@@ -6,7 +6,6 @@
 
 class USIOption{
 public:
-	int64_t byoyomi_margin;
 	uint32_t random_turn;
     uint64_t USI_Hash;
     uint32_t thread_num;

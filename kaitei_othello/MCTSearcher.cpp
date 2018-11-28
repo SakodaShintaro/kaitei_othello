@@ -382,7 +382,7 @@ bool MCTSearcher::isTimeOver() {
     //時間のチェック
     auto now_time = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now_time - start_);
-    return (elapsed.count() >= shared_data.limit_msec - usi_option.byoyomi_margin);
+    return (elapsed.count() >= shared_data.limit_msec);
 }
 
 bool MCTSearcher::shouldStop() {
