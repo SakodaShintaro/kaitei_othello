@@ -134,7 +134,12 @@ void AlphaZeroTrainer::learn() {
     //局面もインスタンスは一つ用意して都度局面を構成
     Position pos(*eval_params);
 
+    //減衰をかけて壊してしまうので学習率の初期値を保持しておく
     auto start_learning_rate = LEARN_RATE;
+
+    //一番最初に対戦する相手を作る
+    eval_params->initRandom();
+    eval_params->writeFile("first_target.bin");
 
     //学習
     for (int32_t i = 1; ; i++) {
@@ -143,9 +148,12 @@ void AlphaZeroTrainer::learn() {
 
         MUTEX.lock();
 
+        //対戦相手の初期化(model.binへコピー)
+        eval_params->readFile("first_target.bin");
+        eval_params->writeFile();
+
         //パラメータの初期化
         eval_params->initRandom();
-        eval_params->writeFile();
         eval_params->writeFile("before_learn" + std::to_string(i) + ".bin");
 
         //変数の初期化
