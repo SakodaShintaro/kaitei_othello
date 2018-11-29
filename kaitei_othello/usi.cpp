@@ -256,6 +256,10 @@ void NBoardProtocol::vsAI() {
     int64_t game_num;
     std::cin >> game_num;
 
+    std::cout << "パイプ名: ";
+    std::string pipe_name;
+    std::cin >> pipe_name;
+
     std::cout << "1局目の先後(0 or 1): ";
     int64_t turn;
     std::cin >> turn;
@@ -265,7 +269,7 @@ void NBoardProtocol::vsAI() {
 
     if (turn == 0) {
         pipe_handle = CreateNamedPipe(
-            "\\\\.\\pipe\\mypipe",
+            ("\\\\.\\pipe\\mypipe" + pipe_name).c_str(),
             PIPE_ACCESS_DUPLEX, PIPE_TYPE_MESSAGE,
             1,
             sizeof(sendBuffer),
@@ -279,7 +283,8 @@ void NBoardProtocol::vsAI() {
         std::cout << "後手の起動待ち..." << std::endl;
         ConnectNamedPipe(pipe_handle, NULL);
     } else {
-        pipe_handle = CreateFile("\\\\.\\pipe\\mypipe", GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
+        pipe_handle = CreateFile(("\\\\.\\pipe\\mypipe" + pipe_name).c_str(),
+            GENERIC_READ | GENERIC_WRITE, 0, NULL, OPEN_EXISTING, 0, NULL);
         if (pipe_handle == INVALID_HANDLE_VALUE) {
             std::cout << "パイプ作成に失敗" << std::endl;
             return;
