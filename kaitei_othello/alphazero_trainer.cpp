@@ -382,8 +382,15 @@ void AlphaZeroTrainer::pushOneGame(Game& game) {
         double teacher_signal = DEEP_COEFFICIENT * game.moves[i].score + (1 - DEEP_COEFFICIENT) * result_for_turn;
 
 #ifdef USE_CATEGORICAL
-        auto teacher_dist = onehotDist(teacher_signal);
-        std::copy(teacher_dist.begin(), teacher_dist.end(), &game.teachers[i][POLICY_DIM]);
+        auto dist = pos.valueDist();
+        CalcType sum = 0.0;
+        for (int32_t j = 0; j < BIN_SIZE; j++) {
+            game.teachers[i][POLICY_DIM + j] = dist[j] * BernoulliDist(teacher_signal, VALUE_WIDTH * (j + 0.5));
+            sum += game.teachers[i][POLICY_DIM + j];
+        }
+        for (int32_t j = 0; j < BIN_SIZE; j++) {
+            game.teachers[i][POLICY_DIM + j] /= sum;
+        }
 #else
         game.teachers[i][POLICY_DIM] = (CalcType)teacher_signal;
 #endif

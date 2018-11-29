@@ -18,6 +18,10 @@ inline std::array<CalcType, BIN_SIZE> onehotDist(double value) {
     return result;
 }
 
+inline double BernoulliDist(double y, double mu) {
+    return std::pow(mu, y) * std::pow(1.0 - mu, 1.0 - y);
+}
+
 #endif
 
 #endif
