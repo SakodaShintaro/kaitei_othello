@@ -3,7 +3,7 @@
 #ifndef TEST_HPP
 #define TEST_HPP
 
-void testMakeRandomPosition();
+void testRandom();
 void testNN();
 void testKifuOutput();
 

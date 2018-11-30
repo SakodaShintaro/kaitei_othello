@@ -101,13 +101,13 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
 
     if (root.turn_number() < usi_option.random_turn) {
         //ランダムなら訪問回数に基づいた分布を得る
-        std::vector<CalcType> distribution(current_node.child_num);
+        std::vector<double> distribution(current_node.child_num);
         for (int32_t i = 0; i < current_node.child_num; i++) {
-            distribution[i] = (CalcType)child_move_counts[i] / current_node.move_count;
+            distribution[i] = (double)child_move_counts[i] / current_node.move_count;
             assert(0.0 <= distribution[i] && distribution[i] <= 1.0);
 
             //分布を教師データにセット
-            teacher[current_node.legal_moves[i].toLabel()] = distribution[i];
+            teacher[current_node.legal_moves[i].toLabel()] = (CalcType)distribution[i];
         }
         //分布に基づいて指し手を選択
         best_move = current_node.legal_moves[randomChoise(distribution)];
@@ -388,6 +388,7 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node, double
         assert(0.0 <= Q && Q <= 1.0);
         double U = std::sqrt(current_node.move_count + 1) / (child_move_counts[i] + 1);
         double ucb = Q + C_PUCT * current_node.nn_rates[i] * U;
+        //double ucb = Q + C_PUCT * U;
 
         //詰みだったらそれを選べばいいだろう
         if (Q == 1.0) {
@@ -417,7 +418,7 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
         double Q = (child_move_counts[i] == 0 ? 100.0 : current_node.child_wins[i] / child_move_counts[i]);
         double U = std::sqrt(current_node.move_count + 1) / (child_move_counts[i] + 1);
         double ucb = Q + C_PUCT * current_node.nn_rates[i] * U;
-        //std::cout << Q << " + " << current_node.nn_rates[i] << " * " << U << " = " << ucb << std::endl;
+        //double ucb = Q + C_PUCT * U;
 
         //詰みだったらそれを選べばいいだろう
         if (Q == 1.0) {

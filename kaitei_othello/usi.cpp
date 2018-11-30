@@ -92,8 +92,8 @@ void NBoardProtocol::loop() {
         } else if (input == "printEvalParams") {
             eval_params->readFile();
             eval_params->printHistgram();
-        } else if (input == "testMakeRandomPosition") {
-            testMakeRandomPosition();
+        } else if (input == "testRandom") {
+            testRandom();
 #ifdef USE_CATEGORICAL
         } else if (input == "testOneHotDist") {
             testOneHotDist();

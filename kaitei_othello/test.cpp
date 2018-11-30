@@ -11,87 +11,60 @@
 #include<numeric>
 #include<set>
 
-void testMakeRandomPosition() {
-    auto s = std::make_unique<Searcher>(usi_option.USI_Hash);
+void testRandom() {
+    //ランダム手
+    usi_option.random_turn = 100;
 
-    uint64_t try_num, random_turn, SEARCH_DEPTH;
-    double temperature;
-    std::cout << "何回試行するか:";
-    std::cin >> try_num;
-    std::cout << "何手ランダムの局面か:";
-    std::cin >> random_turn;
-    std::cout << "ランダムムーブ後の局面を調べる深さ:";
-    std::cin >> SEARCH_DEPTH;
-    std::cout << "温度:";
-    std::cin >> temperature;
-    std::cout << std::endl;
+    shared_data.stop_signal = false;
+    shared_data.limit_msec = LLONG_MAX;
+    Searcher searcher(usi_option.USI_Hash);
 
-    //同一局面の登場回数
-    std::map<uint64_t, uint64_t> appear_num;
+    Position pos(*eval_params);
 
-    //評価値
-    std::vector<double> scores(try_num);
+    std::vector<Game> games;
+    std::cout << std::fixed;
 
-    for (uint64_t i = 0; i < try_num; i++) {
-        Position p(*eval_params);
+    for (int64_t i = 0; i < 1000; i++) {
+        pos.init();
+        Game game;
+        while (!pos.isFinish()) {
+            //思考する
+            auto result = searcher.thinkForGenerateLearnData(pos, false);
+            Move move = result.first;
+            pos.doMove(move);
+            game.moves.push_back(move);
+        }
 
-        int move_count = 0;
-        for (uint64_t j = 0; j < random_turn; j++) {
-            Move random_move = s->thinkForGenerateLearnData(p, true).first;
-            if (random_move == NULL_MOVE) {
+        //過去の対局と比較して同一でないかを確認する
+        bool ok = true;
+        for (const auto& g : games) {
+            if (g.moves.size() != game.moves.size()) {
+                continue;
+            }
+
+            bool same = true;
+            for (int64_t j = 0; j < (int64_t)g.moves.size(); j++) {
+                if (g.moves[j] != game.moves[j]) {
+                    same = false;
+                    break;
+                }
+            }
+            if (same) {
+                ok = false;
                 break;
             }
-            p.doMove(random_move);
-            move_count++;
         }
-
-        //手数分ランダムに動かした
-        //p.print();
-        
-        if (move_count != random_turn) {
-            //途中で詰んだ場合もう一度やり直す
-            for (uint64_t j = 0; j < move_count; j++) {
-                p.undo();
-            }
+        if (!ok) {
+            usi_option.random_turn += 2;
+            std::cout << "重複あり random_turn -> " << usi_option.random_turn << std::endl;
             i--;
             continue;
         }
 
-        //探索してランダムムーブ後の局面の評価値を得る
-        auto result = s->thinkForGenerateLearnData(p, Depth(SEARCH_DEPTH * (int)PLY));
-        auto move = result.first;
-        if (isMatedScore(move.score)) {
-            //探索して詰みが見えた場合ももう一度
-            for (uint64_t j = 0; j < move_count; j++) {
-                p.undo();
-            }
-            i--;
-            continue;
-        }
-        scores[i] = static_cast<double>(move.score);
-        //std::cout << "今回のスコア : " << scores[i] << std::endl;
-        appear_num[p.hash_value()]++;
+        std::cout << std::setw(4) << i << "局目生成終了" << std::endl;
+        auto result = pos.resultForBlack();
+        games.push_back(game);
     }
-
-    //統計情報を得る
-    double sum = std::accumulate(scores.begin(), scores.end(), 0.0);
-    double average = sum / try_num;
-    double variance = 0;
-    for (double s : scores) {
-        variance += std::pow(s - average, 2);
-    }
-    variance /= try_num;
-
-    printf("average = %f, variance = %f\n", average, variance);
-
-    //局面の重複を確認
-    for (auto p : appear_num) {
-        if (p.second >= 2) {
-            std::cout << p.first << "の局面の登場回数:" << p.second << std::endl;
-        }
-    }
-
-    printf("終了\n");
 }
 
 void testNN() {
