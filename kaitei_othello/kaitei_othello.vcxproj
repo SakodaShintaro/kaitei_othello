@@ -42,7 +42,6 @@
     <ClCompile Include="alphabeta_searcher.cpp" />
     <ClCompile Include="square.cpp" />
     <ClCompile Include="test.cpp" />
-    <ClCompile Include="thread.cpp" />
     <ClCompile Include="treestrap_trainer.cpp" />
     <ClCompile Include="types.cpp" />
     <ClCompile Include="uct_hash_table.cpp" />
@@ -72,7 +71,6 @@
     <ClInclude Include="shared_data.hpp" />
     <ClInclude Include="square.hpp" />
     <ClInclude Include="test.hpp" />
-    <ClInclude Include="thread.hpp" />
     <ClInclude Include="treestrap_trainer.hpp" />
     <ClInclude Include="types.hpp" />
     <ClInclude Include="uct_hash_table.hpp" />

@@ -5,7 +5,6 @@
 #include"position.hpp"
 #include"searcher.hpp"
 #include"move.hpp"
-#include"thread.hpp"
 #include<string>
 
 class NBoardProtocol {

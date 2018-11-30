@@ -2,7 +2,6 @@
 #include"position.hpp"
 #include"searcher.hpp"
 #include"eval_params.hpp"
-#include"thread.hpp"
 #include"operate_params.hpp"
 #include<iomanip>
 #include<experimental/filesystem>

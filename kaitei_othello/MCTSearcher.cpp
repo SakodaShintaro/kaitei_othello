@@ -239,14 +239,8 @@ Index MCTSearcher::expandNode(Position& pos) {
     current_node.child_wins = std::vector<float>(current_node.child_num, 0.0);
 #endif
 
-    //I‹Ç‚µ‚Ä‚¢‚é‚©‚Ç‚¤‚©‚ÅğŒ•ª‚¯
     //ƒm[ƒh‚ğ•]‰¿
-    if (!pos.isFinish()) {
-        evalNode(pos, index);
-    } else {
-        printf("‚±‚±‚É‚Í—ˆ‚È‚¢‚Í‚¸\n");
-        assert(false);
-    }
+    evalNode(pos, index);
 
     return index;
 }
