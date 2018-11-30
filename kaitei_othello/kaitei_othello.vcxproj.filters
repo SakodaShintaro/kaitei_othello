@@ -13,11 +13,20 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="ソース ファイル\trainer">
+      <UniqueIdentifier>{18545c38-6719-441e-81cd-b8db46f59d83}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\searcher">
+      <UniqueIdentifier>{cefd69ac-b8af-4e0f-9393-e2227276fdac}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\trainer">
+      <UniqueIdentifier>{5af9d3cb-f678-48c0-8daf-bdf96ce8b77e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\searcher">
+      <UniqueIdentifier>{0917686c-a9d8-4f17-815e-8d2637b6bc72}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="base_trainer.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="bitboard.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -33,9 +42,6 @@
     <ClCompile Include="main.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="MCTSearcher.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="network.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -45,9 +51,6 @@
     <ClCompile Include="position.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="rootstrap_trainer.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="square.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -55,9 +58,6 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="thread.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
-    <ClCompile Include="treestrap_trainer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="types.cpp">
@@ -70,17 +70,26 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="alphazero_trainer.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\trainer</Filter>
+    </ClCompile>
+    <ClCompile Include="base_trainer.cpp">
+      <Filter>ソース ファイル\trainer</Filter>
+    </ClCompile>
+    <ClCompile Include="rootstrap_trainer.cpp">
+      <Filter>ソース ファイル\trainer</Filter>
+    </ClCompile>
+    <ClCompile Include="treestrap_trainer.cpp">
+      <Filter>ソース ファイル\trainer</Filter>
+    </ClCompile>
+    <ClCompile Include="MCTSearcher.cpp">
+      <Filter>ソース ファイル\searcher</Filter>
     </ClCompile>
     <ClCompile Include="alphabeta_searcher.cpp">
-      <Filter>ソース ファイル</Filter>
+      <Filter>ソース ファイル\searcher</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array_map.hpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="base_trainer.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="bitboard.hpp">
@@ -96,9 +105,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="hash_table.hpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="MCTSearcher.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="move.hpp">
@@ -119,9 +125,6 @@
     <ClInclude Include="pv_table.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="rootstrap_trainer.hpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="search_stack.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -135,9 +138,6 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="thread.hpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
-    <ClInclude Include="treestrap_trainer.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="types.hpp">
@@ -156,13 +156,25 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="alphazero_trainer.hpp">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\trainer</Filter>
+    </ClInclude>
+    <ClInclude Include="base_trainer.hpp">
+      <Filter>ヘッダー ファイル\trainer</Filter>
+    </ClInclude>
+    <ClInclude Include="rootstrap_trainer.hpp">
+      <Filter>ヘッダー ファイル\trainer</Filter>
+    </ClInclude>
+    <ClInclude Include="treestrap_trainer.hpp">
+      <Filter>ヘッダー ファイル\trainer</Filter>
+    </ClInclude>
+    <ClInclude Include="MCTSearcher.hpp">
+      <Filter>ヘッダー ファイル\searcher</Filter>
     </ClInclude>
     <ClInclude Include="alphabeta_searcher.hpp">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\searcher</Filter>
     </ClInclude>
     <ClInclude Include="searcher.hpp">
-      <Filter>ヘッダー ファイル</Filter>
+      <Filter>ヘッダー ファイル\searcher</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
