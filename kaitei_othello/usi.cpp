@@ -354,7 +354,7 @@ void NBoardProtocol::vsAI() {
             }
 
             bool same = true;
-            for (int64_t j = 0; j < g.moves.size(); j++) {
+            for (int64_t j = 0; j < (int64_t)g.moves.size(); j++) {
                 if (g.moves[j] != game.moves[j]) {
                     same = false;
                     break;
