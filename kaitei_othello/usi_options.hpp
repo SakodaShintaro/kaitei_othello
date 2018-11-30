@@ -6,13 +6,13 @@
 
 class USIOption{
 public:
-	uint32_t random_turn;
-    uint64_t USI_Hash;
-    uint32_t thread_num;
+	int64_t random_turn;
+    int64_t USI_Hash;
+    int64_t thread_num;
     double temperature;
 
 #ifdef USE_MCTS
-    uint64_t playout_limit;
+    int64_t playout_limit;
 #endif
 };
 

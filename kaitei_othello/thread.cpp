@@ -33,7 +33,7 @@ void Thread::idleLoop() {
 
 void ThreadPool::init() {
     //Mainの分を引く
-    int slave_num = usi_option.thread_num - 1;
+    int64_t slave_num = usi_option.thread_num - 1;
 
     //メインスレッドを作る
     this->emplace_back(new MainThread(0));
