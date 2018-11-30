@@ -22,9 +22,9 @@ protected:
     bool exit_, searching_;
     std::mutex mutex_;
     std::condition_variable sleep_condition_;
-    Searcher searcher_;
+    AlphaBetaSearcher searcher_;
 public:
-    Thread(uint32_t id) : id_(id), exit_(false), searching_(false), searcher_(Searcher::Role::SLAVE) {
+    Thread(uint32_t id) : id_(id), exit_(false), searching_(false), searcher_(AlphaBetaSearcher::Role::SLAVE) {
         thread_ = std::thread(&Thread::idleLoop, this);
     }
     ~Thread() {
@@ -61,7 +61,7 @@ private:
 
 public:
     MainThread(uint32_t id) : Thread(id) {
-        searcher_.setRole(Searcher::Role::MAIN);
+        searcher_.setRole(AlphaBetaSearcher::Role::MAIN);
     }
 
     virtual void startSearch() {

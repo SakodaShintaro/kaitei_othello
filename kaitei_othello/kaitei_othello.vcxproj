@@ -39,7 +39,7 @@
     <ClCompile Include="piece.cpp" />
     <ClCompile Include="position.cpp" />
     <ClCompile Include="rootstrap_trainer.cpp" />
-    <ClCompile Include="searcher.cpp" />
+    <ClCompile Include="alphabeta_searcher.cpp" />
     <ClCompile Include="square.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="thread.cpp" />
@@ -66,6 +66,7 @@
     <ClInclude Include="position.hpp" />
     <ClInclude Include="pv_table.hpp" />
     <ClInclude Include="rootstrap_trainer.hpp" />
+    <ClInclude Include="alphabeta_searcher.hpp" />
     <ClInclude Include="searcher.hpp" />
     <ClInclude Include="search_stack.hpp" />
     <ClInclude Include="shared_data.hpp" />

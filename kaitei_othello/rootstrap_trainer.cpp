@@ -206,7 +206,7 @@ std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit,
 #ifdef USE_MCTS
     auto searcher = std::make_unique<MCTSearcher>(usi_option.USI_Hash);
 #else
-    auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
+    auto searcher = std::make_unique<AlphaBetaSearcher>(AlphaBetaSearcher::SLAVE);
 #endif
 
     std::vector<Game> games(game_num);
@@ -248,7 +248,7 @@ std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
 #ifdef USE_MCTS
             auto searcher = std::make_unique<MCTSearcher>(usi_option.USI_Hash);
 #else
-            auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
+            auto searcher = std::make_unique<AlphaBetaSearcher>(AlphaBetaSearcher::SLAVE);
 #endif
             while (true) {
                 int32_t curr_index = index++;
@@ -424,7 +424,7 @@ void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>&
 }
 
 void RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t& learn_position_num) {
-    auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
+    auto searcher = std::make_unique<AlphaBetaSearcher>(AlphaBetaSearcher::SLAVE);
     Position pos(*eval_params);
 
     //まずは最終局面まで動かす

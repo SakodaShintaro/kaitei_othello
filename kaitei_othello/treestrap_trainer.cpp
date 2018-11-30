@@ -59,7 +59,7 @@ void TreestrapTrainer::startLearn() {
             Position pos(*eval_params);
             //Å‰”è‚Íƒ‰ƒ“ƒ_ƒ€‚É‘I‘ğ
             while (pos.turn_number() < usi_option.random_turn) {
-                auto random_move = Searcher::randomChoice(pos);
+                auto random_move = AlphaBetaSearcher::randomChoice(pos);
                 pos.doMove(random_move);
             }
 

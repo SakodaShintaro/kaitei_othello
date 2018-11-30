@@ -48,9 +48,6 @@
     <ClCompile Include="rootstrap_trainer.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
-    <ClCompile Include="searcher.cpp">
-      <Filter>ソース ファイル</Filter>
-    </ClCompile>
     <ClCompile Include="square.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
@@ -73,6 +70,9 @@
       <Filter>ソース ファイル</Filter>
     </ClCompile>
     <ClCompile Include="alphazero_trainer.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="alphabeta_searcher.cpp">
       <Filter>ソース ファイル</Filter>
     </ClCompile>
   </ItemGroup>
@@ -125,9 +125,6 @@
     <ClInclude Include="search_stack.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
-    <ClInclude Include="searcher.hpp">
-      <Filter>ヘッダー ファイル</Filter>
-    </ClInclude>
     <ClInclude Include="shared_data.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
@@ -159,6 +156,12 @@
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
     <ClInclude Include="alphazero_trainer.hpp">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="alphabeta_searcher.hpp">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="searcher.hpp">
       <Filter>ヘッダー ファイル</Filter>
     </ClInclude>
   </ItemGroup>

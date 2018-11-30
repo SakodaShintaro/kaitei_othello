@@ -28,7 +28,7 @@ struct SearchLog {
 };
 static SearchLog search_log;
 
-void Searcher::think() {
+void AlphaBetaSearcher::think() {
     //思考開始時間をセット
     start_ = std::chrono::steady_clock::now();
 
@@ -199,7 +199,7 @@ void Searcher::think() {
     }
 }
 
-std::pair<Move, TeacherType> Searcher::thinkForGenerateLearnData(Position& root, int32_t depth) {
+std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Position& root, int32_t depth) {
     //思考開始時間をセット
     start_ = std::chrono::steady_clock::now();
 
@@ -264,11 +264,11 @@ std::pair<Move, TeacherType> Searcher::thinkForGenerateLearnData(Position& root,
 }
 
 template<bool isPVNode>
-Score Searcher::qsearch(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root) {
+Score AlphaBetaSearcher::qsearch(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root) {
     return pos.valueScoreForTurn();
 }
 
-void Searcher::sendInfo(Depth depth, std::string cp_or_mate, Score score, Bound bound) {
+void AlphaBetaSearcher::sendInfo(Depth depth, std::string cp_or_mate, Score score, Bound bound) {
     if (bound != EXACT_BOUND) {
         //lower_boundとか表示する意味がない気がしてきた
         return;
@@ -301,7 +301,7 @@ void Searcher::sendInfo(Depth depth, std::string cp_or_mate, Score score, Bound 
     std::cout << std::endl;
 }
 
-Move Searcher::randomChoice(Position & pos) {
+Move AlphaBetaSearcher::randomChoice(Position & pos) {
     auto moves = pos.generateAllMoves();
     std::uniform_int_distribution<size_t> dist(0, moves.size() - 1);
     static std::random_device seed_gen;
@@ -309,7 +309,7 @@ Move Searcher::randomChoice(Position & pos) {
     return moves[dist(engine)];
 }
 
-Move Searcher::softmaxChoice(Position& pos, double temperature) {
+Move AlphaBetaSearcher::softmaxChoice(Position& pos, double temperature) {
     auto moves = pos.generateAllMoves();
     if (moves.size() == 0) {
         return NULL_MOVE;
@@ -347,12 +347,12 @@ Move Searcher::softmaxChoice(Position& pos, double temperature) {
     return moves[moves.size() - 1];
 }
 
-inline int Searcher::futilityMargin(int depth) {
+inline int AlphaBetaSearcher::futilityMargin(int depth) {
     return 175 * depth / PLY;
     //return PLY / 2 + depth * 2;
 }
 
-inline bool Searcher::shouldStop() {
+inline bool AlphaBetaSearcher::shouldStop() {
     //探索深さの制限も加えるべきか?
     if (role_ == MAIN) { //MainThreadなら時間の確認と停止信号の確認
         auto now_time = std::chrono::steady_clock::now();
@@ -374,7 +374,7 @@ inline bool Searcher::shouldStop() {
 #define OMIT_PRUNINGS
 
 template<bool isPVNode, bool train_mode>
-Score Searcher::search(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root) {
+Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root) {
     if (depth < PLY) {
         return qsearch<isPVNode || train_mode>(pos, alpha, beta, Depth(0), distance_from_root);
     }

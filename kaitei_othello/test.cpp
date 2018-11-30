@@ -12,7 +12,7 @@
 #include<set>
 
 void testMakeRandomPosition() {
-    std::unique_ptr<Searcher> s(new Searcher(Searcher::SLAVE));
+    std::unique_ptr<AlphaBetaSearcher> s(new AlphaBetaSearcher(AlphaBetaSearcher::SLAVE));
 
     uint64_t try_num, random_turn, SEARCH_DEPTH;
     double temperature;
@@ -127,7 +127,7 @@ void testKifuOutput() {
     Game game;
     eval_params->readFile();
     Position pos_c(*eval_params), pos_t(*eval_params);
-    auto searcher = std::make_unique<Searcher>(Searcher::SLAVE);
+    auto searcher = std::make_unique<AlphaBetaSearcher>(AlphaBetaSearcher::SLAVE);
 
     while (true) {
         //iが偶数のときpos_cが先手
