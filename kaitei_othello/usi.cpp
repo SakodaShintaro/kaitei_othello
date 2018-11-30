@@ -68,8 +68,9 @@ void NBoardProtocol::loop() {
         if (input == "go") {
             shared_data.stop_signal = false;
 #ifdef USE_MCTS
-            mctsearcher.think();
+            auto result = mctsearcher.thinkForGenerateLearnData(shared_data.root, usi_option.playout_limit, false);
 #endif
+            std::cout << "=== " << result.first << std::endl;
         } else if (input == "prepareForLearn") {
             eval_params->initRandom();
             eval_params->printHistgram();

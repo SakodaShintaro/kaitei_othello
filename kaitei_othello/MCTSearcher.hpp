@@ -15,9 +15,6 @@ public:
     //コンストラクタ
     MCTSearcher(int64_t hash_size) : hash_table_(hash_size) {}
     
-    //USIプロトコルに基づいて結果等を標準出力に出す関数
-    void think();
-
     //学習用に一番良い指し手と学習データを返す
     std::pair<Move, TeacherType> thinkForGenerateLearnData(Position& pos, int32_t playout_limit, bool add_noise);
 
