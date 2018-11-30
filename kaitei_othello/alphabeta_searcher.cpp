@@ -4,6 +4,7 @@
 #include"types.hpp"
 #include"shared_data.hpp"
 #include"network.hpp"
+#include"operate_params.hpp"
 #include<iostream>
 #include<stdio.h>
 #include<string>

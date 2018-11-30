@@ -226,6 +226,7 @@ void testTreeDist() {
 
     usi_option.random_turn = 0;
     usi_option.thread_num = 5;
+    usi_option.playout_limit = 800;
 
     auto games = RootstrapTrainer::parallelPlay(*eval_params, *eval_params, 1, 800, false);
     std::set<int64_t> hash_values;
@@ -246,7 +247,7 @@ void testTreeDist() {
             for (auto curr_move : curr_moves) {
                 //各指し手について探索してみる
                 pos.doMove(curr_move);
-                auto result = searcher.thinkForGenerateLearnData(pos, 800, false);
+                auto result = searcher.thinkForGenerateLearnData(pos, false);
                 result.first.score = 1.0 - result.first.score;
 
                 double value = 0.0;
