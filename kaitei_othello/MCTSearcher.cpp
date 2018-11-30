@@ -44,7 +44,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
 
     //プレイアウトを繰り返す
     //探索回数が閾値を超える、または探索が打ち切られたらループを抜ける
-    while (playout_num < (uint32_t)usi_option.playout_limit) {
+    while (playout_num < usi_option.playout_limit) {
         //探索回数を1回増やす
         playout_num++;
 

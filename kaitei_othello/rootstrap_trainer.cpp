@@ -203,11 +203,7 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
 }
 
 std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit, bool add_noise) {
-#ifdef USE_MCTS
-    auto searcher = std::make_unique<MCTSearcher>(usi_option.USI_Hash);
-#else
-    auto searcher = std::make_unique<AlphaBetaSearcher>(AlphaBetaSearcher::SLAVE);
-#endif
+    auto searcher = std::make_unique<Searcher>(usi_option.USI_Hash);
 
     std::vector<Game> games(game_num);
     for (int32_t i = 0; i < game_num; i++) {
@@ -245,11 +241,7 @@ std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
     std::vector<std::thread> threads;
     for (int32_t i = 0; i < (int32_t)usi_option.thread_num; i++) {
         threads.emplace_back([&]() {
-#ifdef USE_MCTS
-            auto searcher = std::make_unique<MCTSearcher>(usi_option.USI_Hash);
-#else
-            auto searcher = std::make_unique<AlphaBetaSearcher>(AlphaBetaSearcher::SLAVE);
-#endif
+            auto searcher = std::make_unique<Searcher>(usi_option.USI_Hash);
             while (true) {
                 int32_t curr_index = index++;
                 if (curr_index >= game_num) {

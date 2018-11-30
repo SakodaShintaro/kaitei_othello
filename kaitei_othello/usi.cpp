@@ -67,9 +67,7 @@ void NBoardProtocol::loop() {
         std::cin >> input;
         if (input == "go") {
             shared_data.stop_signal = false;
-#ifdef USE_MCTS
             auto result = mctsearcher.thinkForGenerateLearnData(shared_data.root, false);
-#endif
             std::cout << "=== " << result.first << std::endl;
         } else if (input == "prepareForLearn") {
             eval_params->initRandom();
@@ -182,9 +180,7 @@ void NBoardProtocol::vsHuman() {
 
     shared_data.stop_signal = false;
     shared_data.limit_msec = LLONG_MAX;
-#ifdef USE_MCTS
-    MCTSearcher mctsearcher(usi_option.USI_Hash);
-#endif
+    Searcher searcher(usi_option.USI_Hash);
 
     int32_t human_turn;
     std::cout << "人間が先手なら0,後手なら1を入力: ";
@@ -235,7 +231,7 @@ void NBoardProtocol::vsHuman() {
                 }
             }
         } else {
-            auto result = mctsearcher.thinkForGenerateLearnData(pos, false);
+            auto result = searcher.thinkForGenerateLearnData(pos, false);
             pos.doMove(result.first);
         }
     }
@@ -297,9 +293,7 @@ void NBoardProtocol::vsAI() {
 
     shared_data.stop_signal = false;
     shared_data.limit_msec = LLONG_MAX;
-#ifdef USE_MCTS
-    MCTSearcher mctsearcher(usi_option.USI_Hash);
-#endif
+    Searcher searcher(usi_option.USI_Hash);
 
     Position pos(*eval_params);
 
@@ -314,7 +308,7 @@ void NBoardProtocol::vsAI() {
             Move move;
             if ((pos.turn_number() + i) % 2 == turn) {
                 //思考する
-                auto result = mctsearcher.thinkForGenerateLearnData(pos, false);
+                auto result = searcher.thinkForGenerateLearnData(pos, false);
                 move = result.first;
 
                 DWORD dwBytesWritten;
