@@ -210,14 +210,13 @@ std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit,
 #endif
 
     std::vector<Game> games(game_num);
-
     for (int32_t i = 0; i < game_num; i++) {
         Game& game = games[i];
         Position pos(*eval_params);
 
         while (!pos.isFinish()) {
             //iが偶数のときpos_cが先手
-            auto move_and_teacher = searcher->thinkForGenerateLearnData(pos, search_limit, add_noise);
+            auto move_and_teacher = searcher->thinkForGenerateLearnData(pos, add_noise);
             Move best_move = move_and_teacher.first;
             TeacherType teacher = move_and_teacher.second;
 
@@ -234,6 +233,7 @@ std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit,
         //対局結果の設定
         game.result = pos.resultForBlack();
     }
+
     return games;
 }
 
@@ -263,8 +263,8 @@ std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
                 while (!pos_c.isFinish()) {
                     //iが偶数のときpos_cが先手
                     auto move_and_teacher = ((pos_c.turn_number() % 2) == (curr_index % 2) ?
-                        searcher->thinkForGenerateLearnData(pos_c, search_limit, add_noise) :
-                        searcher->thinkForGenerateLearnData(pos_t, search_limit, add_noise));
+                        searcher->thinkForGenerateLearnData(pos_c, add_noise) :
+                        searcher->thinkForGenerateLearnData(pos_t, add_noise));
                     Move best_move = move_and_teacher.first;
                     TeacherType teacher = move_and_teacher.second;
 

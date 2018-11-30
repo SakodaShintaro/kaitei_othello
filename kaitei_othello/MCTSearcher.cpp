@@ -6,7 +6,7 @@
 
 #ifdef USE_MCTS
 
-std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& root, int32_t playout_limit, bool add_noise) {
+std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& root, bool add_noise) {
     //思考開始時間をセット
     start_ = std::chrono::steady_clock::now();
 
@@ -44,7 +44,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
 
     //プレイアウトを繰り返す
     //探索回数が閾値を超える、または探索が打ち切られたらループを抜ける
-    while (playout_num < (uint32_t)playout_limit) {
+    while (playout_num < (uint32_t)usi_option.playout_limit) {
         //探索回数を1回増やす
         playout_num++;
 

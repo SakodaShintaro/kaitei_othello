@@ -68,7 +68,7 @@ void NBoardProtocol::loop() {
         if (input == "go") {
             shared_data.stop_signal = false;
 #ifdef USE_MCTS
-            auto result = mctsearcher.thinkForGenerateLearnData(shared_data.root, usi_option.playout_limit, false);
+            auto result = mctsearcher.thinkForGenerateLearnData(shared_data.root, false);
 #endif
             std::cout << "=== " << result.first << std::endl;
         } else if (input == "prepareForLearn") {
@@ -235,7 +235,7 @@ void NBoardProtocol::vsHuman() {
                 }
             }
         } else {
-            auto result = mctsearcher.thinkForGenerateLearnData(pos, (int32_t)usi_option.playout_limit, false);
+            auto result = mctsearcher.thinkForGenerateLearnData(pos, false);
             pos.doMove(result.first);
         }
     }
@@ -314,7 +314,7 @@ void NBoardProtocol::vsAI() {
             Move move;
             if ((pos.turn_number() + i) % 2 == turn) {
                 //思考する
-                auto result = mctsearcher.thinkForGenerateLearnData(pos, (int32_t)usi_option.playout_limit, false);
+                auto result = mctsearcher.thinkForGenerateLearnData(pos, false);
                 move = result.first;
 
                 DWORD dwBytesWritten;
