@@ -6,10 +6,7 @@
 #include<atomic>
 
 struct SharedData {
-    SharedData() : root(*eval_params) {}
     std::atomic<bool> stop_signal;
-    HashTable hash_table;
-    Position root;
     int64_t limit_msec;
 };
 

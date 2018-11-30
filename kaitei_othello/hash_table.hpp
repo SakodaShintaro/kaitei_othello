@@ -37,7 +37,7 @@ struct HashEntry {
 
 class HashTable{
 public:
-    HashTable() { setSize(64); }
+    HashTable(int64_t hash_size) { setSize(hash_size); }
 	HashEntry* find(int64_t key);
     void save(int64_t key, Move move, Score score, Depth depth, std::vector<Move> sorted_moves);
     void save(int64_t key, Move move, Score score, Depth depth);

@@ -28,177 +28,6 @@ struct SearchLog {
 };
 static SearchLog search_log;
 
-void AlphaBetaSearcher::think() {
-    //思考開始時間をセット
-    start_ = std::chrono::steady_clock::now();
-
-    //コピーして使う
-    Position root = shared_data.root;
-
-    //思考する局面の表示
-    if (role_ == MAIN) {
-        root.print();
-    }
-
-    //History初期化
-    history_.clear();
-
-    resetPVTable();
-
-    //ルート局面の合法手を設定
-    root_moves_ = root.generateAllMoves();
-
-#ifdef USE_SEARCH_STACK
-    SearchStack* ss = searchInfoAt(0);
-    ss->killers[0] = ss->killers[1] = NULL_MOVE;
-#ifndef SF_SEARCH
-    ss->can_null_move = true;
-#endif
-#endif
-
-    //合法手が0だったら投了
-    if (root_moves_.size() == 0) {
-        if (role_ == MAIN) {
-            std::cout << "bestmove resign" << std::endl;
-        }
-        return;
-    }
-
-    //合法手が1つだったらすぐ送る
-    //これ別にいらないよな
-    //これもUSIオプション化した方が良いか
-    //if (root_moves_.size() == 1) {
-    //    if (role_ == MAIN) {
-    //        std::cout << "bestmove " << root_moves_[0] << std::endl;
-    //    }
-    //    return;
-    //}
-
-    //指定された手数まで完全ランダムに指す
-    static std::random_device rd;
-    if (root.turn_number() + 1 <= usi_option.random_turn) {
-        if (role_ == MAIN) {
-            //int rnd = rd() % root_moves_.size();
-            //std::cout << "bestmove " << root_moves_[rnd] << std::endl;
-            std::cout << "bestmove " << softmaxChoice(root, usi_option.temperature) << std::endl;;
-        }
-        return;
-    }
-
-    //探索局面数を初期化
-    node_number_ = 0;
-
-    //探索
-    //反復深化
-    static constexpr Score DEFAULT_ASPIRATION_WINDOW_SIZE = Score(256);
-    Score aspiration_window_size = DEFAULT_ASPIRATION_WINDOW_SIZE;
-    Score best_score, alpha, beta, previous_best_score;
-
-    for (Depth depth = PLY * 1; depth <= DEPTH_MAX; depth += PLY) {
-        if (role_ == SLAVE) { //Svaleスレッドは探索深さを深くする
-            static std::mt19937 mt(rd());
-            static std::uniform_int_distribution<int32_t> distribution(PLY / 2, 2 * PLY);
-            depth += distribution(mt);
-        }
-
-        //seldepth_の初期化
-        seldepth_ = depth;
-
-        //探索窓の設定
-        if (depth <= 4 * PLY) { //深さ4まではASPIRATION_WINDOWを使わずフルで探索する
-            alpha = MIN_SCORE;
-            beta = MAX_SCORE;
-        } else {
-            alpha = std::max(previous_best_score - aspiration_window_size, MIN_SCORE);
-            beta = std::min(previous_best_score + aspiration_window_size, MAX_SCORE);
-        }
-
-        while (!shouldStop()) { //exactな評価値が返ってくるまでウィンドウを広げつつ探索
-            //指し手のスコアを最小にしておかないと変になる
-            for (auto& root_move : root_moves_) {
-                root_move.score = MIN_SCORE;
-            }
-
-            best_score = search<true, false>(root, alpha, beta, depth, 0);
-
-            //history_.print();
-
-            //詰んでいたら抜ける
-            if (isMatedScore(best_score) || shouldStop()) {
-                break;
-            }
-
-            if (best_score <= alpha) {
-                //fail-low
-                if (role_ == MAIN) {
-                    printf("aspiration fail-low, alpha = %f\n", alpha);
-                    sendInfo(depth, "cp", best_score, UPPER_BOUND);
-                }
-
-                beta = (alpha + beta) / 2;
-                alpha -= aspiration_window_size;
-                aspiration_window_size *= 4;
-            } else if (best_score >= beta) {
-                //fail-high
-                if (role_ == MAIN) {
-                    printf("aspiration fail-high, beta = %f\n", beta);
-                    sendInfo(depth, "cp", best_score, LOWER_BOUND);
-                }
-
-                alpha = (alpha + beta) / 2;
-                beta += aspiration_window_size;
-                aspiration_window_size *= 4;
-            } else {
-                aspiration_window_size = DEFAULT_ASPIRATION_WINDOW_SIZE;
-                break;
-            }
-        }
-
-        //停止確認してダメだったら保存せずループを抜ける
-        if (shouldStop()) {
-            break;
-        }
-
-        //指し手の並び替え
-        std::stable_sort(root_moves_.begin(), root_moves_.end(), std::greater<Move>());
-
-        //GUIへ読みの情報を送る
-        if (role_ == MAIN) {
-            if (MATE_SCORE_UPPER_BOUND < root_moves_[0].score && root_moves_[0].score < MATE_SCORE_LOWER_BOUND) {
-                //詰みなし
-                sendInfo(depth, "cp", root_moves_[0].score, EXACT_BOUND);
-            } else {
-                //詰みあり
-                Score mate_num = MAX_SCORE - std::abs(root_moves_[0].score);
-                mate_num *= ((int32_t)mate_num % 2 == 0 ? -1 : 1);
-                sendInfo(depth, "mate", mate_num, EXACT_BOUND);
-            }
-        }
-
-        //置換表への保存
-        shared_data.hash_table.save(root.hash_value(), root_moves_[0], root_moves_[0].score, depth, root_moves_);
-
-        //詰みがあったらすぐ返す
-        if (isMatedScore(root_moves_[0].score)) {
-            break;
-        }
-
-        //今回のイテレーションにおけるスコアを記録
-        previous_best_score = best_score;
-
-        //PVtableをリセットしていいよな？
-        resetPVTable();
-    }
-
-    //GUIへBestMoveの情報を送る
-    if (role_ == MAIN) {
-        std::cout << "bestmove " << root_moves_[0] << std::endl;
-
-        //ログを出力
-        search_log.print();
-    }
-}
-
 std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Position& root, int32_t depth) {
     //思考開始時間をセット
     start_ = std::chrono::steady_clock::now();
@@ -225,42 +54,100 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
         return { NULL_MOVE, TeacherType() };
     }
 
-    //指定された手数までソフトマックスランダムにより指し手を決定
-    //if (root.turn_number() < usi_option.random_turn) {
-    //    Move random_move = softmaxChoice(root, usi_option.temperature);
-    //    random_move.score = MIN_SCORE;
-    //    return { random_move, 0.0 };
-    //}
+    //指定された手数まで完全ランダムに指す
+    static std::random_device rd;
+    if (root.turn_number() + 1 <= usi_option.random_turn) {
+        return { root_moves_[rd() % root_moves_.size()], TeacherType() };
+    }
 
     //探索局面数を初期化
     node_number_ = 0;
 
-    search_log.hash_cut_num = 0;
+    //探索
+    //反復深化
+    static constexpr Score DEFAULT_ASPIRATION_WINDOW_SIZE = Score(256);
+    Score aspiration_window_size = DEFAULT_ASPIRATION_WINDOW_SIZE;
+    Score best_score, alpha, beta, previous_best_score;
 
-    Score best_score = MIN_SCORE;
-    
-    std::vector<double> scores(root_moves_.size());
-    for (uint32_t i = 0; i < root_moves_.size(); i++) {
-        root.doMove(root_moves_[i]);
-        root_moves_[i].score = -search<true, true>(root, MIN_SCORE, MAX_SCORE, depth * PLY - PLY, 1);
-        root.undo();
+    for (Depth depth = PLY * 1; depth <= DEPTH_MAX; depth += PLY) {
+        //seldepth_の初期化
+        seldepth_ = depth;
 
-        best_score = std::max(best_score, root_moves_[i].score);
-        scores[i] = root_moves_[i].score;
+        //探索窓の設定
+        if (depth <= 4 * PLY) { //深さ4まではASPIRATION_WINDOWを使わずフルで探索する
+            alpha = MIN_SCORE;
+            beta = MAX_SCORE;
+        } else {
+            alpha = std::max(previous_best_score - aspiration_window_size, MIN_SCORE);
+            beta = std::min(previous_best_score + aspiration_window_size, MAX_SCORE);
+        }
+
+        while (!shouldStop()) { //exactな評価値が返ってくるまでウィンドウを広げつつ探索
+            //指し手のスコアを最小にしておかないと変になる
+            for (auto& root_move : root_moves_) {
+                root_move.score = MIN_SCORE;
+            }
+
+            best_score = search<true, false>(root, alpha, beta, depth, 0);
+
+            //詰んでいたら抜ける
+            if (isMatedScore(best_score) || shouldStop()) {
+                break;
+            }
+
+            if (best_score <= alpha) {
+                //fail-low
+                beta = (alpha + beta) / 2;
+                alpha -= aspiration_window_size;
+                aspiration_window_size *= 4;
+            } else if (best_score >= beta) {
+                //fail-high
+                alpha = (alpha + beta) / 2;
+                beta += aspiration_window_size;
+                aspiration_window_size *= 4;
+            } else {
+                aspiration_window_size = DEFAULT_ASPIRATION_WINDOW_SIZE;
+                break;
+            }
+        }
+
+        //停止確認してダメだったら保存せずループを抜ける
+        if (shouldStop()) {
+            break;
+        }
+
+        //指し手の並び替え
+        std::stable_sort(root_moves_.begin(), root_moves_.end(), std::greater<Move>());
+
+        //置換表への保存
+        hash_table_.save(root.hash_value(), root_moves_[0], root_moves_[0].score, depth, root_moves_);
+
+        //詰みがあったらすぐ返す
+        if (isMatedScore(root_moves_[0].score)) {
+            break;
+        }
+
+        //今回のイテレーションにおけるスコアを記録
+        previous_best_score = best_score;
+
+        //PVtableをリセットしていいよな？
+        resetPVTable();
     }
 
-    if (isMatedScore(best_score)) {
-        //詰みがある場合は最善のものを返す
-    }
-
-    scores = softmax(scores, 50.0);
-
-    scores.push_back(sigmoid((int32_t)best_score, CP_GAIN));
+    Move best_move = root_moves_.front();
     TeacherType teacher(OUTPUT_DIM, 0.0);
-    for (int32_t i = 0; i < root_moves_.size(); i++) {
-        teacher[root_moves_[i].toLabel()] = (CalcType)scores[i];
+    teacher[best_move.toLabel()] = 1.0;
+
+#ifdef USE_CATEGORICAL
+    auto dist = onehotDist(best_score);
+    for (int32_t i = 0; i < BIN_SIZE; i++) {
+        teacher[POLICY_DIM + i] = dist[i];
     }
-    return { root_moves_[randomChoise(scores)], teacher };
+#else
+    teacher[POLICY_DIM] = best_score;
+#endif
+
+    return { root_moves_.front(), teacher };
 }
 
 template<bool isPVNode>
@@ -290,7 +177,7 @@ void AlphaBetaSearcher::sendInfo(Depth depth, std::string cp_or_mate, Score scor
     }
     int64_t nps = (elapsed.count() == 0 ? 0 : (int64_t)((double)(node_number_) / elapsed.count() * 1000.0));
     std::cout << " nps " << std::setw(10) << nps;
-    std::cout << " hashfull " << std::setw(4) << (int)shared_data.hash_table.hashfull();
+    std::cout << " hashfull " << std::setw(4) << (int)hash_table_.hashfull();
     std::cout << " pv ";
     if (pv_table_.size() == 0) {
         pv_table_.update(root_moves_[0], 0);
@@ -354,19 +241,13 @@ inline int AlphaBetaSearcher::futilityMargin(int depth) {
 
 inline bool AlphaBetaSearcher::shouldStop() {
     //探索深さの制限も加えるべきか?
-    if (role_ == MAIN) { //MainThreadなら時間の確認と停止信号の確認
-        auto now_time = std::chrono::steady_clock::now();
-        auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now_time - start_);
-        if ((elapsed.count() >= shared_data.limit_msec)
-            || shared_data.stop_signal) {
-            //停止信号をオンにする
-            shared_data.stop_signal = true;
-            return true;
-        }
-    } else { //SlaveThreadなら停止信号だけを見る
-        if (shared_data.stop_signal) {
-            return true;
-        }
+    auto now_time = std::chrono::steady_clock::now();
+    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now_time - start_);
+    if ((elapsed.count() >= shared_data.limit_msec)
+        || shared_data.stop_signal) {
+        //停止信号をオンにする
+        shared_data.stop_signal = true;
+        return true;
     }
     return false;
 }
@@ -438,7 +319,7 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
     // Step4. 置換表を見る
     //-----------------------------
 
-    auto hash_entry = shared_data.hash_table.find(pos.hash_value());
+    auto hash_entry = hash_table_.find(pos.hash_value());
     if (train_mode) {
         hash_entry = nullptr;
     }
@@ -475,8 +356,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
     Move best_move = NULL_MOVE;
 
     //指し手を生成
-    constexpr int32_t scale = 1000;
-    constexpr int32_t threshold = scale;
     std::vector<Move> moves;
     if (hash_entry && hash_entry->sorted_moves.size() > 0) {
         moves = hash_entry->sorted_moves;
@@ -638,7 +517,7 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
     //-----------------------------
     // 置換表に保存
     //-----------------------------
-    shared_data.hash_table.save(pos.hash_value(), best_move, best_score, depth, moves);
+    hash_table_.save(pos.hash_value(), best_move, best_score, depth, moves);
 
     return best_score;
 }

@@ -415,7 +415,6 @@ void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>&
 }
 
 void RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEvalType>& grad, std::array<double, 2>& loss, uint64_t& learn_position_num) {
-    auto searcher = std::make_unique<AlphaBetaSearcher>(AlphaBetaSearcher::SLAVE);
     Position pos(*eval_params);
 
     //まずは最終局面まで動かす

@@ -57,17 +57,14 @@ void NBoardProtocol::loop() {
         }
     }
 
-    //これはαβ探索用なので当面は使わない
-    shared_data.hash_table.setSize(1);
-
     //探索クラスの準備
-    MCTSearcher mctsearcher(usi_option.USI_Hash);
+    Searcher searcher(usi_option.USI_Hash);
 
     while (true) {
         std::cin >> input;
         if (input == "go") {
             shared_data.stop_signal = false;
-            auto result = mctsearcher.thinkForGenerateLearnData(shared_data.root, false);
+            auto result = searcher.thinkForGenerateLearnData(root_, false);
             std::cout << "=== " << result.first << std::endl;
         } else if (input == "prepareForLearn") {
             eval_params->initRandom();
@@ -128,7 +125,7 @@ void NBoardProtocol::loop() {
                 //やることは特になし
             } else if (command == "game") {
                 //盤面を初期化
-                shared_data.root.init();
+                root_.init();
 
                 while (true) {
                     std::string ggf_str;
@@ -140,7 +137,7 @@ void NBoardProtocol::loop() {
                                 //[から2文字を取ってMoveとして解釈し]まで飛ばす
                                 std::string s = ggf_str.substr(i + 2, 2);
                                 Move move = stringToMove(s);
-                                shared_data.root.doMove(move);
+                                root_.doMove(move);
                                 while (ggf_str[i] != ']') {
                                     i++;
                                 }
@@ -161,7 +158,7 @@ void NBoardProtocol::loop() {
             std::cin >> move_str;
             //変換
             Move move = stringToMove(move_str);
-            shared_data.root.doMove(move);
+            root_.doMove(move);
         } else if (input == "hint") {
             int32_t n;
             std::cin >> n;

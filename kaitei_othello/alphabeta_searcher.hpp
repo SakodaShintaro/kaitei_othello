@@ -11,19 +11,10 @@
 #include"history.hpp"
 #include<chrono>
 
-//1スレッド分に相当する探索クラス
 class AlphaBetaSearcher {
 public:
-    //役割
-    enum Role {
-        MAIN, SLAVE
-    };
-
     //コンストラクタ
-	AlphaBetaSearcher(Role r) : role_(r) {}
-
-    //思考をする関数:RoleがMAINである場合のみUSIエンジンとしての標準出力への応答を行う
-	void think();
+	AlphaBetaSearcher(int64_t hash_size) : hash_table_(hash_size) {}
 
     //学習データを生成する関数
     std::pair<Move, TeacherType> thinkForGenerateLearnData(Position &root, int32_t depth);
@@ -38,11 +29,6 @@ public:
     //局面の合法手を何らかの方法で点数付けしてsoftmax関数
     //をかけた値を基にランダムに選択する関数
     Move softmaxChoice(Position& pos, double temperature);
-
-    //Roleの設定:MainThreadだけはこれで設定するため消せない
-    void setRole(Role r) {
-        role_ = r;
-    }
     
     //pvを取り出す関数
     std::vector<Move> pv() {
@@ -84,11 +70,11 @@ private:
     //------------------
     //    メンバ変数
     //------------------
-    //役割
-    Role role_;
+    //置換表
+    HashTable hash_table_;
 
     //探索局面数
-    uint64_t node_number_;
+    int64_t node_number_;
 
     //時間
     std::chrono::steady_clock::time_point start_;

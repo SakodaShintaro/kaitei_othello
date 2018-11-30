@@ -9,9 +9,12 @@
 
 class NBoardProtocol {
 public:
+    NBoardProtocol() : root_(*eval_params) {}
     void loop();
     void vsHuman();
     void vsAI();
+private:
+    Position root_;
 };
 
 #endif
