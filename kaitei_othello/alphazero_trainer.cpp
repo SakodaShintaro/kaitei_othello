@@ -384,7 +384,7 @@ void AlphaZeroTrainer::pushOneGame(Game& game) {
         auto dist = pos.valueDist();
         CalcType sum = 0.0;
         for (int32_t j = 0; j < BIN_SIZE; j++) {
-            game.teachers[i][POLICY_DIM + j] = dist[j] * BernoulliDist(teacher_signal, VALUE_WIDTH * (j + 0.5));
+            game.teachers[i][POLICY_DIM + j] = (CalcType)(dist[j] * BernoulliDist(teacher_signal, VALUE_WIDTH * (j + 0.5)));
             sum += game.teachers[i][POLICY_DIM + j];
         }
         for (int32_t j = 0; j < BIN_SIZE; j++) {

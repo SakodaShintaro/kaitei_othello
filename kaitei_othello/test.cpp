@@ -221,7 +221,7 @@ void testTreeDist() {
                 //各指し手について探索してみる
                 pos.doMove(curr_move);
                 auto result = searcher.thinkForGenerateLearnData(pos, false);
-                result.first.score = 1.0 - result.first.score;
+                result.first.score = (Score)(1.0 - result.first.score);
 
                 double value = 0.0;
                 auto value_dist = pos.valueDist();
