@@ -45,8 +45,6 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
             usi_option.thread_num = THREAD_NUM;
         } else if (name == "threshold(0.0~1.0)") {
             ifs >> THRESHOLD;
-        } else if (name == "random_move_temperature") {
-            ifs >> usi_option.temperature;
         } else if (name == "random_move_num") {
             ifs >> usi_option.random_turn;
         } else if (name == "learn_mode(0or1)") {

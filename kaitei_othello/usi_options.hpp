@@ -9,7 +9,6 @@ public:
 	int64_t random_turn;
     int64_t USI_Hash;
     int64_t thread_num;
-    double temperature;
 
 #ifdef USE_MCTS
     int64_t playout_limit;

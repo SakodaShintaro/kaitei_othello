@@ -44,8 +44,6 @@ void NBoardProtocol::loop() {
             ifs >> usi_option.random_turn;
         } else if (input == "thread_num") {
             ifs >> usi_option.thread_num;
-        } else if (input == "temperature") {
-            ifs >> usi_option.temperature;
         } else if (input == "playout_limit") {
             ifs >> usi_option.playout_limit;
         } else if (input == "limit_msec") {

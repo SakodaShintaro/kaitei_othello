@@ -28,8 +28,6 @@ TreestrapTrainer::TreestrapTrainer(std::string settings_file_path) {
             THREAD_NUM = std::min(std::max(1u, THREAD_NUM), std::thread::hardware_concurrency());
         } else if (name == "random_turn") {
             ifs >> usi_option.random_turn;
-        } else if (name == "random_move_temperature") {
-            ifs >> usi_option.temperature;
         } else if (name == "step_size") {
             ifs >> step_size;
         } else {
