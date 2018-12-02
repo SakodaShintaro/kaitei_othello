@@ -100,21 +100,19 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
     //最善手
     Move best_move = current_node.legal_moves[best_index];
 
-    if (root.turn_number() < usi_option.random_turn) {
-        //ランダムなら訪問回数に基づいた分布を得る
-        std::vector<double> distribution(current_node.child_num);
-        for (int32_t i = 0; i < current_node.child_num; i++) {
-            distribution[i] = (double)child_move_counts[i] / current_node.move_count;
-            assert(0.0 <= distribution[i] && distribution[i] <= 1.0);
+    //訪問回数に基づいた分布を得る
+    std::vector<double> distribution(current_node.child_num);
+    for (int32_t i = 0; i < current_node.child_num; i++) {
+        distribution[i] = (double)child_move_counts[i] / current_node.move_count;
+        assert(0.0 <= distribution[i] && distribution[i] <= 1.0);
 
-            //分布を教師データにセット
-            teacher[current_node.legal_moves[i].toLabel()] = (CalcType)distribution[i];
-        }
+        //分布を教師データにセット
+        teacher[current_node.legal_moves[i].toLabel()] = (CalcType)distribution[i];
+    }
+
+    if (root.turn_number() < usi_option.random_turn) {
         //分布に基づいて指し手を選択
         best_move = current_node.legal_moves[randomChoise(distribution)];
-    } else {
-        //訪問回数最大のもの = best_moveを選ぶような分布
-        teacher[best_move.toLabel()] = 1.0;
     }
 
     best_move.score = (Score)best_wp;
