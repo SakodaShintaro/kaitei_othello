@@ -80,12 +80,6 @@ private:
     
     //‹­‚­‚È‚Á‚Ä¢‘ã‚ªi‚ñ‚¾‰ñ”
     uint64_t update_num_;
-
-    //‹­‚­‚È‚Á‚½‚Æ‚İ‚È‚¹‚È‚©‚Á‚½‰ñ”
-    uint64_t fail_num_;
-
-    //‹­‚­‚È‚Á‚Ä‚¢‚È‚¢‚±‚Æ‚ª‘±‚¢‚Ä‚¢‚é‰ñ”
-    uint64_t consecutive_fail_num_;
 };
 
 #endif

@@ -91,8 +91,6 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
 
     //•Ï”‚Ì‰Šú‰»
     update_num_ = 0;
-    fail_num_ = 0;
-    consecutive_fail_num_ = 0;
 
     //•]‰¿ŠÖ”“Ç‚Ýž‚Ý
     eval_params->readFile("tmp.bin");
@@ -159,8 +157,6 @@ void AlphaZeroTrainer::learn() {
         int64_t evaluation_interval = 10;
         int64_t evaluation_step = 10;
         update_num_ = 0;
-        fail_num_ = 0;
-        consecutive_fail_num_ = 0;
 
         //ŠwK—¦‚Ì‰Šú‰»
         LEARN_RATE = start_learning_rate;
@@ -349,21 +345,16 @@ void AlphaZeroTrainer::evaluate() {
             }
         }
     }
-    printf("%d\t%d\t", same_num, (same_num == 0 ? EVALUATION_RANDOM_TURN : ++EVALUATION_RANDOM_TURN));
     win_rate /= test_games.size();
 
     if (win_rate >= THRESHOLD) {
         eval_params->writeFile();
         update_num_++;
-        consecutive_fail_num_ = 0;
-    } else {
-        fail_num_++;
-        consecutive_fail_num_++;
     }
     print(win_rate * 100.0);
     print(update_num_);
-    print(fail_num_);
-    print(consecutive_fail_num_);
+    print(same_num);
+    print(same_num == 0 ? --EVALUATION_RANDOM_TURN : ++EVALUATION_RANDOM_TURN);
 }
 
 void AlphaZeroTrainer::pushOneGame(Game& game) {
