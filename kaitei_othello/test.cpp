@@ -70,6 +70,7 @@ void testRandom() {
 void testNN() {
     eval_params->readFile();
     Position pos(*eval_params);
+    auto searcher = std::make_unique<Searcher>(usi_option.USI_Hash);
 
     while (!pos.isFinish()) {
         auto moves = pos.generateAllMoves();
@@ -81,17 +82,14 @@ void testNN() {
 
         pos.print();
 
-        auto policy = pos.maskedPolicy();
+        auto result = searcher->thinkForGenerateLearnData(pos, false);
 
-        for (auto& move : moves) {
-            move.score = policy[move.toLabel()];
-        }
-        sort(moves.begin(), moves.end(), std::greater<Move>());
-        for (const auto& move : moves) {
-            move.printWithScore();
+        std::cout << "探索結果" << std::endl;
+        for (Move move : moves) {
+            std::cout << move << " " << result.second[move.toLabel()] << std::endl;
         }
 
-        pos.doMove(moves.front());
+        pos.doMove(result.first);
     }
     pos.print();
 }
