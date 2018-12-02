@@ -215,11 +215,6 @@ std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit,
             Move best_move = move_and_teacher.first;
             TeacherType teacher = move_and_teacher.second;
 
-            if (!pos.isLegalMove(best_move)) {
-                pos.printForDebug();
-                best_move.printWithScore();
-                assert(false);
-            }
             pos.doMove(best_move);
             game.moves.push_back(best_move);
             game.teachers.push_back(teacher);
@@ -404,11 +399,6 @@ void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>&
         
         //数値微分による誤差逆伝播の検証
         //verifyAddGrad(pos, teacher);
-
-        if (!pos.isLegalMove(move)) {
-            pos.printForDebug();
-            move.printWithScore();
-        }
 
         pos.doMove(move);
     }

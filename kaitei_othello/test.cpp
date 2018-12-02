@@ -103,20 +103,14 @@ void testKifuOutput() {
     while (true) {
         //iが偶数のときpos_cが先手
         auto move_and_teacher = ((pos_c.turn_number() % 2) == 0 ?
-            searcher->thinkForGenerateLearnData(pos_c, 3) :
-            searcher->thinkForGenerateLearnData(pos_t, 3));
+            searcher->thinkForGenerateLearnData(pos_c, false) :
+            searcher->thinkForGenerateLearnData(pos_t, false));
         Move best_move = move_and_teacher.first;
         TeacherType teacher = move_and_teacher.second;
 
         if (best_move == NULL_MOVE) { //NULL_MOVEは投了を示す
             game.result = (pos_c.color() == BLACK ? Game::RESULT_WHITE_WIN : Game::RESULT_BLACK_WIN);
             break;
-        }
-
-        if (!pos_c.isLegalMove(best_move)) {
-            pos_c.printForDebug();
-            best_move.printWithScore();
-            assert(false);
         }
         pos_c.doMove(best_move);
         pos_t.doMove(best_move);

@@ -388,11 +388,6 @@ void AlphaZeroTrainer::pushOneGame(Game& game) {
         //スタックに詰める
         position_stack_.push_back({ pos.data(), game.teachers[i] });
 
-        if (!pos.isLegalMove(move)) {
-            pos.printForDebug();
-            move.printWithScore();
-        }
-
         pos.doMove(move);
     }
 }

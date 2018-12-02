@@ -21,9 +21,6 @@ public:
 
     //内部の状態等を表示する関数
     void print() const;
-    void printAllMoves() const;
-    void printHistory() const;
-    void printForDebug() const;
 
     //一手進める・戻す関数
     void doMove(const Move move);

@@ -122,23 +122,6 @@ void Position::print() const {
     printf("ハッシュ値:%lld\n", hash_value_);
 }
 
-void Position::printAllMoves() const {
-    std::vector<Move> moves = generateAllMoves();
-    printf("全合法手の数:%zu\n", moves.size());
-    for (Move move : moves) move.print();
-}
-
-void Position::printHistory() const {
-    printf("print history\n");
-    for (Move move : kifu_) move.print();
-    printf("\n");
-}
-
-void Position::printForDebug() const {
-    print();
-    printHistory();
-}
-
 void Position::doMove(const Move move) {
 #if DEBUG
     if (!isLegalMove(move)) {
