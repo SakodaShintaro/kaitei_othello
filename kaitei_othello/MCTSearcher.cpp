@@ -19,6 +19,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
 
     //‡–@è‚ª0‚¾‚Á‚½‚ç“Š—¹
     if (current_node.child_num == 0) {
+        assert(false);
         return { NULL_MOVE, TeacherType() };
     }
 
