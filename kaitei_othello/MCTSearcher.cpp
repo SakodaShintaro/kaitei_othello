@@ -17,24 +17,16 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
     current_root_index_ = expandNode(root);
     auto& current_node = hash_table_[current_root_index_];
 
-    //合法手が0だったら投了
-    if (current_node.child_num == 0) {
-        assert(false);
-        return { NULL_MOVE, TeacherType() };
-    }
-
-    //NULL_MOVEだけでもすぐ返す
+    //NULL_MOVEだけならすぐ返す
     if (current_node.child_num == 1 && current_node.legal_moves[0] == NULL_MOVE) {
         return { NULL_MOVE, TeacherType() };
     }
 
-    std::vector<CalcType> nn_rates_copy;
     if (add_noise) {
         //ノイズを加える
         //Alpha Zeroの論文と同じディリクレノイズ
         constexpr double epsilon = 0.25;
         auto dirichlet = dirichletDistribution(current_node.child_num, 0.05);
-        nn_rates_copy = current_node.nn_rates;
         for (int32_t i = 0; i < current_node.child_num; i++) {
             current_node.nn_rates[i] = (CalcType)((1.0 - epsilon) * current_node.nn_rates[i] + epsilon * dirichlet[i]);
         }
@@ -97,9 +89,6 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
     teacher[POLICY_DIM] = (CalcType)best_wp;
 #endif
 
-    //最善手
-    Move best_move = current_node.legal_moves[best_index];
-
     //訪問回数に基づいた分布を得る
     std::vector<double> distribution(current_node.child_num);
     for (int32_t i = 0; i < current_node.child_num; i++) {
@@ -110,11 +99,11 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
         teacher[current_node.legal_moves[i].toLabel()] = (CalcType)distribution[i];
     }
 
-    if (root.turn_number() < usi_option.random_turn) {
-        //分布に基づいて指し手を選択
-        best_move = current_node.legal_moves[randomChoise(distribution)];
-    }
-
+    //最善手
+    //手数が指定以下だった場合は訪問回数の分布からランダムに選択
+    Move best_move = (root.turn_number() < usi_option.random_turn
+        ? current_node.legal_moves[randomChoise(distribution)]
+        : current_node.legal_moves[best_index]);
     best_move.score = (Score)best_wp;
 
     return { best_move, teacher };
