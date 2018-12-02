@@ -84,8 +84,6 @@ void Position::print() const {
         lastMove().printWithScore();
     }
 
-    printAllMoves();
-
     //評価値
     auto output = makeOutput();
 #ifdef USE_CATEGORICAL
@@ -104,6 +102,22 @@ void Position::print() const {
 #else
     printf("value = %f\n", standardSigmoid(output(POLICY_DIM)));
 #endif
+
+    //方策
+    std::vector<Move> moves = generateAllMoves();
+    if (moves.front() != NULL_MOVE) {
+        std::cout << std::fixed;
+
+        std::vector<double> policy;
+        for (Move move : moves) {
+            policy.push_back(output(move.toLabel()));
+        }
+        policy = softmax(policy);
+
+        for (int32_t i = 0; i < moves.size(); i++) {
+            std::cout << moves[i] << " " << policy[i] << std::endl;
+        }
+    }
 
     printf("ハッシュ値:%lld\n", hash_value_);
 }
