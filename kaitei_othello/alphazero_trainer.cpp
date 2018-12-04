@@ -154,6 +154,7 @@ void AlphaZeroTrainer::learn() {
         //•Ï”‚Ì‰Šú‰»
         int64_t evaluation_interval = 10;
         int64_t evaluation_step = 10;
+        int64_t eval_times = 0;
         update_num_ = 0;
 
         //ŠwK—¦‚Ì‰Šú‰»
@@ -247,7 +248,9 @@ void AlphaZeroTrainer::learn() {
                 evaluate();
                 evaluation_interval = (int64_t)ceil(evaluation_interval * EVALUATION_INTERVAL_EXP);
                 evaluation_step += evaluation_interval;
-                eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
+                if (++eval_times % 100 == 0 || step_num == MAX_STEP_NUM) {
+                    eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
+                }
             }
 
             std::cout << std::endl;
