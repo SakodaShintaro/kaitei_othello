@@ -367,21 +367,39 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node, double
 
     int32_t max_index = -1;
     double max_value = INT_MIN;
+
     for (int32_t i = 0; i < current_node.child_num; i++) {
         double Q = 0.0;
-        for (int32_t j = (int32_t)(curr_best_winrate * BIN_SIZE); j < BIN_SIZE; j++) {
-        //for (int32_t j = 0; j < BIN_SIZE; j++) {
-            Q += VALUE_WIDTH * (0.5 + j) * (child_move_counts[i] == 0 ? 0.0 : current_node.child_wins[i][j] / child_move_counts[i]);
+        if (child_move_counts[i] == 0) {
+            Q = 100.0;
+        } else {
+            ////(1)今まで間違っていた謎の値
+            //for (int32_t j = (int32_t)(curr_best_winrate * BIN_SIZE); j < BIN_SIZE; j++) {
+            //    Q += VALUE_WIDTH * (0.5 + j) * current_node.child_wins[i][j] / child_move_counts[i];
+            //}
+
+            ////(2)普通に期待値を計算する
+            //for (int32_t j = 0; j < BIN_SIZE; j++) {
+            //    Q += VALUE_WIDTH * (0.5 + j) * current_node.child_wins[i][j] / child_move_counts[i];
+            //}
+
+            ////(3)分散を(2)に加える
+            //auto e = Q;
+            //for (int32_t j = 0; j < BIN_SIZE; j++) {
+            //    Q += pow(VALUE_WIDTH * (0.5 + j) - e, 2) *
+            //        (child_move_counts[i] == 0 ? 0.0 : current_node.child_wins[i][j] / child_move_counts[i]);
+            //}
+
+            //(4)基準値を超える確率(これがやりたかったことでは？)
+            for (int32_t j = (int32_t)(curr_best_winrate * BIN_SIZE); j < BIN_SIZE; j++) {
+                Q += current_node.child_wins[i][j] / child_move_counts[i];
+            }
         }
-        assert(0.0 <= Q && Q <= 1.0);
+        
         double U = std::sqrt(current_node.move_count + 1) / (child_move_counts[i] + 1);
         double ucb = Q + C_PUCT * current_node.nn_rates[i] * U;
         //double ucb = Q + C_PUCT * U;
 
-        //詰みだったらそれを選べばいいだろう
-        if (Q == 1.0) {
-            return i;
-        }
         if (ucb > max_value) {
             max_value = ucb;
             max_index = i;
