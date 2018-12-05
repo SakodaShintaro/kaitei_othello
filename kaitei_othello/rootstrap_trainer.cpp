@@ -590,6 +590,8 @@ void RootstrapTrainer::testLearn() {
     //時間を設定
     start_time_ = std::chrono::steady_clock::now();
 
+    eval_params->readFile();
+
     //自己対局による棋譜生成:並列化
 #ifdef USE_MCTS
     std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, (int32_t)usi_option.playout_limit, true);
@@ -599,13 +601,10 @@ void RootstrapTrainer::testLearn() {
 
     std::cout << std::fixed;
 
-    //ここから学習のメイン
-    eval_params->readFile();
-
     std::ofstream ofs("test_learn_log.txt");
     ofs << "step\tP = " << POLICY_LOSS_COEFF << ", V = " << VALUE_LOSS_COEFF << ", LEARN_RATE = " << LEARN_RATE << std::endl;
 
-    for (int64_t i = 0; i < 1000; i++) {
+    for (int64_t i = 0; i < 2000; i++) {
         //損失・勾配・千日手数・長手数による引き分け数を計算
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
         std::array<double, 2> loss = learnGames(games, *grad);
@@ -614,6 +613,8 @@ void RootstrapTrainer::testLearn() {
         updateParams(*eval_params, *grad);
         std::cout << i << "\tloss[0] = " << loss[0] << ",\tloss[1] = " << loss[1] << std::endl;
         ofs << i << "\t" << loss[0] << "\t" << loss[1] << std::endl;
+
+        step_num++;
     }
 
     for (auto game : games) {
