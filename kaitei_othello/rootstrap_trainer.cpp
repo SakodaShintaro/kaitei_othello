@@ -597,8 +597,6 @@ void RootstrapTrainer::testLearn() {
     std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
 #endif
 
-    games.front().moves.resize(1);
-
     std::cout << std::fixed;
 
     //ここから学習のメイン
@@ -624,9 +622,6 @@ void RootstrapTrainer::testLearn() {
 
         for (int32_t i = 0; i < game.moves.size(); i++) {
             pos.print();
-            for (auto move : pos.generateAllMoves()) {
-                std::cout << "teacher[" << move << "] = " << game.teachers[i][move.toLabel()] << std::endl;
-            }
             pos.doMove(game.moves[i]);
         }
     }
