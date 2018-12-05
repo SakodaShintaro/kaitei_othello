@@ -387,8 +387,20 @@ void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>&
         double teacher_signal = DEEP_COEFFICIENT * move.score + (1 - DEEP_COEFFICIENT) * result_for_turn;
 
 #ifdef USE_CATEGORICAL
-        auto teacher_dist = onehotDist(teacher_signal);
-        std::copy(teacher_dist.begin(), teacher_dist.end(), &teacher[POLICY_DIM]);
+        //auto teacher_dist = onehotDist(teacher_signal);
+        //std::copy(teacher_dist.begin(), teacher_dist.end(), &teacher[POLICY_DIM]); 
+
+        auto dist = pos.valueDist();
+        CalcType sum = 0.0;
+        for (int32_t j = 0; j < BIN_SIZE; j++) {
+            teacher[POLICY_DIM + j] = (CalcType)(dist[j] * BernoulliDist(teacher_signal, VALUE_WIDTH * (j + 0.5)));
+            sum += teacher[POLICY_DIM + j];
+        }
+        std::cout << "teacher_signal = " << teacher_signal << "\n" << std::fixed;
+        for (int32_t j = 0; j < BIN_SIZE; j++) {
+            teacher[POLICY_DIM + j] /= sum;
+            std::cout << teacher[POLICY_DIM + j] << " <- " << dist[j] << " * " << BernoulliDist(teacher_signal, VALUE_WIDTH * (j + 0.5)) << std::endl;
+        }
 #else
         teacher[POLICY_DIM] = (CalcType)teacher_signal;
 #endif
@@ -585,6 +597,8 @@ void RootstrapTrainer::testLearn() {
     std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
 #endif
 
+    games.front().moves.resize(1);
+
     std::cout << std::fixed;
 
     //ここから学習のメイン
@@ -609,13 +623,8 @@ void RootstrapTrainer::testLearn() {
         std::cout << "game.result = " << game.result << std::endl;
 
         for (int32_t i = 0; i < game.moves.size(); i++) {
+            pos.print();
             auto move = game.moves[i];
-            if (move != NULL_MOVE) {
-                auto policy = pos.maskedPolicy();
-                std::cout << "policy[" << std::setw(4) << move << "] = " << policy[move.toLabel()]
-                    << ", value = " << pos.valueForTurn()
-                    << ", teacher = " << game.teachers[i][POLICY_DIM] << std::endl;
-            }
             pos.doMove(move);
         }
     }
