@@ -613,8 +613,6 @@ void RootstrapTrainer::testLearn() {
         updateParams(*eval_params, *grad);
         std::cout << i << "\tloss[0] = " << loss[0] << ",\tloss[1] = " << loss[1] << std::endl;
         ofs << i << "\t" << loss[0] << "\t" << loss[1] << std::endl;
-
-        step_num++;
     }
 
     for (auto game : games) {
