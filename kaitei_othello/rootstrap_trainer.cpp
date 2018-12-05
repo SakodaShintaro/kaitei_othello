@@ -396,10 +396,10 @@ void RootstrapTrainer::learnOneGame(const Game& game, EvalParams<LearnEvalType>&
             teacher[POLICY_DIM + j] = (CalcType)(dist[j] * BernoulliDist(teacher_signal, VALUE_WIDTH * (j + 0.5)));
             sum += teacher[POLICY_DIM + j];
         }
-        std::cout << "teacher_signal = " << teacher_signal << "\n" << std::fixed;
+        //std::cout << "teacher_signal = " << teacher_signal << "\n" << std::fixed;
         for (int32_t j = 0; j < BIN_SIZE; j++) {
             teacher[POLICY_DIM + j] /= sum;
-            std::cout << teacher[POLICY_DIM + j] << " <- " << dist[j] << " * " << BernoulliDist(teacher_signal, VALUE_WIDTH * (j + 0.5)) << std::endl;
+            //std::cout << teacher[POLICY_DIM + j] << " <- " << dist[j] << " * " << BernoulliDist(teacher_signal, VALUE_WIDTH * (j + 0.5)) << std::endl;
         }
 #else
         teacher[POLICY_DIM] = (CalcType)teacher_signal;
@@ -624,8 +624,10 @@ void RootstrapTrainer::testLearn() {
 
         for (int32_t i = 0; i < game.moves.size(); i++) {
             pos.print();
-            auto move = game.moves[i];
-            pos.doMove(move);
+            for (auto move : pos.generateAllMoves()) {
+                std::cout << "teacher[" << move << "] = " << game.teachers[i][move.toLabel()] << std::endl;
+            }
+            pos.doMove(game.moves[i]);
         }
     }
 

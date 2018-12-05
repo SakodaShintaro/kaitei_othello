@@ -132,7 +132,7 @@ inline int inv_sigmoid(Type x, double gain) {
 }
 
 inline double crossEntropy(double y, double t) {
-    constexpr double epsilon = 0.000001;
+    constexpr double epsilon = 0.0000001;
     return -t * std::log(y + epsilon);
 }
 

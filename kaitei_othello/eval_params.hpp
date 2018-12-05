@@ -23,7 +23,7 @@ const std::string DEFAULT_FILE_NAME = "model.bin";
 constexpr int32_t POLICY_DIM = 64;
 
 #ifdef USE_CATEGORICAL
-constexpr int32_t BIN_SIZE = 11;
+constexpr int32_t BIN_SIZE = 51;
 constexpr int32_t OUTPUT_DIM = POLICY_DIM + BIN_SIZE;
 constexpr double VALUE_WIDTH = 1.0 / BIN_SIZE;
 #else
