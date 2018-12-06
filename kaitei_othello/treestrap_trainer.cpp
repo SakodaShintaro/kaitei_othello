@@ -2,6 +2,8 @@
 #include"rootstrap_trainer.hpp"
 #include<thread>
 
+#ifndef USE_MCTS
+
 TreestrapTrainer::TreestrapTrainer(std::string settings_file_path) {
     std::ifstream ifs(settings_file_path);
     if (!ifs) {
@@ -175,3 +177,5 @@ double TreestrapTrainer::calcGrad(Score shallow_score, Score deep_score) {
     double t = sigmoid((double)deep_score, CP_GAIN);
     return y - t;
 }
+
+#endif

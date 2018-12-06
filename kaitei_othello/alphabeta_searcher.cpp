@@ -13,6 +13,8 @@
 #include<functional>
 #include<iomanip>
 
+#ifndef USE_MCTS
+
 extern USIOption usi_option;
 
 std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Position& root, bool add_noise) {
@@ -56,7 +58,7 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
     teacher[root_moves_[0].toLabel()] = 1.0;
 
 #ifdef USE_CATEGORICAL
-    auto dist = onehotDist(best_score);
+    auto dist = onehotDist(root_moves_[0].score);
     for (int32_t i = 0; i < BIN_SIZE; i++) {
         teacher[POLICY_DIM + i] = dist[i];
     }
@@ -224,3 +226,5 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
 
     return best_score;
 }
+
+#endif

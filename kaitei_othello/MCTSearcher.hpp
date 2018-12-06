@@ -8,7 +8,7 @@
 #include<vector>
 #include<chrono>
 
-//#define USE_MCTS
+#define USE_MCTS
 
 class MCTSearcher {
 public:

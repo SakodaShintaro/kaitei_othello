@@ -363,14 +363,22 @@ void AlphaZeroTrainer::pushOneGame(Game& game) {
         double teacher_signal = DEEP_COEFFICIENT * game.moves[i].score + (1 - DEEP_COEFFICIENT) * result_for_turn;
 
 #ifdef USE_CATEGORICAL
-        auto dist = pos.valueDist();
-        CalcType sum = 0.0;
+        //auto dist = pos.valueDist();
+        //CalcType sum = 0.0;
+        //for (int32_t j = 0; j < BIN_SIZE; j++) {
+        //    game.teachers[i][POLICY_DIM + j] = (CalcType)(dist[j] * BernoulliDist(teacher_signal, VALUE_WIDTH * (j + 0.5)));
+        //    sum += game.teachers[i][POLICY_DIM + j];
+        //}
+        //for (int32_t j = 0; j < BIN_SIZE; j++) {
+        //    game.teachers[i][POLICY_DIM + j] /= sum;
+        //}
+
+        //手番から見た分布を得る
+        auto teacher_dist = onehotDist(teacher_signal);
+
+        //teacherにコピーする
         for (int32_t j = 0; j < BIN_SIZE; j++) {
-            game.teachers[i][POLICY_DIM + j] = (CalcType)(dist[j] * BernoulliDist(teacher_signal, VALUE_WIDTH * (j + 0.5)));
-            sum += game.teachers[i][POLICY_DIM + j];
-        }
-        for (int32_t j = 0; j < BIN_SIZE; j++) {
-            game.teachers[i][POLICY_DIM + j] /= sum;
+            game.teachers[i][POLICY_DIM + j] = teacher_dist[j];
         }
 #else
         game.teachers[i][POLICY_DIM] = (CalcType)teacher_signal;

@@ -2,6 +2,8 @@
 #include"base_trainer.hpp"
 #include"position.hpp"
 
+#ifndef USE_MCTS
+
 class TreestrapTrainer : BaseTrainer {
 public:
     TreestrapTrainer(std::string settings_file_path);
@@ -33,3 +35,5 @@ private:
     //ステップ数
     int32_t step_size;
 };
+
+#endif

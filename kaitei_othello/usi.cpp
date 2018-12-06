@@ -88,9 +88,11 @@ void NBoardProtocol::loop() {
         } else if (input == "learnSync") {
             RootstrapTrainer trainer("rootstrap_settings.txt");
             trainer.learnSync();
+#ifndef USE_MCTS
         } else if (input == "treeStrap") {
             TreestrapTrainer trainer("treestrap_settings.txt");
             trainer.startLearn();
+#endif
         } else if (input == "alphaZero") {
             AlphaZeroTrainer trainer("alphazero_settings.txt");
             trainer.learn();
