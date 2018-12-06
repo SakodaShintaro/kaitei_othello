@@ -14,6 +14,7 @@ public:
     int64_t playout_limit;
 #else
     Depth depth_limit;
+    int64_t node_limit;
 #endif
 };
 

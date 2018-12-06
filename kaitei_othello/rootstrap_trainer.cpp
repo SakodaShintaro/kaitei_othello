@@ -25,8 +25,6 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
     while (ifs >> name) {
         if (name == "batch_size") {
             ifs >> BATCH_SIZE;
-        } else if (name == "search_depth") {
-            ifs >> SEARCH_DEPTH;
         } else if (name == "optimizer") {
             ifs >> OPTIMIZER_NAME;
             if (!isLegalOptimizer()) {
@@ -70,6 +68,11 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
 #ifdef USE_MCTS
         } else if (name == "playout_limit") {
             ifs >> usi_option.playout_limit;
+#else
+        } else if (name == "depth_limit") {
+            ifs >> usi_option.depth_limit;
+        } else if (name == "node_limit") {
+            ifs >> usi_option.node_limit;
 #endif
         }
     }

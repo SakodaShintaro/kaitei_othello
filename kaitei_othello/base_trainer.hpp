@@ -55,9 +55,6 @@ protected:
     //バッチサイズ
     int32_t BATCH_SIZE;
 
-    //探索深さ
-    int32_t SEARCH_DEPTH;
-
     //optimizerの設定
     std::string OPTIMIZER_NAME;
 

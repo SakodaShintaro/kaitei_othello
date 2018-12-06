@@ -13,8 +13,6 @@ TreestrapTrainer::TreestrapTrainer(std::string settings_file_path) {
     while (ifs >> name) {
         if (name == "batch_size") {
             ifs >> BATCH_SIZE;
-        } else if (name == "search_depth") {
-            ifs >> SEARCH_DEPTH;
         } else if (name == "optimizer") {
             ifs >> OPTIMIZER_NAME;
             if (!isLegalOptimizer()) {
@@ -69,7 +67,7 @@ void TreestrapTrainer::startLearn() {
                 for (auto move : moves) {
                     pos.doMove(move);
                     //Score score = -miniMaxLearn(pos, SEARCH_DEPTH * PLY);
-                    Score score = -alphaBetaLearn(pos, MIN_SCORE, best_move.score, SEARCH_DEPTH * PLY);
+                    Score score = -alphaBetaLearn(pos, MIN_SCORE, best_move.score, usi_option.depth_limit * (int32_t)PLY);
                     if (score > best_move.score) {
                         best_move = move;
                         best_move.score = score;
