@@ -44,12 +44,6 @@ public:
         pv_table_.reset();
     }
 
-    //historyのリセットをする関数:これもBonanzaMethodで呼ばれる
-    //RootStrapでも呼ばれないとおかしいか?
-    void clearHistory() {
-        history_.clear();
-    }
-
 private:
     //--------------------
     //    内部メソッド
@@ -70,7 +64,7 @@ private:
     std::chrono::steady_clock::time_point start_;
 
     //History 
-    History history_;
+    //History history_;
 
     //思考する局面における合法手
     std::vector<Move> root_moves_;

@@ -33,22 +33,11 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
     //思考開始時間をセット
     start_ = std::chrono::steady_clock::now();
 
-    //History初期化
-    history_.clear();
-
     //PV初期化
     resetPVTable();
 
     //ルート局面の合法手を設定
     root_moves_ = root.generateAllMoves();
-
-#ifdef USE_SEARCH_STACK
-    SearchStack* ss = searchInfoAt(0);
-    ss->killers[0] = ss->killers[1] = NULL_MOVE;
-#ifndef SF_SEARCH
-    ss->can_null_move = true;
-#endif
-#endif
 
     //指定された手数まで完全ランダムに指す
     if (root.turn_number() + 1 <= usi_option.random_turn) {
@@ -241,10 +230,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
         && tt_depth >= depth
         && tt_score >= beta) {
 
-        //tt_moveがちゃんとしたMoveならこれでHistory更新
-        if (tt_move != NULL_MOVE) {
-            history_.updateBetaCutMove(tt_move, depth);
-        }
         search_log.hash_cut_num++;
         return tt_score;
     }
@@ -367,18 +352,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
             }
         }
         non_cut_moves[non_cut_moves_index++] = current_move;
-    }
-
-
-    //-----------------------------
-    // Step20. 詰みの確認
-    //-----------------------------
-
-    if (best_move != NULL_MOVE) {
-        history_.updateBetaCutMove(best_move, depth);
-    }
-    for (uint32_t i = 0; i < non_cut_moves_index; i++) {
-        history_.updateNonBetaCutMove(non_cut_moves[i], depth);
     }
 
     //-----------------------------
