@@ -17,10 +17,10 @@ public:
 	AlphaBetaSearcher(int64_t hash_size) : hash_table_(hash_size) {}
 
     //学習データを生成する関数
-    std::pair<Move, TeacherType> thinkForGenerateLearnData(Position &root, int32_t depth);
+    std::pair<Move, TeacherType> thinkForGenerateLearnData(Position &root, bool add_noise);
 
     //探索で再帰的に用いる通常の関数
-    template<bool isPVNode, bool train_mode>
+    template<bool train_mode>
     Score search(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root);
 
     //局面の合法手から完全ランダムに選択する関数

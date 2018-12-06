@@ -29,7 +29,7 @@ struct SearchLog {
 };
 static SearchLog search_log;
 
-std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Position& root, int32_t depth) {
+std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Position& root, bool add_noise) {
     //思考開始時間をセット
     start_ = std::chrono::steady_clock::now();
 
@@ -84,7 +84,7 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
                 root_move.score = MIN_SCORE;
             }
 
-            best_score = search<true, false>(root, alpha, beta, depth, 0);
+            best_score = search<false>(root, alpha, beta, depth, 0);
 
             if (best_score <= alpha) {
                 //fail-low
@@ -241,10 +241,10 @@ inline bool AlphaBetaSearcher::shouldStop() {
 
 #define OMIT_PRUNINGS
 
-template<bool isPVNode, bool train_mode>
+template<bool train_mode>
 Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root) {
     if (depth < PLY) {
-        return qsearch<isPVNode || train_mode>(pos, alpha, beta, Depth(0), distance_from_root);
+        return qsearch<train_mode>(pos, alpha, beta, Depth(0), distance_from_root);
     }
 
     // nodeの種類
@@ -255,15 +255,10 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
     //-----------------------------
 
     //assert類
-    assert(isPVNode || (alpha + 1 == beta));
     assert(MIN_SCORE <= alpha && alpha < beta && beta <= MAX_SCORE);
 
     //探索局面数を増やす
     ++node_number_;
-
-    if (isPVNode) {
-        seldepth_ = std::max(seldepth_, distance_from_root * PLY);
-    }
 
     //-----------------------------
     // RootNode以外での処理
@@ -317,8 +312,7 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
     Depth tt_depth = (hash_entry ? hash_entry->depth : Depth(0));
 
     //置換表の値による枝刈り
-    if (!isPVNode
-        && hash_entry
+    if (hash_entry
         && tt_depth >= depth
         && tt_score >= beta) {
 
@@ -402,10 +396,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
 
         pos.doMove(current_move);
 
-        if (isPVNode) {
-            pv_table_.closePV(distance_from_root + 1);
-        }
-
         Score score;
         bool shouldSearchFullDepth = true;
 
@@ -424,11 +414,11 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
         if (shouldSearchFullDepth) {
             //Null Window Searchでalphaを超えそうか確認
             //これ入れた方がいいのかなぁ
-            score = -search<false, train_mode>(pos, -alpha - 1, -alpha, depth - PLY, distance_from_root + 1);
+            score = -search<train_mode>(pos, -alpha - 1, -alpha, depth - PLY, distance_from_root + 1);
 
             if (alpha < score && score < beta) {
                 //いい感じのスコアだったので再探索
-                score = -search<isPVNode, train_mode>(pos, -beta, -alpha, depth - PLY, distance_from_root + 1);
+                score = -search<train_mode>(pos, -beta, -alpha, depth - PLY, distance_from_root + 1);
             }
         }
 
@@ -490,12 +480,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
 
     if (best_move != NULL_MOVE) {
         history_.updateBetaCutMove(best_move, depth);
-#ifdef USE_SEARCH_STACK
-        ss->updateKillers(best_move);
-#endif
-#ifdef USE_MOVEHISTORY
-        move_history_.update(pos.lastMove(), best_move);
-#endif 
     }
     for (uint32_t i = 0; i < non_cut_moves_index; i++) {
         history_.updateNonBetaCutMove(non_cut_moves[i], depth);

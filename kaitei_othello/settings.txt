@@ -4,4 +4,5 @@ thread_num 1
 temperature 10
 playout_limit 8000
 depth_limit 64
+node_limit 8000
 limit_msec 100000

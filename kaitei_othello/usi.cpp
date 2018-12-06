@@ -50,6 +50,8 @@ void NBoardProtocol::loop() {
 #else
         } else if (input == "depth_limit") {
             ifs >> usi_option.depth_limit;
+        } else if (input == "node_limit") {
+            ifs >> usi_option.node_limit;
 #endif
         } else if (input == "limit_msec") {
             ifs >> shared_data.limit_msec;
