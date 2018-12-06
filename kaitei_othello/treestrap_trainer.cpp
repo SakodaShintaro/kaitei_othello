@@ -67,16 +67,12 @@ void TreestrapTrainer::startLearn() {
                 for (auto move : moves) {
                     pos.doMove(move);
                     //Score score = -miniMaxLearn(pos, SEARCH_DEPTH * PLY);
-                    Score score = -alphaBetaLearn(pos, MIN_SCORE, best_move.score, usi_option.depth_limit * (int32_t)PLY);
+                    Score score = -alphaBetaLearn(pos, MIN_SCORE, best_move.score, usi_option.depth_limit * PLY);
                     if (score > best_move.score) {
                         best_move = move;
                         best_move.score = score;
                     }
                     pos.undo();
-                }
-
-                if (isMatedScore(best_move.score)) {
-                    break;
                 }
 
                 Score curr_score = pos.valueScoreForTurn();
@@ -124,11 +120,6 @@ Score TreestrapTrainer::miniMaxLearn(Position& pos, Depth depth) {
     //std::cout << "best_score = " << best_score << std::endl;
     //std::cout << "curr_score = " << curr_score << std::endl;
 
-    if (isMatedScore(best_score)) {
-        //ŠwK‚¹‚¸return
-        return best_score;
-    }
-
     //Œ»‹Ç–Ê‚ÌŠwK
     assert(false);
     learned_position_num_++;
@@ -164,11 +155,6 @@ Score TreestrapTrainer::alphaBetaLearn(Position& pos, Score alpha, Score beta, D
                 alpha = best_score;
             }
         }
-    }
-
-    if (isMatedScore(best_score)) {
-        //ŠwK‚¹‚¸return
-        return best_score;
     }
 
     //Œ»‹Ç–Ê‚ÌŠwK

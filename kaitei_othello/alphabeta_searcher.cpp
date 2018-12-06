@@ -50,14 +50,9 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
 #endif
 #endif
 
-    //合法手が0だったら投了
-    if (root_moves_.size() == 0) {
-        return { NULL_MOVE, TeacherType() };
-    }
-
     //指定された手数まで完全ランダムに指す
-    static std::random_device rd;
     if (root.turn_number() + 1 <= usi_option.random_turn) {
+        static std::random_device rd;
         return { root_moves_[rd() % root_moves_.size()], TeacherType() };
     }
 
@@ -70,7 +65,7 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
     Score aspiration_window_size = DEFAULT_ASPIRATION_WINDOW_SIZE;
     Score best_score, alpha, beta, previous_best_score;
 
-    for (Depth depth = PLY * 1; depth <= DEPTH_MAX; depth += PLY) {
+    for (Depth depth = PLY; depth <= usi_option.depth_limit * PLY; depth += PLY) {
         //seldepth_の初期化
         seldepth_ = depth;
 
@@ -90,11 +85,6 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
             }
 
             best_score = search<true, false>(root, alpha, beta, depth, 0);
-
-            //詰んでいたら抜ける
-            if (isMatedScore(best_score) || shouldStop()) {
-                break;
-            }
 
             if (best_score <= alpha) {
                 //fail-low
@@ -122,11 +112,6 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
 
         //置換表への保存
         hash_table_.save(root.hash_value(), root_moves_[0], root_moves_[0].score, depth, root_moves_);
-
-        //詰みがあったらすぐ返す
-        if (isMatedScore(root_moves_[0].score)) {
-            break;
-        }
 
         //今回のイテレーションにおけるスコアを記録
         previous_best_score = best_score;
@@ -245,6 +230,7 @@ inline bool AlphaBetaSearcher::shouldStop() {
     auto now_time = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now_time - start_);
     if ((elapsed.count() >= shared_data.limit_msec)
+        || node_number_ > usi_option.node_limit
         || shared_data.stop_signal) {
         //停止信号をオンにする
         shared_data.stop_signal = true;

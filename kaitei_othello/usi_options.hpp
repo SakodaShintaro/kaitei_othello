@@ -13,7 +13,7 @@ public:
 #ifdef USE_MCTS
     int64_t playout_limit;
 #else
-    Depth depth_limit;
+    int32_t depth_limit;
     int64_t node_limit;
 #endif
 };

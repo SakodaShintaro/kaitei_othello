@@ -431,7 +431,7 @@ void RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEva
         //この指し手が対応するのは1手戻した局面
         pos.undo();
 
-        if (isMatedScore(game.moves[i].score) || game.moves[i] == NULL_MOVE) { //詰みの値だったら学習を飛ばす
+        if (game.moves[i] == NULL_MOVE) { //詰みの値だったら学習を飛ばす
             continue;
         }
 

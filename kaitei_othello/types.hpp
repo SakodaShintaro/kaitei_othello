@@ -16,8 +16,7 @@ enum Bound {
 
 enum Depth {
     PLY = 128,
-    DEPTH_MAX = 64 * PLY,
-    MATE_DEPTH_MAX = 128,
+    DEPTH_MAX = 128 * PLY
 };
 
 using Score = float;
@@ -25,14 +24,8 @@ constexpr Score MAX_SCORE = 1000000.0f;
 constexpr Score SCORE_ZERO = 0.0f;
 constexpr Score DRAW_SCORE = 0.0f;
 constexpr Score MIN_SCORE = -MAX_SCORE;
-constexpr Score MATE_SCORE_LOWER_BOUND = MAX_SCORE - (Score)MATE_DEPTH_MAX;
-constexpr Score MATE_SCORE_UPPER_BOUND = MIN_SCORE + (Score)MATE_DEPTH_MAX;
 
 constexpr double CP_GAIN = 1.0 / 600.0;
-
-inline bool isMatedScore(const Score score) {
-    return score <= MATE_SCORE_UPPER_BOUND || MATE_SCORE_LOWER_BOUND <= score;
-}
 
 //Depth
 constexpr Depth operator-(Depth lhs) { return Depth(-int(lhs)); }
