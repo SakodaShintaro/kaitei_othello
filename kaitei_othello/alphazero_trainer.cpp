@@ -276,11 +276,7 @@ void AlphaZeroTrainer::learnSlave() {
     //停止信号が来るまでループ
     while (!shared_data.stop_signal) {
         //棋譜を生成
-#ifdef USE_MCTS
-        auto games = RootstrapTrainer::play(1, (int32_t)usi_option.playout_limit, true);
-#else
-        auto games = RootstrapTrainer::play(1, SEARCH_DEPTH, true);
-#endif
+        auto games = RootstrapTrainer::play(1, true);
 
         MUTEX.lock();
         //生成した棋譜を学習用データに加工してstackへ詰め込む

@@ -158,11 +158,7 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
     //停止信号が来るまでループ
     while (!shared_data.stop_signal) {
         //棋譜を生成
-#ifdef USE_MCTS
-        auto games = play(BATCH_SIZE, (int32_t)usi_option.playout_limit, true);
-#else
-        auto games = play(BATCH_SIZE, SEARCH_DEPTH, true);
-#endif
+        auto games = play(BATCH_SIZE, true);
 
         //損失・勾配・千日手数・長手数による引き分け数を計算
         auto grad = std::make_unique<EvalParams<LearnEvalType>>();
@@ -199,7 +195,7 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
     }
 }
 
-std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit, bool add_noise) {
+std::vector<Game> RootstrapTrainer::play(int32_t game_num, bool add_noise) {
     auto searcher = std::make_unique<Searcher>(usi_option.USI_Hash);
 
     std::vector<Game> games(game_num);
