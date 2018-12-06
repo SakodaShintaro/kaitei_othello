@@ -30,20 +30,6 @@ public:
     //をかけた値を基にランダムに選択する関数
     Move softmaxChoice(Position& pos, double temperature);
     
-    //pvを取り出す関数
-    std::vector<Move> pv() {
-        std::vector<Move> pv;
-        for (Move m : pv_table_) {
-            pv.push_back(m);
-        }
-        return pv;
-    }
-
-    //pvのリセットをする関数:BonanzaMethodで呼ばれるためpublicに置いているがprivateにできるかも
-    void resetPVTable() {
-        pv_table_.reset();
-    }
-
 private:
     //--------------------
     //    内部メソッド
@@ -70,7 +56,7 @@ private:
     std::vector<Move> root_moves_;
 
     //技巧風のPV_Table
-    PVTable pv_table_;
+    //PVTable pv_table_;
 };
 
 #endif

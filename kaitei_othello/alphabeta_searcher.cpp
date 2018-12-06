@@ -33,9 +33,6 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
     //思考開始時間をセット
     start_ = std::chrono::steady_clock::now();
 
-    //PV初期化
-    resetPVTable();
-
     //ルート局面の合法手を設定
     root_moves_ = root.generateAllMoves();
 
@@ -101,9 +98,6 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
 
         //今回のイテレーションにおけるスコアを記録
         previous_best_score = best_score;
-
-        //PVtableをリセットしていいよな？
-        resetPVTable();
     }
 
     Move best_move = root_moves_.front();
@@ -342,7 +336,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
 
             best_score = score;
             best_move = current_move;
-            pv_table_.update(best_move, distance_from_root);
 
             if (score >= beta) {
                 //fail-high
