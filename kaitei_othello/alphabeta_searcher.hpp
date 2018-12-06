@@ -54,9 +54,6 @@ private:
     //--------------------
     //    内部メソッド
     //--------------------
-    //GUIへ情報を送る関数
-    void sendInfo(Depth depth, std::string cp_or_mate, Score score, Bound bound);
-
     //停止すべきか確認する関数
     inline bool shouldStop();
 
@@ -77,9 +74,6 @@ private:
 
     //思考する局面における合法手
     std::vector<Move> root_moves_;
-
-    //Seldpth
-    Depth seldepth_;
 
     //技巧風のPV_Table
     PVTable pv_table_;

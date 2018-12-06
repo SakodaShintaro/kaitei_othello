@@ -66,9 +66,6 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
     Score best_score, alpha, beta, previous_best_score;
 
     for (Depth depth = PLY; depth <= usi_option.depth_limit * PLY; depth += PLY) {
-        //seldepth_の初期化
-        seldepth_ = depth;
-
         //探索窓の設定
         if (depth <= 4 * PLY) { //深さ4まではASPIRATION_WINDOWを使わずフルで探索する
             alpha = MIN_SCORE;
@@ -134,39 +131,6 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
 #endif
 
     return { root_moves_.front(), teacher };
-}
-
-void AlphaBetaSearcher::sendInfo(Depth depth, std::string cp_or_mate, Score score, Bound bound) {
-    if (bound != EXACT_BOUND) {
-        //lower_boundとか表示する意味がない気がしてきた
-        return;
-    }
-
-    auto now_time = std::chrono::steady_clock::now();
-    auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now_time - start_);
-    std::cout << "info time " << std::setw(6) << elapsed.count();
-
-    //GUIへ読み途中の情報を返す
-    std::cout << " depth " << std::setw(2) << depth / PLY;
-    std::cout << " seldepth " << std::setw(2) << seldepth_ / PLY;
-    std::cout << " nodes " << std::setw(10) << node_number_;
-    std::cout << " score " << std::setw(4) << cp_or_mate << " " << std::setw(6) << score;
-    if (bound == UPPER_BOUND) {
-        std::cout << " upperbound";
-    } else if (bound == LOWER_BOUND) {
-        std::cout << " lowerbound";
-    }
-    int64_t nps = (elapsed.count() == 0 ? 0 : (int64_t)((double)(node_number_) / elapsed.count() * 1000.0));
-    std::cout << " nps " << std::setw(10) << nps;
-    std::cout << " hashfull " << std::setw(4) << (int)hash_table_.hashfull();
-    std::cout << " pv ";
-    if (pv_table_.size() == 0) {
-        pv_table_.update(root_moves_[0], 0);
-    }
-    for (auto move : pv_table_) {
-        std::cout << move << " ";
-    }
-    std::cout << std::endl;
 }
 
 Move AlphaBetaSearcher::randomChoice(Position & pos) {
