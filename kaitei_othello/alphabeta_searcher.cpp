@@ -23,7 +23,7 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
     root_moves_ = root.generateAllMoves();
 
     //指定された手数まで完全ランダムに指す
-    if (root.turn_number() + 1 <= usi_option.random_turn) {
+    if (root.turn_number() < usi_option.random_turn) {
         static std::random_device rd;
         return { root_moves_[rd() % root_moves_.size()], TeacherType() };
     }
@@ -31,45 +31,14 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
     //探索局面数を初期化
     node_number_ = 0;
 
-    //探索
     //反復深化
-    static constexpr Score DEFAULT_ASPIRATION_WINDOW_SIZE = Score(256);
-    Score aspiration_window_size = DEFAULT_ASPIRATION_WINDOW_SIZE;
-    Score best_score, alpha, beta, previous_best_score;
-
     for (Depth depth = PLY; depth <= usi_option.depth_limit * PLY; depth += PLY) {
-        //探索窓の設定
-        if (depth <= 4 * PLY) { //深さ4まではASPIRATION_WINDOWを使わずフルで探索する
-            alpha = MIN_SCORE;
-            beta = MAX_SCORE;
-        } else {
-            alpha = std::max(previous_best_score - aspiration_window_size, MIN_SCORE);
-            beta = std::min(previous_best_score + aspiration_window_size, MAX_SCORE);
+        //指し手のスコアを最小にしておかないと変になる
+        for (auto& root_move : root_moves_) {
+            root_move.score = MIN_SCORE;
         }
 
-        while (!shouldStop()) { //exactな評価値が返ってくるまでウィンドウを広げつつ探索
-            //指し手のスコアを最小にしておかないと変になる
-            for (auto& root_move : root_moves_) {
-                root_move.score = MIN_SCORE;
-            }
-
-            best_score = search<false>(root, alpha, beta, depth, 0);
-
-            if (best_score <= alpha) {
-                //fail-low
-                beta = (alpha + beta) / 2;
-                alpha -= aspiration_window_size;
-                aspiration_window_size *= 4;
-            } else if (best_score >= beta) {
-                //fail-high
-                alpha = (alpha + beta) / 2;
-                beta += aspiration_window_size;
-                aspiration_window_size *= 4;
-            } else {
-                aspiration_window_size = DEFAULT_ASPIRATION_WINDOW_SIZE;
-                break;
-            }
-        }
+        search<false>(root, MIN_SCORE, MAX_SCORE, depth, 0);
 
         //停止確認してダメだったら保存せずループを抜ける
         if (shouldStop()) {
@@ -81,14 +50,10 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
 
         //置換表への保存
         hash_table_.save(root.hash_value(), root_moves_[0], root_moves_[0].score, depth, root_moves_);
-
-        //今回のイテレーションにおけるスコアを記録
-        previous_best_score = best_score;
     }
 
-    Move best_move = root_moves_.front();
     TeacherType teacher(OUTPUT_DIM, 0.0);
-    teacher[best_move.toLabel()] = 1.0;
+    teacher[root_moves_[0].toLabel()] = 1.0;
 
 #ifdef USE_CATEGORICAL
     auto dist = onehotDist(best_score);
@@ -96,7 +61,7 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
         teacher[POLICY_DIM + i] = dist[i];
     }
 #else
-    teacher[POLICY_DIM] = best_score;
+    teacher[POLICY_DIM] = root_moves_[0].score;
 #endif
 
     return { root_moves_.front(), teacher };
@@ -142,16 +107,10 @@ inline bool AlphaBetaSearcher::shouldStop() {
     return false;
 }
 
-#define OMIT_PRUNINGS
-
 template<bool train_mode>
 Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root) {
     // nodeの種類
-    bool isRootNode = (distance_from_root == 0);
-
-    //-----------------------------
-    // Step1. 初期化
-    //-----------------------------
+    const bool isRootNode = (distance_from_root == 0);
 
     //assert類
     assert(MIN_SCORE <= alpha && alpha < beta && beta <= MAX_SCORE);
@@ -159,24 +118,22 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
     //探索局面数を増やす
     ++node_number_;
 
+    //
+    if (pos.isFinish()) {
+        return pos.resultForTurn();
+    }
+
+    //深さが1未満だったら値を返す
     if (depth < PLY) {
-        return pos.valueScoreForTurn();
+        return pos.valueForTurn();
     }
 
-    //-----------------------------
-    // RootNode以外での処理
-    //-----------------------------
-    if (!isRootNode) {
-        //停止確認
-        if (!train_mode && shouldStop()) {
-            return SCORE_ZERO;
-        }
+    //RootNode以外での処理
+    if (!isRootNode && !train_mode && shouldStop()) {
+        return SCORE_ZERO;
     }
 
-    //-----------------------------
-    // Step4. 置換表を見る
-    //-----------------------------
-
+    //置換表の参照
     auto hash_entry = hash_table_.find(pos.hash_value());
     if (train_mode) {
         hash_entry = nullptr;
@@ -194,10 +151,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
 
         return tt_score;
     }
-
-    //-----------------------------
-    // Step5. 局面の静的評価
-    //-----------------------------
 
     //変数の準備
     Score best_score = MIN_SCORE;
@@ -218,9 +171,7 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
         moves = pos.scoredAndSortedMoves();
     }
 
-    //-----------------------------
-    // Step11. Loop through moves
-    //-----------------------------
+    //全探索
     for (Move current_move : moves) {
         //ルートノードでしか参照されない
         std::vector<Move>::iterator root_move_itr;
@@ -233,31 +184,21 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
             }
         }
 
-        //-----------------------------
-        // Step14. 1手進める
-        //-----------------------------
+        //1手進める
         pos.doMove(current_move);
 
         //探索
         Score score = -search<train_mode>(pos, -beta, -alpha, depth - PLY, distance_from_root + 1);
 
-        //-----------------------------
-        // Step17. 1手戻す
-        //-----------------------------
+        //1手戻す
         pos.undo();
-
-        //-----------------------------
-        // Step18. 停止確認
-        //-----------------------------
 
         //停止確認
         if (!train_mode && shouldStop()) {
             return Score(0);
         }
 
-        //-----------------------------
-        // 探索された値によるalpha更新
-        //-----------------------------
+        //探索された値によるalpha値の更新
         if (score > best_score) {
             if (isRootNode) {
                 //ルートノードならスコアを更新しておく
