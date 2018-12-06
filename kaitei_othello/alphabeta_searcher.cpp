@@ -209,20 +209,7 @@ Move AlphaBetaSearcher::softmaxChoice(Position& pos, double temperature) {
     static std::random_device seed_gen;
     static std::default_random_engine engine(seed_gen());
 
-    double random_value = dist(engine);
-    double sum = 0.0;
-    for (int i = 0; i < moves.size(); i++) {
-        sum += score[i];
-        if (random_value <= sum) {
-            return moves[i];
-        }
-    }
-    return moves[moves.size() - 1];
-}
-
-inline int AlphaBetaSearcher::futilityMargin(int depth) {
-    return 175 * depth / PLY;
-    //return PLY / 2 + depth * 2;
+    return moves[randomChoise(score)];
 }
 
 inline bool AlphaBetaSearcher::shouldStop() {
@@ -274,28 +261,7 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
         if (!train_mode && shouldStop()) {
             return SCORE_ZERO;
         }
-
-        //-----------------------------
-        // Step3. Mate distance pruning
-        //-----------------------------
-
-        //合ってるのか怪しいぞ
-        alpha = std::max(MIN_SCORE + distance_from_root, alpha);
-        beta = std::min(MAX_SCORE - distance_from_root + 1, beta);
-        if (alpha >= beta) {
-            return alpha;
-        }
     }
-
-#ifdef USE_SEARCH_STACK
-    //-----------------------------
-    // SearchStackの初期化
-    //-----------------------------
-
-    SearchStack* ss = searchInfoAt(distance_from_root);
-    (ss + 1)->killers[0] = (ss + 1)->killers[1] = NULL_MOVE;
-    (ss + 1)->can_null_move = true;
-#endif
 
     //-----------------------------
     // Step4. 置換表を見る
@@ -385,15 +351,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
 
         //合法性判定は必要かどうか
         //今のところ合法手しかこないはずだけど
-#if DEBUG
-        if (!pos.isLegalMove(current_move)) {
-            pos.isLegalMove(current_move);
-            current_move.print();
-            pos.printForDebug();
-            assert(false);
-        }
-#endif
-
         pos.doMove(current_move);
 
         Score score;
@@ -406,11 +363,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
         //-----------------------------
         // Step16. Full Depth Search
         //-----------------------------
-        //if (distance_from_root == 0 && current_move.to() == SQ23 && current_move.subject() == BLACK_PAWN
-        //    && depth == 3 * PLY) {
-        //    printf("------------------------------\n");
-        //}
-
         if (shouldSearchFullDepth) {
             //Null Window Searchでalphaを超えそうか確認
             //これ入れた方がいいのかなぁ
@@ -421,16 +373,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
                 score = -search<train_mode>(pos, -beta, -alpha, depth - PLY, distance_from_root + 1);
             }
         }
-
-        //for (int32_t i = 0; i < distance_from_root; i++) {
-        //    printf("  ");
-        //}
-        //current_move.scores = scores;
-        //current_move.printWithScore();
-        //if (distance_from_root == 0 && current_move.to() == SQ23 && current_move.subject() == BLACK_PAWN) {
-        //    printf("------------------------------\n");
-        //}
-
         //-----------------------------
         // Step17. 1手戻す
         //-----------------------------
@@ -472,11 +414,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
     //-----------------------------
     // Step20. 詰みの確認
     //-----------------------------
-
-    if (move_count == 0) {
-        //詰み
-        return MIN_SCORE + distance_from_root;
-    }
 
     if (best_move != NULL_MOVE) {
         history_.updateBetaCutMove(best_move, depth);

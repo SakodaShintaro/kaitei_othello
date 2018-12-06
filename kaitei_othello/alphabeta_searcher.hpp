@@ -64,9 +64,6 @@ private:
     //停止すべきか確認する関数
     inline bool shouldStop();
 
-    //futilityMarginを計算する関数:razoringのマージンと共通化すると棋力が落ちる.そういうものか
-    inline static int futilityMargin(int depth);
-
     //------------------
     //    メンバ変数
     //------------------

@@ -36,20 +36,4 @@ public:
     }
 };
 
-#ifdef USE_MOVEHISTORY
-
-class MoveHistory {
-public:
-    Move operator[](const Move& move) const {
-        return table_[move.subject()][move.to()];
-    }
-    void update(Move pre, Move beta_cut) {
-        table_[pre.subject()][pre.to()] = beta_cut;
-    }
-private:
-    Move table_[PieceNum][SquareNum];
-};
-
-#endif
-
 #endif // !HISTORY_HPP
