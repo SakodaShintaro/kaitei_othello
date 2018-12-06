@@ -44,8 +44,13 @@ void NBoardProtocol::loop() {
             ifs >> usi_option.random_turn;
         } else if (input == "thread_num") {
             ifs >> usi_option.thread_num;
+#ifdef USE_MCTS
         } else if (input == "playout_limit") {
             ifs >> usi_option.playout_limit;
+#else
+        } else if (input == "depth_limit") {
+            ifs >> usi_option.depth_limit;
+#endif
         } else if (input == "limit_msec") {
             ifs >> shared_data.limit_msec;
         } else if (input == "eval_params_file") {

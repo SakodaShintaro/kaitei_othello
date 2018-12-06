@@ -7,7 +7,7 @@
 #ifdef USE_MCTS
 using Searcher = MCTSearcher;
 #else
-using Seacher = AlphaBetaSearcher;
+using Searcher = AlphaBetaSearcher;
 #endif
 
 #endif // !SEARCHER_HPP

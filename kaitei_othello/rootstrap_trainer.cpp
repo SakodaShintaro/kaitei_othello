@@ -161,7 +161,7 @@ void RootstrapTrainer::learnAsyncSlave(int32_t id) {
 #ifdef USE_MCTS
         auto games = play(BATCH_SIZE, (int32_t)usi_option.playout_limit, true);
 #else
-        auto games = play(BATCH_SIZE, SEARCH_DEPTH);
+        auto games = play(BATCH_SIZE, SEARCH_DEPTH, true);
 #endif
 
         //損失・勾配・千日手数・長手数による引き分け数を計算
@@ -225,7 +225,7 @@ std::vector<Game> RootstrapTrainer::play(int32_t game_num, int32_t search_limit,
     return games;
 }
 
-std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, int32_t search_limit, bool add_noise) {
+std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, bool add_noise) {
     std::vector<Game> games(game_num);
     std::atomic<int32_t> index;
     index = 0;
@@ -284,11 +284,7 @@ void RootstrapTrainer::evaluate() {
     //random_turnは小さめにする
     auto copy = usi_option.random_turn;
     usi_option.random_turn = (uint32_t)EVALUATION_RANDOM_TURN;
-#ifdef USE_MCTS
-    auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, (int32_t)usi_option.playout_limit, false);
-#else
-    auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, SEARCH_DEPTH);
-#endif
+    auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, false);
     usi_option.random_turn = copy;
 
     //いくつか出力
@@ -534,11 +530,7 @@ void RootstrapTrainer::learnSync() {
         //ここから学習のメイン
         while (true) {
             //自己対局による棋譜生成:並列化
-#ifdef USE_MCTS
-            auto games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, (int32_t)usi_option.playout_limit, true);
-#else
-            auto games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
-#endif
+            auto games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, true);
             //損失・勾配・千日手数・長手数による引き分け数を計算
             auto grad = std::make_unique<EvalParams<LearnEvalType>>();
             std::array<double, 2> loss = learnGames(games, *grad);
@@ -593,11 +585,7 @@ void RootstrapTrainer::testLearn() {
     eval_params->readFile();
 
     //自己対局による棋譜生成:並列化
-#ifdef USE_MCTS
-    std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, (int32_t)usi_option.playout_limit, true);
-#else
-    std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, SEARCH_DEPTH);
-#endif
+    std::vector<Game> games = parallelPlay(*eval_params, *eval_params, BATCH_SIZE, true);
 
     std::cout << std::fixed;
 

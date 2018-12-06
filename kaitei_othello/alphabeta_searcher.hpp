@@ -80,16 +80,8 @@ private:
     std::chrono::steady_clock::time_point start_;
 
     //History 
-#ifdef SF_SEARCH
-    ContinuationHistory continuationHistory;
-
-#endif
     History history_;
 
-    //MoveHistory:強くならなかったので外している
-#ifdef USE_MOVEHISTORY
-    MoveHistory move_history_;
-#endif
     //思考する局面における合法手
     std::vector<Move> root_moves_;
 
@@ -98,15 +90,6 @@ private:
 
     //技巧風のPV_Table
     PVTable pv_table_;
-
-    //Search Stackとそれを参照する関数
-#ifdef USE_SEARCH_STACK
-    SearchStack stack_[DEPTH_MAX / PLY]; //65KBほど？
-    SearchStack* searchInfoAt(int32_t distance_from_root) {
-        //深さ0でも前二つが参照できるようにずらしておかなければならない
-        return &stack_[distance_from_root + 2];
-    }
-#endif
 };
 
 #endif

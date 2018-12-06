@@ -12,6 +12,8 @@ public:
 
 #ifdef USE_MCTS
     int64_t playout_limit;
+#else
+    Depth depth_limit;
 #endif
 };
 

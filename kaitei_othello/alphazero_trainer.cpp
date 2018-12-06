@@ -279,7 +279,7 @@ void AlphaZeroTrainer::learnSlave() {
 #ifdef USE_MCTS
         auto games = RootstrapTrainer::play(1, (int32_t)usi_option.playout_limit, true);
 #else
-        auto games = RootstrapTrainer::play(1, SEARCH_DEPTH);
+        auto games = RootstrapTrainer::play(1, SEARCH_DEPTH, true);
 #endif
 
         MUTEX.lock();
@@ -310,11 +310,7 @@ void AlphaZeroTrainer::evaluate() {
     //random_turnÇÕè¨Ç≥ÇﬂÇ…Ç∑ÇÈ
     auto copy = usi_option.random_turn;
     usi_option.random_turn = (uint32_t)EVALUATION_RANDOM_TURN;
-#ifdef USE_MCTS
-    auto test_games = RootstrapTrainer::parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, (int32_t)usi_option.playout_limit, false);
-#else
-    auto test_games = RootstrapTrainer::parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, SEARCH_DEPTH);
-#endif
+    auto test_games = RootstrapTrainer::parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, false);
     usi_option.random_turn = copy;
 
     //Ç¢Ç≠Ç¬Ç©èoóÕ
