@@ -18,8 +18,9 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
 
     //Policy
     //合法手だけにマスクしていいのかよくわからなくなってきた
-    //auto y = softmax(pos.policyScore());
-    auto y = pos.maskedPolicy();
+    //マスクしない方が良さそう(2018/12/06の実験結果から)
+    //auto y = pos.maskedPolicy();
+    auto y = softmax(pos.policyScore());
 
     //Policyの損失
     double policy_loss = 0.0;

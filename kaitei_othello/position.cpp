@@ -95,7 +95,11 @@ void Position::print() const {
 
     CalcType value = 0.0;
     for (int32_t i = 0; i < BIN_SIZE; i++) {
-        printf("p[%f] = %f\n", VALUE_WIDTH * (0.5 + i), categorical_distribution[i]);
+        printf("p[%f] = %f ", VALUE_WIDTH * (0.5 + i), categorical_distribution[i]);
+        for (int32_t j = 0; j < (int32_t)(categorical_distribution[i] / 0.02); j++) {
+            std::cout << "*";
+        }
+        std::cout << std::endl;
         value += (CalcType)(VALUE_WIDTH * (0.5 + i) * categorical_distribution[i]);
     }
     printf("value = %f\n", value);
@@ -115,7 +119,11 @@ void Position::print() const {
         policy = softmax(policy);
 
         for (int32_t i = 0; i < moves.size(); i++) {
-            std::cout << moves[i] << " " << policy[i] << std::endl;
+            std::cout << moves[i] << " " << policy[i] << " ";
+            for (int32_t j = 0; j < (int32_t)(policy[i] / 0.02); j++) {
+                std::cout << "*";
+            }
+            std::cout << std::endl;
         }
     }
 
