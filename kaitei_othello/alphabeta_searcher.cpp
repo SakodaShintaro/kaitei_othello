@@ -15,20 +15,6 @@
 
 extern USIOption usi_option;
 
-struct SearchLog {
-    uint64_t hash_cut_num;
-    uint64_t razoring_num;
-    uint64_t futility_num;
-    uint64_t null_move_num;
-    void print() const {
-        printf("hash_cut_num  = %llu\n", hash_cut_num);
-        printf("razoring_num  = %llu\n", razoring_num);
-        printf("futility_num  = %llu\n", futility_num);
-        printf("null_move_num = %llu\n", null_move_num);
-    }
-};
-static SearchLog search_log;
-
 std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Position& root, bool add_noise) {
     //思考開始時間をセット
     start_ = std::chrono::steady_clock::now();
@@ -134,23 +120,11 @@ Move AlphaBetaSearcher::softmaxChoice(Position& pos, double temperature) {
     for (int i = 0; i < moves.size(); i++) {
         pos.doMove(moves[i]);
         //手番から見たスコア
-        moves[i].score = (Score)(int)policy[moves[i].toLabel()];
+        moves[i].score = policy[moves[i].toLabel()];
         pos.undo();
     }
 
     score = softmax(score, temperature);
-
-    //forDebug
-    //pos.print();
-    //for (int i = 0; i < moves.size(); i++) {
-    //    moves[i].printWithScore();
-    //    std::cout << "\t" << scores[i] << std::endl;
-    //}
-
-    static std::uniform_real_distribution<double> dist(0.0, 1.0);
-    static std::random_device seed_gen;
-    static std::default_random_engine engine(seed_gen());
-
     return moves[randomChoise(score)];
 }
 
@@ -172,10 +146,6 @@ inline bool AlphaBetaSearcher::shouldStop() {
 
 template<bool train_mode>
 Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root) {
-    if (depth < PLY) {
-        return pos.valueScoreForTurn();
-    }
-
     // nodeの種類
     bool isRootNode = (distance_from_root == 0);
 
@@ -189,16 +159,14 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
     //探索局面数を増やす
     ++node_number_;
 
+    if (depth < PLY) {
+        return pos.valueScoreForTurn();
+    }
+
     //-----------------------------
     // RootNode以外での処理
     //-----------------------------
-
     if (!isRootNode) {
-
-        //-----------------------------
-        // Step2. 探索の停止と引き分けの確認
-        //-----------------------------
-
         //停止確認
         if (!train_mode && shouldStop()) {
             return SCORE_ZERO;
@@ -224,7 +192,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
         && tt_depth >= depth
         && tt_score >= beta) {
 
-        search_log.hash_cut_num++;
         return tt_score;
     }
 
@@ -233,11 +200,7 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
     //-----------------------------
 
     //変数の準備
-    Move non_cut_moves[600];
-    uint32_t non_cut_moves_index = 0;
-    int move_count = 0;
-    Move pre = (pos.turn_number() > 0 ? pos.lastMove() : NULL_MOVE);
-    Score best_score = MIN_SCORE + distance_from_root;
+    Score best_score = MIN_SCORE;
     Move best_move = NULL_MOVE;
 
     //指し手を生成
@@ -258,12 +221,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
     //-----------------------------
     // Step11. Loop through moves
     //-----------------------------
-
-    //Score base_line = pos.color() == BLACK ? pos.scores() : -pos.scores();
-    //if (distance_from_root == 0) {
-    //    printf("base_line = %4d\n", base_line);
-    //}
-
     for (Move current_move : moves) {
         //ルートノードでしか参照されない
         std::vector<Move>::iterator root_move_itr;
@@ -276,41 +233,14 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
             }
         }
 
-        ++move_count;
-
-        //-----------------------------
-        // Step13. 動かす前での枝刈り
-        //-----------------------------
-
-
         //-----------------------------
         // Step14. 1手進める
         //-----------------------------
-
-        //合法性判定は必要かどうか
-        //今のところ合法手しかこないはずだけど
         pos.doMove(current_move);
 
-        Score score;
-        bool shouldSearchFullDepth = true;
+        //探索
+        Score score = -search<train_mode>(pos, -beta, -alpha, depth - PLY, distance_from_root + 1);
 
-        //-----------------------------
-        // Step15. Move countに応じてdepthを減らした探索(Late Move Reduction)
-        //-----------------------------
-
-        //-----------------------------
-        // Step16. Full Depth Search
-        //-----------------------------
-        if (shouldSearchFullDepth) {
-            //Null Window Searchでalphaを超えそうか確認
-            //これ入れた方がいいのかなぁ
-            score = -search<train_mode>(pos, -alpha - 1, -alpha, depth - PLY, distance_from_root + 1);
-
-            if (alpha < score && score < beta) {
-                //いい感じのスコアだったので再探索
-                score = -search<train_mode>(pos, -beta, -alpha, depth - PLY, distance_from_root + 1);
-            }
-        }
         //-----------------------------
         // Step17. 1手戻す
         //-----------------------------
@@ -344,7 +274,6 @@ Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth de
                 alpha = score;
             }
         }
-        non_cut_moves[non_cut_moves_index++] = current_move;
     }
 
     //-----------------------------
