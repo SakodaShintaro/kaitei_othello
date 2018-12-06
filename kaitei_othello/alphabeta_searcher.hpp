@@ -54,10 +54,6 @@ private:
     //--------------------
     //    内部メソッド
     //--------------------
-    //静止探索をする関数:searchのtemplateパラメータを変えたものとして実装できないか
-    template<bool isPVNode>
-    Score qsearch(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root);
-
     //GUIへ情報を送る関数
     void sendInfo(Depth depth, std::string cp_or_mate, Score score, Bound bound);
 

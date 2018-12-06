@@ -136,11 +136,6 @@ std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Positi
     return { root_moves_.front(), teacher };
 }
 
-template<bool isPVNode>
-Score AlphaBetaSearcher::qsearch(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root) {
-    return pos.valueScoreForTurn();
-}
-
 void AlphaBetaSearcher::sendInfo(Depth depth, std::string cp_or_mate, Score score, Bound bound) {
     if (bound != EXACT_BOUND) {
         //lower_boundとか表示する意味がない気がしてきた
@@ -231,7 +226,7 @@ inline bool AlphaBetaSearcher::shouldStop() {
 template<bool train_mode>
 Score AlphaBetaSearcher::search(Position &pos, Score alpha, Score beta, Depth depth, int distance_from_root) {
     if (depth < PLY) {
-        return qsearch<train_mode>(pos, alpha, beta, Depth(0), distance_from_root);
+        return pos.valueScoreForTurn();
     }
 
     // nodeの種類
