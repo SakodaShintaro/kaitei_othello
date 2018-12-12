@@ -45,11 +45,7 @@ private:
     void printUSIInfo() const;
 
     //Ucbを計算して最大値を持つインデックスを返す
-#ifdef USE_CATEGORICAL
-    static int32_t selectMaxUcbChild(const UctHashEntry& current_node, double curr_best_winrate);
-#else
     static int32_t selectMaxUcbChild(const UctHashEntry& current_node);
-#endif
 
     //ディリクレ分布に従ったものを返す関数
     static std::vector<double> dirichletDistribution(int32_t k, double alpha);

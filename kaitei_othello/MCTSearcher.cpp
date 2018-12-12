@@ -127,19 +127,7 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
     auto& child_indices = current_node.child_indices;
 
     // UCB値が最大の手を求める
-#ifdef USE_CATEGORICAL
-    const auto& child_move_counts = current_node.child_move_counts;
-    int32_t selected_index = (int32_t)(std::max_element(child_move_counts.begin(), child_move_counts.end()) - child_move_counts.begin());
-    double best_wp = 0.0;
-    for (int32_t i = 0; i < BIN_SIZE; i++) {
-        double v = (child_move_counts[selected_index] == 0 ? 0.0 :
-            current_node.child_wins[selected_index][i] / child_move_counts[selected_index]);
-        best_wp += VALUE_WIDTH * (0.5 + i) * v;
-    }
-    auto next_index = selectMaxUcbChild(current_node, best_wp);
-#else
     auto next_index = selectMaxUcbChild(current_node);
-#endif
 
     // 選んだ手を着手
     pos.doMove(current_node.legal_moves[next_index]);
@@ -356,8 +344,7 @@ std::vector<double> MCTSearcher::dirichletDistribution(int32_t k, double alpha) 
     return dirichlet;
 }
 
-#ifdef USE_CATEGORICAL
-int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node, double curr_best_winrate) {
+int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
     const auto& child_move_counts = current_node.child_move_counts;
 
     // ucb = Q(s, a) + U(s, a)
@@ -368,7 +355,18 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node, double
     int32_t max_index = -1;
     double max_value = INT_MIN;
 
+#ifdef USE_CATEGORICAL
+    int32_t selected_index = (int32_t)(std::max_element(child_move_counts.begin(), child_move_counts.end()) - child_move_counts.begin());
+    double best_wp = 0.0;
+    for (int32_t i = 0; i < BIN_SIZE; i++) {
+        double v = (child_move_counts[selected_index] == 0 ? 0.0 :
+            current_node.child_wins[selected_index][i] / child_move_counts[selected_index]);
+        best_wp += VALUE_WIDTH * (0.5 + i) * v;
+    }
+#endif
+
     for (int32_t i = 0; i < current_node.child_num; i++) {
+#ifdef USE_CATEGORICAL
         double Q = 0.0;
         if (child_move_counts[i] == 0) {
             Q = 0.5;
@@ -386,10 +384,13 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node, double
             //}
 
             //(3)基準値を超える確率(提案手法)
-            for (int32_t j = (int32_t)(curr_best_winrate * BIN_SIZE); j < BIN_SIZE; j++) {
+            for (int32_t j = (int32_t)(best_wp * BIN_SIZE); j < BIN_SIZE; j++) {
                 Q += current_node.child_wins[i][j] / child_move_counts[i];
             }
         }
+#else
+        double Q = (child_move_counts[i] == 0 ? 0.5 : current_node.child_wins[i] / child_move_counts[i]);
+#endif
         
         double U = std::sqrt(current_node.move_count + 1) / (child_move_counts[i] + 1);
         double ucb = Q + C_PUCT * current_node.nn_rates[i] * U;
@@ -402,31 +403,5 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node, double
     assert(0 <= max_index && max_index < (int32_t)current_node.child_num);
     return max_index;
 }
-
-#else
-int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
-    const auto& child_move_counts = current_node.child_move_counts;
-
-    // ucb = Q(s, a) + U(s, a)
-    // Q(s, a) = W(s, a) / N(s, a)
-    // U(s, a) = C_PUCT * P(s, a) * sqrt(sum_b(B(s, b)) / (1 + N(s, a))
-    constexpr double C_PUCT = 1.0;
-
-    int32_t max_index = -1;
-    double max_value = INT_MIN;
-    for (int32_t i = 0; i < current_node.child_num; i++) {
-        double Q = (child_move_counts[i] == 0 ? 0.5 : current_node.child_wins[i] / child_move_counts[i]);
-        double U = std::sqrt(current_node.move_count + 1) / (child_move_counts[i] + 1);
-        double ucb = Q + C_PUCT * current_node.nn_rates[i] * U;
-
-        if (ucb > max_value) {
-            max_value = ucb;
-            max_index = i;
-        }
-    }
-    assert(0 <= max_index && max_index < (int32_t)current_node.child_num);
-    return max_index;
-}
-#endif
 
 #endif
