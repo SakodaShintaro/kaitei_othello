@@ -48,9 +48,6 @@ private:
     //ЊёђЉЊWђ”
     double DECAY_RATE;
 
-    //€ш‚«•Є‚Ї‚М‘О‹З‚аЉwЏK‚·‚й‚©
-    bool USE_DRAW_GAME;
-
     //‹­‚­‚И‚Б‚Ѕ‚Ж‚Э‚И‚·Џџ—¦‚Ми‡’l
     double THRESHOLD;
 

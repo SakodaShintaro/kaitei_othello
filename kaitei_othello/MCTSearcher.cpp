@@ -116,14 +116,6 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
 #endif
     auto& current_node = hash_table_[current_index];
 
-    if (current_node.child_num == 0) {
-#ifdef USE_CATEGORICAL
-        return onehotDist(0.0);
-#else
-        return 0.0;
-#endif
-    }
-
     auto& child_indices = current_node.child_indices;
 
     // UCB’l‚ªÅ‘å‚Ìè‚ğ‹‚ß‚é

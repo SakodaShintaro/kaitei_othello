@@ -55,8 +55,6 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
             ifs >> DEEP_COEFFICIENT;
         } else if (name == "decay_rate") {
             ifs >> DECAY_RATE;
-        } else if (name == "use_draw_game") {
-            ifs >> USE_DRAW_GAME;
         } else if (name == "USI_Hash") {
             ifs >> usi_option.USI_Hash;
         } else if (name == "evaluation_game_num") {
