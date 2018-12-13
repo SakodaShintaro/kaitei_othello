@@ -60,7 +60,7 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
         } else if (name == "evaluation_game_num") {
             ifs >> EVALUATION_GAME_NUM;
         } else if (name == "evaluation_interval") {
-            ifs >> EVALUATION_INTERVAL_EXP;
+            ifs >> EVALUATION_INTERVAL;
         } else if (name == "evaluation_random_turn") {
             ifs >> EVALUATION_RANDOM_TURN;
         } else if (name == "policy_loss_coeff") {
@@ -82,13 +82,6 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
     //その他オプションを学習用に設定
     shared_data.limit_msec = LLONG_MAX;
     shared_data.stop_signal = false;
-
-    //変数の初期化
-    update_num_ = 0;
-
-    //評価関数読み込み
-    eval_params->readFile("tmp.bin");
-    eval_params->writeFile("before_learn.bin");
 
     //Optimizerに合わせて必要なものを準備
     if (OPTIMIZER_NAME == "MOMENTUM") {
@@ -128,10 +121,6 @@ void AlphaZeroTrainer::learn() {
     //減衰をかけて壊してしまうので学習率の初期値を保持しておく
     auto start_learning_rate = LEARN_RATE;
 
-    //一番最初に対戦する相手を作る
-    eval_params->initRandom();
-    eval_params->writeFile("first_target.bin");
-
     //学習
     for (int32_t i = 1; ; i++) {
         //時間を初期化
@@ -139,18 +128,11 @@ void AlphaZeroTrainer::learn() {
 
         MUTEX.lock();
 
-        //対戦相手の初期化(model.binへコピー)
-        eval_params->readFile("first_target.bin");
-        eval_params->writeFile();
-
         //パラメータの初期化
         eval_params->initRandom();
         eval_params->writeFile("before_learn" + std::to_string(i) + ".bin");
 
         //変数の初期化
-        int64_t evaluation_interval = 10;
-        int64_t evaluation_step = 10;
-        int64_t eval_times = 0;
         update_num_ = 0;
 
         //学習率の初期化
@@ -239,13 +221,9 @@ void AlphaZeroTrainer::learn() {
             LEARN_RATE *= LEARN_RATE_DECAY;
 
             //評価と書き出し
-            if (step_num == evaluation_step || step_num == MAX_STEP_NUM) {
+            if (step_num % EVALUATION_INTERVAL == 0 || step_num == MAX_STEP_NUM) {
                 evaluate();
-                evaluation_interval = (int64_t)ceil(evaluation_interval * EVALUATION_INTERVAL_EXP);
-                evaluation_step += evaluation_interval;
-                if (++eval_times % 100 == 0 || step_num == MAX_STEP_NUM) {
-                    eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
-                }
+                eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
             }
 
             std::cout << std::endl;

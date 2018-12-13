@@ -58,7 +58,7 @@ private:
     int32_t EVALUATION_GAME_NUM;
 
     //•]‰¿‚·‚éŠÔŠu
-    double EVALUATION_INTERVAL_EXP;
+    int64_t EVALUATION_INTERVAL;
 
     //•]‰¿‚·‚é‚Æ‚«‚Ìƒ‰ƒ“ƒ_ƒ€Žè”
     int32_t EVALUATION_RANDOM_TURN;
