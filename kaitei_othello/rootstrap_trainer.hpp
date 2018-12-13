@@ -63,7 +63,7 @@ private:
     int32_t LEARN_MODE;
 
     //Œ¸ŠŒW”
-    double DECAY_RATE;
+    double LAMBDA;
 
     //ˆø‚«•ª‚¯‚Ì‘Î‹Ç‚àŠwK‚·‚é‚©
     bool USE_DRAW_GAME;

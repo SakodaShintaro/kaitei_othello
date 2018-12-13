@@ -49,12 +49,8 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
             ifs >> THRESHOLD;
         } else if (name == "random_move_num") {
             ifs >> usi_option.random_turn;
-        } else if (name == "learn_mode(0or1)") {
-            ifs >> LEARN_MODE;
-        } else if (name == "deep_coefficient") {
-            ifs >> DEEP_COEFFICIENT;
-        } else if (name == "decay_rate") {
-            ifs >> DECAY_RATE;
+        } else if (name == "lambda") {
+            ifs >> LAMBDA;
         } else if (name == "USI_Hash") {
             ifs >> usi_option.USI_Hash;
         } else if (name == "evaluation_game_num") {
@@ -69,7 +65,7 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
             ifs >> VALUE_LOSS_COEFF;
         } else if (name == "max_stack_size") {
             ifs >> MAX_STACK_SIZE;
-            position_stack_.reserve(MAX_STACK_SIZE);
+            position_pool_.reserve(MAX_STACK_SIZE);
         } else if (name == "max_step_num") {
             ifs >> MAX_STEP_NUM;
 #ifdef USE_MCTS
@@ -170,8 +166,8 @@ void AlphaZeroTrainer::learn() {
         std::cout << std::endl;
         log_file_ << std::endl;
 
-        position_stack_.clear();
-        position_stack_.reserve(MAX_STACK_SIZE);
+        position_pool_.clear();
+        position_pool_.reserve(MAX_STACK_SIZE);
 
         MUTEX.unlock();
 
@@ -180,15 +176,15 @@ void AlphaZeroTrainer::learn() {
             auto grad = std::make_unique<EvalParams<LearnEvalType>>();
             std::array<double, 2> loss{ 0.0, 0.0 };
             for (int32_t j = 0; j < BATCH_SIZE; j++) {
-                if (position_stack_.size() <= BATCH_SIZE * 10) {
+                if (position_pool_.size() <= BATCH_SIZE * 10) {
                     j--;
                     continue;
                 }
 
                 //ランダムに選ぶ
                 MUTEX.lock();
-                int32_t random = engine() % position_stack_.size();
-                auto data = position_stack_[random];
+                int32_t random = engine() % position_pool_.size();
+                auto data = position_pool_[random];
                 MUTEX.unlock();
 
                 //局面を復元
@@ -254,18 +250,12 @@ void AlphaZeroTrainer::learnSlave() {
         MUTEX.lock();
         //生成した棋譜を学習用データに加工してstackへ詰め込む
         for (auto& game : games) {
-            if (LEARN_MODE == ELMO_LEARN) {
-                pushOneGame(game);
-            } else if (LEARN_MODE == N_STEP_SARSA) {
-                pushOneGameReverse(game);
-            } else { //ここには来ないはず
-                assert(false);
-            }
+            pushOneGame(game);
         }
 
-        if ((int64_t)position_stack_.size() >= MAX_STACK_SIZE) {
-            auto diff = position_stack_.size() - MAX_STACK_SIZE;
-            position_stack_.erase(position_stack_.begin(), position_stack_.begin() + diff);
+        if ((int64_t)position_pool_.size() >= MAX_STACK_SIZE) {
+            auto diff = position_pool_.size() - MAX_STACK_SIZE;
+            position_pool_.erase(position_pool_.begin(), position_pool_.begin() + diff);
         }
         MUTEX.unlock();
     }
@@ -326,49 +316,6 @@ void AlphaZeroTrainer::evaluate() {
 void AlphaZeroTrainer::pushOneGame(Game& game) {
     Position pos(*eval_params);
 
-    for (int32_t i = 0; i < game.moves.size(); i++) {
-        const Move& move = game.moves[i];
-        if (move == NULL_MOVE) {
-            pos.doMove(move);
-            continue;
-        }
-
-        //教師信号を計算
-        double result_for_turn = (pos.color() == BLACK ? game.result : 1.0 - game.result);
-        double teacher_signal = DEEP_COEFFICIENT * game.moves[i].score + (1 - DEEP_COEFFICIENT) * result_for_turn;
-
-#ifdef USE_CATEGORICAL
-        //auto dist = pos.valueDist();
-        //CalcType sum = 0.0;
-        //for (int32_t j = 0; j < BIN_SIZE; j++) {
-        //    game.teachers[i][POLICY_DIM + j] = (CalcType)(dist[j] * BernoulliDist(teacher_signal, VALUE_WIDTH * (j + 0.5)));
-        //    sum += game.teachers[i][POLICY_DIM + j];
-        //}
-        //for (int32_t j = 0; j < BIN_SIZE; j++) {
-        //    game.teachers[i][POLICY_DIM + j] /= sum;
-        //}
-
-        //手番から見た分布を得る
-        auto teacher_dist = onehotDist(teacher_signal);
-
-        //teacherにコピーする
-        for (int32_t j = 0; j < BIN_SIZE; j++) {
-            game.teachers[i][POLICY_DIM + j] = teacher_dist[j];
-        }
-#else
-        game.teachers[i][POLICY_DIM] = (CalcType)teacher_signal;
-#endif
-
-        //スタックに詰める
-        position_stack_.push_back({ pos.data(), game.teachers[i] });
-
-        pos.doMove(move);
-    }
-}
-
-void AlphaZeroTrainer::pushOneGameReverse(Game& game) {
-    Position pos(*eval_params);
-
     //まずは最終局面まで動かす
     for (auto move : game.moves) {
         pos.doMove(move);
@@ -392,7 +339,7 @@ void AlphaZeroTrainer::pushOneGameReverse(Game& game) {
         double curr_win_rate = (pos.color() == BLACK ? game.moves[i].score : 1.0 - game.moves[i].score);
 
         //混合
-        win_rate_for_black = DECAY_RATE * win_rate_for_black + (1.0 - DECAY_RATE) * curr_win_rate;
+        win_rate_for_black = LAMBDA * win_rate_for_black + (1.0 - LAMBDA) * curr_win_rate;
 
 #ifdef USE_CATEGORICAL
         //手番から見た分布を得る
@@ -408,6 +355,6 @@ void AlphaZeroTrainer::pushOneGameReverse(Game& game) {
 #endif
 
         //スタックに詰める
-        position_stack_.push_back({ pos.data(), game.teachers[i] });
+        position_pool_.push_back({ pos.data(), game.teachers[i] });
     }
 }

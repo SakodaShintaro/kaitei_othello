@@ -50,7 +50,7 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
         } else if (name == "deep_coefficient") {
             ifs >> DEEP_COEFFICIENT;
         } else if (name == "decay_rate") {
-            ifs >> DECAY_RATE;
+            ifs >> LAMBDA;
         } else if (name == "use_draw_game") {
             ifs >> USE_DRAW_GAME;
         } else if (name == "USI_Hash") {
@@ -438,7 +438,7 @@ void RootstrapTrainer::learnOneGameReverse(const Game& game, EvalParams<LearnEva
         double curr_win_rate = (pos.color() == BLACK ? game.moves[i].score : 1.0 - game.moves[i].score);
 
         //混合する
-        win_rate_for_black = DECAY_RATE * win_rate_for_black + (1.0 - DECAY_RATE) * curr_win_rate;
+        win_rate_for_black = LAMBDA * win_rate_for_black + (1.0 - LAMBDA) * curr_win_rate;
 
 #ifdef USE_CATEGORICAL
         //teacherから分布を得る
