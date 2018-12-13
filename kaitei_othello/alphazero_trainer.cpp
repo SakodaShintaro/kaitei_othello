@@ -150,9 +150,9 @@ void AlphaZeroTrainer::learn() {
         print("最大パラメータ");
         print("総和パラメータ");
         print("勝率");
-        print("勝ち越し数");
-        print("負け越し数");
-        print("連続負け越し数");
+        print("更新回数");
+        print("重複数");
+        print("次回のランダム手数");
         log_file_ << std::endl << std::fixed;
         std::cout << std::endl << std::fixed;
 
