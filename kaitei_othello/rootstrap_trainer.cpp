@@ -251,11 +251,6 @@ std::vector<Game> RootstrapTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
                     Move best_move = move_and_teacher.first;
                     TeacherType teacher = move_and_teacher.second;
 
-                    //if (!pos_c.isLegalMove(best_move)) {
-                    //    pos_c.printForDebug();
-                    //    best_move.printWithScore();
-                    //    assert(false);
-                    //}
                     pos_c.doMove(best_move);
                     pos_t.doMove(best_move);
                     game.moves.push_back(best_move);

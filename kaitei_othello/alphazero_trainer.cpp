@@ -198,7 +198,6 @@ void AlphaZeroTrainer::learn() {
             auto grad = std::make_unique<EvalParams<LearnEvalType>>();
             std::array<double, 2> loss{ 0.0, 0.0 };
             for (int32_t j = 0; j < BATCH_SIZE; j++) {
-                //std::this_thread::sleep_for(std::chrono::microseconds(50));
                 if (position_stack_.size() <= BATCH_SIZE * 10) {
                     j--;
                     continue;
@@ -305,8 +304,8 @@ void AlphaZeroTrainer::evaluate() {
     auto test_games = RootstrapTrainer::parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, false);
     usi_option.random_turn = copy;
 
-    //‚¢‚­‚Â‚©o—Í
-    for (int32_t i = 0; i < std::min(4, (int32_t)test_games.size()); i++) {
+    //o—Í
+    for (int32_t i = 0; i < std::min(10000, (int32_t)test_games.size()); i++) {
         test_games[i].writeKifuFile("./test_games/");
     }
 
