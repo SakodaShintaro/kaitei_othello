@@ -50,8 +50,6 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
         }
     }
 
-    std::cout << "playout_num = " << playout_num << std::endl;
-
     const auto& child_move_counts = current_node.child_move_counts;
 
     //for debug
