@@ -183,7 +183,6 @@ void NBoardProtocol::vsHuman() {
     Position pos(*eval_params);
 
     shared_data.stop_signal = false;
-    shared_data.limit_msec = LLONG_MAX;
     Searcher searcher(usi_option.USI_Hash);
 
     int32_t human_turn;
@@ -296,7 +295,6 @@ void NBoardProtocol::vsAI() {
     usi_option.random_turn = 0;
 
     shared_data.stop_signal = false;
-    shared_data.limit_msec = LLONG_MAX;
     Searcher searcher(usi_option.USI_Hash);
 
     Position pos(*eval_params);

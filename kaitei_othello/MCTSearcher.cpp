@@ -50,6 +50,8 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
         }
     }
 
+    std::cout << "playout_num = " << playout_num << std::endl;
+
     const auto& child_move_counts = current_node.child_move_counts;
 
     //for debug
@@ -253,6 +255,8 @@ bool MCTSearcher::shouldStop() {
         return true;
     }
 
+    return false;
+
     // ’Tõ‰ñ”‚ªÅ‚à‘½‚¢Žè‚ÆŽŸ‚É‘½‚¢Žè‚ð‹‚ß‚é
     int32_t max1 = 0, max2 = 0;
     for (auto e : hash_table_[current_root_index_].child_move_counts) {
@@ -383,9 +387,13 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
 #else
         double Q = (child_move_counts[i] == 0 ? 0.5 : current_node.child_wins[i] / child_move_counts[i]);
 #endif
+
+        constexpr double C_base = 19652.0;
+        constexpr double C_init = 1.25;
+        double C = (std::log((current_node.move_count + C_base + 1) / C_base) + C_init) / 2.0;
         
         double U = std::sqrt(current_node.move_count + 1) / (child_move_counts[i] + 1);
-        double ucb = Q + C_PUCT * current_node.nn_rates[i] * U;
+        double ucb = Q + C * current_node.nn_rates[i] * U;
 
         if (ucb > max_value) {
             max_value = ucb;
