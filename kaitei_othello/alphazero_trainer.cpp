@@ -335,12 +335,6 @@ void AlphaZeroTrainer::pushOneGame(Game& game) {
             continue;
         }
 
-        //探索結果を先手から見た値に変換
-        double curr_win_rate = (pos.color() == BLACK ? game.moves[i].score : 1.0 - game.moves[i].score);
-
-        //混合
-        win_rate_for_black = LAMBDA * win_rate_for_black + (1.0 - LAMBDA) * curr_win_rate;
-
 #ifdef USE_CATEGORICAL
         //手番から見た分布を得る
         auto teacher_dist = onehotDist(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
@@ -351,6 +345,11 @@ void AlphaZeroTrainer::pushOneGame(Game& game) {
         //teacherにコピーする
         game.teachers[i][POLICY_DIM] = (CalcType)(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
 #endif
+        //探索結果を先手から見た値に変換
+        double curr_win_rate = (pos.color() == BLACK ? game.moves[i].score : 1.0 - game.moves[i].score);
+
+        //混合
+        win_rate_for_black = LAMBDA * win_rate_for_black + (1.0 - LAMBDA) * curr_win_rate;
 
         //スタックに詰める
         position_pool_.push_back({ pos.data(), game.teachers[i] });
