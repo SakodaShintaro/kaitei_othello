@@ -273,7 +273,7 @@ void AlphaZeroTrainer::evaluate() {
     usi_option.random_turn = copy;
 
     //èoóÕ
-    for (int32_t i = 0; i < std::min(10000, (int32_t)test_games.size()); i++) {
+    for (int32_t i = 0; i < std::min(2, (int32_t)test_games.size()); i++) {
         test_games[i].writeKifuFile("./test_games/");
     }
 
