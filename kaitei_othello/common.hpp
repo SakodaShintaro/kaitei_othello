@@ -96,6 +96,18 @@ inline double d_standardSigmoid(Type x) {
 }
 
 template<class Type>
+inline double tanh(Type x) {
+    const double a = std::exp(x);
+    return (a - 1.0 / a) / (a + 1.0 / a);
+}
+
+template<class Type>
+inline double d_tanh(Type x) {
+    const double a = std::exp(x);
+    return 4.0 / std::pow(a + 1.0 / a, 2);
+}
+
+template<class Type>
 inline std::vector<Type> softmax(std::vector<Type> x, Type temperature = 1.0) {
     if (x.size() == 0) {
         return x;
