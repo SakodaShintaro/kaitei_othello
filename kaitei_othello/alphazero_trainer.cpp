@@ -342,13 +342,13 @@ void AlphaZeroTrainer::pushOneGame(Game& game) {
         win_rate_for_black = LAMBDA * win_rate_for_black + (1.0 - LAMBDA) * curr_win_rate;
 
 #ifdef USE_CATEGORICAL
-        //手番から見た分布を得る
-        auto teacher_dist = onehotDist(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
+        ////手番から見た分布を得る
+        //auto teacher_dist = onehotDist(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
 
-        //teacherにコピーする
-        for (int32_t j = 0; j < BIN_SIZE; j++) {
-            game.teachers[i][POLICY_DIM + j] = teacher_dist[j];
-        }
+        ////teacherにコピーする
+        //for (int32_t j = 0; j < BIN_SIZE; j++) {
+        //    game.teachers[i][POLICY_DIM + j] = teacher_dist[j];
+        //}
 #else
         //teacherにコピーする
         game.teachers[i][POLICY_DIM] = (CalcType)(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);

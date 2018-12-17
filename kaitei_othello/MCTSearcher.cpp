@@ -80,15 +80,6 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
 
     TeacherType teacher(OUTPUT_DIM, 0.0);
 
-    //valueのセット
-#ifdef USE_CATEGORICAL
-    for (int32_t i = 0; i < BIN_SIZE; i++) {
-        teacher[POLICY_DIM + i] = current_node.child_wins[best_index][i] / child_move_counts[best_index];
-    }
-#else
-    teacher[POLICY_DIM] = (CalcType)best_wp;
-#endif
-
     //訪問回数に基づいた分布を得る
     std::vector<double> distribution(current_node.child_num);
     for (int32_t i = 0; i < current_node.child_num; i++) {
@@ -98,6 +89,29 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
         //分布を教師データにセット
         teacher[current_node.legal_moves[i].toLabel()] = (CalcType)distribution[i];
     }
+
+    //valueのセット
+#ifdef USE_CATEGORICAL
+    for (int32_t i = 0; i < current_node.child_num; i++) {
+        //この子供の期待値を計算
+        double exp;
+        if (current_node.child_move_counts[i] == 0) {
+            exp = 0.5;
+        } else {
+            exp = 0.0;
+            for (int32_t j = 0; j < BIN_SIZE; j++) {
+                double value = (j + 0.5) * VALUE_WIDTH;
+                double prob = current_node.child_wins[i][j] / current_node.child_move_counts[i];
+                exp += value * prob;
+            }
+        }
+
+        //期待値のところに投げ込む
+        teacher[POLICY_DIM + std::min((int32_t)(exp * BIN_SIZE), BIN_SIZE - 1)] += distribution[i];
+    }
+#else
+    teacher[POLICY_DIM] = (CalcType)best_wp;
+#endif
 
     //最善手
     //手数が指定以下だった場合は訪問回数の分布からランダムに選択
