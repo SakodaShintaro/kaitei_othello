@@ -107,7 +107,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
         }
 
         //ä˙ë“ílÇÃÇ∆Ç±ÇÎÇ…ìäÇ∞çûÇﬁ
-        teacher[POLICY_DIM + std::min((int32_t)(exp * BIN_SIZE), BIN_SIZE - 1)] += distribution[i];
+        teacher[POLICY_DIM + std::min((int32_t)(exp * BIN_SIZE), BIN_SIZE - 1)] += (CalcType)distribution[i];
     }
 #else
     teacher[POLICY_DIM] = (CalcType)best_wp;

@@ -143,6 +143,8 @@ void testDistEffect() {
     auto games = RootstrapTrainer::parallelPlay(*eval_params, *eval_params, 500, false);
     std::set<int64_t> hash_values;
 
+    result_fs << "探索した値\t状態価値分布の期待値\t状態価値分布の分散\t探索した値の確率" << std::endl;
+
     for (const auto& game : games) {
         Position pos(*eval_params);
         for (auto move : game.moves) {
@@ -164,9 +166,9 @@ void testDistEffect() {
                 sigma += value_dist[i] * pow(VALUE_WIDTH * (i + 0.5) - value, 2);
             }
 
+            int32_t index = std::min((int32_t)(move.score * BIN_SIZE), BIN_SIZE - 1);
             if (hash_values.count(pos.hash_value()) == 0) {
-                result_fs << move.score << "\t" << value << "\t" << sigma << "\t" << pos.turn_number() << std::endl;
-                std::cout << move.score << "\t" << value << "\t" << sigma << "\t" << pos.turn_number() << std::endl;
+                result_fs << move.score << "\t" << value << "\t" << sigma << "\t" << value_dist[index] << std::endl;
                 hash_values.insert(pos.hash_value());
             }
 
