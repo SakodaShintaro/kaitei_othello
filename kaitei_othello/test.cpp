@@ -151,37 +151,77 @@ void testDistEffect() {
     usi_option.node_limit = 800;
 #endif
     
-    auto games = RootstrapTrainer::parallelPlay(*eval_params, *eval_params, 500, false);
+    auto games = RootstrapTrainer::parallelPlay(*eval_params, *eval_params, 100, false);
     std::set<int64_t> hash_values;
 
-    result_fs << "探索した値\t状態価値分布の期待値\t状態価値分布の分散\t探索した値の確率" << std::endl;
+    result_fs << "探索した値";
+    constexpr int32_t MAX = 25;
+    for (int32_t i = 0; i <= MAX; i++) {
+        result_fs << "\t幅" << 2 * i + 1 << "確率";
+    }
+    result_fs << std::endl;
+
+    auto isOK = [&](int32_t i) {
+        return 0 <= i && i < BIN_SIZE;
+    };
 
     for (const auto& game : games) {
         Position pos(*eval_params);
         for (auto move : game.moves) {
-            if (move == NULL_MOVE) {
+            if (move == NULL_MOVE || hash_values.count(pos.hash_value())) {
                 pos.doMove(move);
                 continue;
             }
 
-            //move.scoreとPositionのvalueDistの期待値を比べる
+            result_fs << move.score;
+
+            //move.score
             auto value_dist = pos.valueDist();
             
-            double value = 0.0;
-            for (int32_t i = 0; i < BIN_SIZE; i++) {
-                value += VALUE_WIDTH * (i + 0.5) * value_dist[i];
-            }
+            int32_t index = valueToIndex(move.score);
 
-            double sigma = 0.0;
-            for (int32_t i = 0; i < BIN_SIZE; i++) {
-                sigma += value_dist[i] * pow(VALUE_WIDTH * (i + 0.5) - value, 2);
-            }
 
-            int32_t index = std::min((int32_t)(move.score * BIN_SIZE), BIN_SIZE - 1);
-            if (hash_values.count(pos.hash_value()) == 0) {
-                result_fs << move.score << "\t" << value << "\t" << sigma << "\t" << value_dist[index] << std::endl;
-                hash_values.insert(pos.hash_value());
+            for (int32_t i = 0; i <= MAX; i++) {
+                //indexから左右i個までを考える
+                double p = value_dist[index];
+
+                int32_t num = 2 * i;
+
+                //左へ進む
+                for (int32_t j = 1; j <= i && isOK(index - j); j++, num--) {
+                    assert(isOK(index - j));
+                    p += value_dist[index - j];
+                    //std::cout << "value_dist[" << index - j << "] = " << value_dist[index - j] << ", p = " << p << std::endl;
+                }
+
+                //右へ進む
+                for (int32_t j = 1; num > 0 && isOK(index + j); j++, num--) {
+                    assert(isOK(index + j));
+                    p += value_dist[index + j];
+                    //std::cout << "value_dist[" << index + j << "] = " << value_dist[index + j] << ", p = " << p << std::endl;
+                }
+
+                //左へ進む
+                for (int32_t j = i + 1; num > 0; j++, num--) {
+                    if (!isOK(index - j)) {
+                        std::cout << p << std::endl;
+                        std::cout << "index = " << index << ", i = " << i << std::endl;
+                        assert(false);
+                    }
+                    p += value_dist[index - j];
+                    //std::cout << "value_dist[" << index - j << "] = " << value_dist[index - j] << ", p = " << p << std::endl;
+                }
+
+                if (!(0.0 <= p && p <= 1.1)) {
+                    std::cout << p << std::endl;
+                    std::cout << "index = " << index << ", i = " << i << std::endl;
+                    assert(false);
+                }
+                result_fs << "\t" << p;
             }
+            result_fs << std::endl;
+
+            hash_values.insert(pos.hash_value());
 
             pos.doMove(move);
         }
