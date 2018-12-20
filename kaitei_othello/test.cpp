@@ -84,6 +84,16 @@ void testNN() {
 
         auto result = searcher->thinkForGenerateLearnData(pos, false);
 
+        auto dist = pos.valueDist();
+        bool print_dist;
+        std::cout << "表示? ";
+        std::cin >> print_dist;
+        if (print_dist) {
+            for (int32_t i = 0; i < BIN_SIZE; i++) {
+                std::cout << dist[i] << std::endl;
+            }
+        }
+
         std::cout << "探索結果" << std::endl;
         for (Move move : moves) {
             std::cout << move << " " << result.second[move.toLabel()] << std::endl;
@@ -92,6 +102,7 @@ void testNN() {
         pos.doMove(result.first);
     }
     pos.print();
+    std::cout << pos.scoreForBlack() << std::endl;
 }
 
 void testKifuOutput() {
