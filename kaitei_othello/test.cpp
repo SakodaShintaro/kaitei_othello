@@ -84,6 +84,7 @@ void testNN() {
 
         auto result = searcher->thinkForGenerateLearnData(pos, false);
 
+#ifdef USE_CATEGORICAL
         auto dist = pos.valueDist();
         bool print_dist;
         std::cout << "表示? ";
@@ -93,6 +94,7 @@ void testNN() {
                 std::cout << dist[i] << std::endl;
             }
         }
+#endif
 
         std::cout << "探索結果" << std::endl;
         for (Move move : moves) {
