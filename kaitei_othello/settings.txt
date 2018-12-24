@@ -1,5 +1,5 @@
-hash_size 16
+hash_size 64
 random_turn 0
 thread_num 1
-playout_limit 8000
-limit_msec 100000
+playout_limit 800000000
+limit_msec 10000000000
