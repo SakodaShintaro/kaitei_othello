@@ -303,6 +303,12 @@ void NBoardProtocol::vsAI() {
     std::cout << std::fixed;
 
     double win_point = 0.0;
+    enum Result {
+        //0, 0.5, 1.0を2倍するとこのResultになる
+        LOSE, DRAW, WIN, RESULT_NUM
+    };
+    std::vector<int32_t> sum_result(RESULT_NUM, 0);
+
     for (int64_t i = 0; i < game_num; i++) {
         pos.init();
         Game game;
@@ -370,14 +376,16 @@ void NBoardProtocol::vsAI() {
 
         std::cout << std::setw(4) << i << "局目: ";
         auto result = pos.resultForBlack();
-        if (i % 2 == turn) {
-            //先手だった
-            win_point += result;
-            std::cout << result << " 計: " << win_point / (i + 1) << std::endl;
-        } else {
-            win_point += 1.0 - result;
-            std::cout << 1.0 - result << " 計: " << win_point / (i + 1) << std::endl;
+        if (i % 2 != turn) {
+            result = 1.0 - result;
         }
+        win_point += result;
+        sum_result[(int32_t)(result * 2)]++;
+        std::cout << result << " 計: " <<
+            std::setw(5) << sum_result[WIN] << "勝 " << 
+            std::setw(5) << sum_result[DRAW] << "引き分け " << 
+            std::setw(5) << sum_result[LOSE] << "敗 " <<
+            "勝率: " << win_point / (i + 1) << std::endl;
 
         if (turn == 0) {
             game.writeKifuFile("./games/");

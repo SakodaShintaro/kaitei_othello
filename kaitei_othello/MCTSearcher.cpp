@@ -69,11 +69,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
 
     //選択した着手の勝率の算出
 #ifdef USE_CATEGORICAL
-    double best_wp = 0.0;
-    for (int32_t i = 0; i < BIN_SIZE; i++) {
-        double v = current_node.child_wins[best_index][i] / child_move_counts[best_index];
-        best_wp += VALUE_WIDTH * (0.5 + i) * v;
-    }
+    double best_wp = expOfValueDist(current_node.child_wins[best_index]) / current_node.child_move_counts[best_index];
 #else
     auto best_wp = (child_move_counts[best_index] == 0 ? 0.0
         : current_node.child_wins[best_index] / child_move_counts[best_index]);
@@ -95,21 +91,17 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
     //valueのセット
 #ifdef USE_CATEGORICAL
     for (int32_t i = 0; i < current_node.child_num; i++) {
-        //この子供の期待値を計算
-        double exp;
         if (current_node.child_move_counts[i] == 0) {
-            exp = 0.5;
-        } else {
-            exp = 0.0;
-            for (int32_t j = 0; j < BIN_SIZE; j++) {
-                double value = (j + 0.5) * VALUE_WIDTH;
-                double prob = current_node.child_wins[i][j] / current_node.child_move_counts[i];
-                exp += value * prob;
-            }
-        }
+            //distribution[i] == 0のはずなので計算する意味がない
+            assert(distribution[i] == 0.0);
+            continue;
+        } 
+
+        double exp = expOfValueDist(current_node.child_wins[i]) / current_node.child_move_counts[i];
+        assert(0.0 <= exp && exp <= 1.0);
 
         //期待値のところに投げ込む
-        teacher[POLICY_DIM + std::min((int32_t)(exp * BIN_SIZE), BIN_SIZE - 1)] += (CalcType)distribution[i];
+        teacher[POLICY_DIM + valueToIndex(exp)] += (CalcType)distribution[i];
     }
 #else
     teacher[POLICY_DIM] = (CalcType)best_wp;
@@ -310,11 +302,7 @@ void MCTSearcher::printUSIInfo() const {
 
     //選択した着手の勝率の算出
 #ifdef USE_CATEGORICAL
-    double best_wp = 0.0;
-    for (int32_t i = 0; i < BIN_SIZE; i++) {
-        double v = current_node.child_wins[selected_index][i] / child_move_counts[selected_index];
-        best_wp += VALUE_WIDTH * (0.5 + i) * v;
-    }
+    double best_wp = expOfValueDist(current_node.child_wins[selected_index]) / child_move_counts[selected_index];
 #else
     auto best_wp = (child_move_counts[selected_index] == 0 ? 0.0
         : current_node.child_wins[selected_index] / child_move_counts[selected_index]);
@@ -366,13 +354,9 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
     double max_value = INT_MIN;
 
 #ifdef USE_CATEGORICAL
-    int32_t selected_index = (int32_t)(std::max_element(child_move_counts.begin(), child_move_counts.end()) - child_move_counts.begin());
-    double best_wp = 0.0;
-    for (int32_t i = 0; i < BIN_SIZE; i++) {
-        double v = (child_move_counts[selected_index] == 0 ? 0.0 :
-            current_node.child_wins[selected_index][i] / child_move_counts[selected_index]);
-        best_wp += VALUE_WIDTH * (0.5 + i) * v;
-    }
+    int32_t best_index = (int32_t)(std::max_element(child_move_counts.begin(), child_move_counts.end()) - child_move_counts.begin());
+    double best_wp = (current_node.child_move_counts[best_index] == 0 ? 0.0:
+        expOfValueDist(current_node.child_wins[best_index]) / current_node.child_move_counts[best_index]);
 #endif
 
     for (int32_t i = 0; i < current_node.child_num; i++) {
@@ -382,9 +366,7 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
             Q = 0.5;
         } else {
             ////(1)普通に期待値を計算する
-            //for (int32_t j = 0; j < BIN_SIZE; j++) {
-            //    Q += VALUE_WIDTH * (0.5 + j) * current_node.child_wins[i][j] / child_move_counts[i];
-            //}
+            //Q = expOfValueDist(current_node.child_wins[i]) / child_move_counts[i];
 
             ////(2)分散を(1)に加える
             //auto e = Q;
@@ -394,17 +376,16 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
             //}
 
             //(3)基準値を超える確率(提案手法)
-            for (int32_t j = (int32_t)(best_wp * BIN_SIZE); j < BIN_SIZE; j++) {
+            for (int32_t j = std::min(valueToIndex(best_wp) + 1, BIN_SIZE - 1); j < BIN_SIZE; j++) {
                 Q += current_node.child_wins[i][j] / child_move_counts[i];
             }
         }
 #else
         double Q = (child_move_counts[i] == 0 ? 0.5 : current_node.child_wins[i] / child_move_counts[i]);
 #endif
-
         constexpr double C_base = 19652.0;
         constexpr double C_init = 1.25;
-        double C = (std::log((current_node.move_count + C_base + 1) / C_base) + C_init) / 2.0;
+        double C = (std::log((current_node.move_count + C_base + 1) / C_base) + C_init);
         
         double U = std::sqrt(current_node.move_count + 1) / (child_move_counts[i] + 1);
         double ucb = Q + C * current_node.nn_rates[i] * U;

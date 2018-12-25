@@ -20,6 +20,15 @@ inline std::array<CalcType, BIN_SIZE> onehotDist(double value) {
     return result;
 }
 
+inline double expOfValueDist(std::array<CalcType, BIN_SIZE> dist) {
+    double exp = 0.0;
+    for (int32_t i = 0; i < BIN_SIZE; i++) {
+        //i”Ô–Ú‚Ì—v‘f‚ªŽ¦‚·’l‚Í(i + 0.5) * VALUE_WIDTH
+        exp += (i + 0.5) * VALUE_WIDTH * dist[i];
+    }
+    return exp;
+}
+
 inline double BernoulliDist(double y, double mu) {
     return std::pow(mu, y) * std::pow(1.0 - mu, 1.0 - y);
 }
