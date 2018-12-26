@@ -385,7 +385,7 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
 #endif
         constexpr double C_base = 19652.0;
         constexpr double C_init = 1.25;
-        double C = (std::log((current_node.move_count + C_base + 1) / C_base) + C_init);
+        double C = (std::log((current_node.move_count + C_base + 1) / C_base) + C_init) / 2;
         
         double U = std::sqrt(current_node.move_count + 1) / (child_move_counts[i] + 1);
         double ucb = Q + C * current_node.nn_rates[i] * U;
