@@ -8,8 +8,8 @@ const ArrayMap<std::string, PieceNum> PieceToStr({
 });
 
 const ArrayMap<std::string, PieceNum> PieceToSfenStr({
-    { BLACK_PIECE,  "o" },
-    { WHITE_PIECE,  "x" },
+    { BLACK_PIECE,  "x" },
+    { WHITE_PIECE,  "o" },
     { EMPTY, " " }
 });
 

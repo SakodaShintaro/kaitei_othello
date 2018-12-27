@@ -80,9 +80,14 @@ void testNN() {
             continue;
         }
 
-        pos.print();
-
         auto result = searcher->thinkForGenerateLearnData(pos, false);
+
+        if (pos.turn_number() % 10 != 0) {
+            pos.doMove(result.first);
+            continue;
+        }
+
+        pos.print();
 
 #ifdef USE_CATEGORICAL
         auto dist = pos.valueDist();

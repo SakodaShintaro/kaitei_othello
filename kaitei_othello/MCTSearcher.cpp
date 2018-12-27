@@ -60,7 +60,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
     //auto root_moves = current_node.legal_moves;
     //for (int32_t i = 0; i < child_num; i++) {
     //    printf("%3d: move_count = %6d, nn_rate = %.5f, win_rate = %7.5f, ", i, child_move_counts[i],
-    //        current_node.nn_rates[i], (child_move_counts[i] > 0 ? current_node.child_wins[i] / child_move_counts[i] : 0));
+    //        current_node.nn_rates[i], (child_move_counts[i] > 0 ? expOfValueDist(current_node.child_wins[i]) / child_move_counts[i] : 0));
     //    root_moves[i].print();
     //}
     
@@ -380,6 +380,7 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
                 Q += current_node.child_wins[i][j] / child_move_counts[i];
             }
         }
+        assert(0.0 <= Q && Q <= 1.0);
 #else
         double Q = (child_move_counts[i] == 0 ? 0.5 : current_node.child_wins[i] / child_move_counts[i]);
 #endif
@@ -389,7 +390,6 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
         
         double U = std::sqrt(current_node.move_count + 1) / (child_move_counts[i] + 1);
         double ucb = Q + C * current_node.nn_rates[i] * U;
-
         if (ucb > max_value) {
             max_value = ucb;
             max_index = i;
