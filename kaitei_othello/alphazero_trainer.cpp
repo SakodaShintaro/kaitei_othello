@@ -17,6 +17,10 @@
 
 static std::mutex MUTEX;
 
+//保存するディレクトリの名前
+static const std::string LEARN_GAMES_DIR = "./learn_games/";
+static const std::string EVAL_GAMES_DIR = "./test_games/";
+
 AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
     //オプションをファイルから読み込む
     std::ifstream ifs(settings_file_path);
@@ -85,16 +89,16 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
     }
 
     //棋譜を保存するディレクトリの削除
-    std::experimental::filesystem::remove_all("./learn_games");
-    std::experimental::filesystem::remove_all("./test_games");
+    std::experimental::filesystem::remove_all(LEARN_GAMES_DIR);
+    std::experimental::filesystem::remove_all(EVAL_GAMES_DIR);
 
     //棋譜を保存するディレクトリの作成
 #ifdef _MSC_VER
-    _mkdir("./learn_games");
-    _mkdir("./test_games");
+    _mkdir(LEARN_GAMES_DIR.c_str());
+    _mkdir(EVAL_GAMES_DIR.c_str());
 #elif __GNUC__
-    mkdir("./learn_games", ACCESSPERMS);
-    mkdir("./test_games", ACCESSPERMS);
+    mkdir(LEARN_GAMES_DIR.c_str(), ACCESSPERMS);
+    mkdir(EVAL_GAMES_DIR.c_str(), ACCESSPERMS);
 #endif
 }
 
@@ -274,7 +278,7 @@ void AlphaZeroTrainer::evaluate() {
 
     //出力
     for (int32_t i = 0; i < std::min(2, (int32_t)test_games.size()); i++) {
-        test_games[i].writeKifuFile("./test_games/");
+        test_games[i].writeKifuFile(EVAL_GAMES_DIR);
     }
 
     double win_rate = 0.0;

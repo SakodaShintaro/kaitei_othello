@@ -10,7 +10,7 @@ lambda 1.0
 playout_limit 800
 random_move_num 10
 USI_Hash 16
-evaluation_game_num 1000
+evaluation_game_num 100
 evaluation_interval 1000
 evaluation_random_turn 10
 policy_loss_coeff 1.0
