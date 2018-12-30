@@ -40,3 +40,21 @@ void Game::writeKifuFile(std::string dir_path) const {
     
     ofs << pos.scoreForBlack() << std::endl;
 }
+
+bool Game::operator==(const Game& rhs) const {
+    if (moves.size() != rhs.moves.size()) {
+        //手数が違えば不一致
+        return false;
+    }
+
+    bool result = true;
+    for (int32_t i = 0; i < moves.size(); i++) {
+        if (moves[i] != rhs.moves[i]) {
+            //指し手が違えば不一致
+            result = false;
+            break;
+        }
+    }
+
+    return result;
+}

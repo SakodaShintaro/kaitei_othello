@@ -23,6 +23,8 @@ struct Game {
 	double result;
 
     void writeKifuFile(std::string dir_path) const;
+
+    bool operator==(const Game& rhs) const;
 };
 
 #endif // !LOAD_GAME_HPP

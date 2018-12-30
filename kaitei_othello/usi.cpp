@@ -121,7 +121,6 @@ void NBoardProtocol::loop() {
         } else if (input == "nboard") {
             int32_t version;
             std::cin >> version;
-            //さて何かやることはあるだろうか
             std::cout << "set myname kaitei_othello" << std::endl;
         } else if (input == "set") {
             std::string command;
@@ -163,9 +162,7 @@ void NBoardProtocol::loop() {
         } else if (input == "move") {
             std::string move_str;
             std::cin >> move_str;
-            //変換
-            Move move = stringToMove(move_str);
-            root_.doMove(move);
+            root_.doMove(stringToMove(move_str));
         } else if (input == "hint") {
             int32_t n;
             std::cin >> n;
@@ -351,18 +348,7 @@ void NBoardProtocol::vsAI() {
         //過去の対局と比較して同一でないかを確認する
         bool ok = true;
         for (const auto& g : games) {
-            if (g.moves.size() != game.moves.size()) {
-                continue;
-            }
-
-            bool same = true;
-            for (int64_t j = 0; j < (int64_t)g.moves.size(); j++) {
-                if (g.moves[j] != game.moves[j]) {
-                    same = false;
-                    break;
-                }
-            }
-            if (same) {
+            if (game == g) {
                 ok = false;
                 break;
             }

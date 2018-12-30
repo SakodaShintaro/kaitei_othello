@@ -290,17 +290,7 @@ void AlphaZeroTrainer::evaluate() {
     int32_t same_num = 0;
     for (int32_t i = 0; i < test_games.size(); i++) {
         for (int32_t j = i + 1; j < test_games.size(); j++) {
-            if (test_games[i].moves.size() != test_games[i].moves.size()) {
-                continue;
-            }
-            bool same = true;
-            for (int32_t k = 0; k < test_games[i].moves.size(); k++) {
-                if (test_games[i].moves[k] != test_games[j].moves[k]) {
-                    same = false;
-                    break;
-                }
-            }
-            if (same) {
+            if (test_games[i] == test_games[j]) {
                 same_num++;
             }
         }
