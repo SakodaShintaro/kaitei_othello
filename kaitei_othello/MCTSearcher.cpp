@@ -113,6 +113,21 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
         ? current_node.legal_moves[randomChoise(distribution)]
         : current_node.legal_moves[best_index]);
     best_move.score = (Score)best_wp;
+    
+    //best_index‚Ì•ª•z‚ð•\Ž¦
+    //CalcType value = 0.0;
+    //double sum_p = 0.0;
+    //for (int32_t i = 0; i < BIN_SIZE; i++) {
+    //    double p = current_node.child_wins[best_index][i] / current_node.child_move_counts[best_index];
+    //    printf("p[%f] = %f ", VALUE_WIDTH * (0.5 + i), p);
+    //    for (int32_t j = 0; j < (int32_t)(p / 0.02); j++) {
+    //        std::cout << "*";
+    //    }
+    //    std::cout << std::endl;
+    //    value += (CalcType)(VALUE_WIDTH * (0.5 + i) * p);
+    //    sum_p += p;
+    //}
+    //printf("value = %f, sum_p = %f\n", value, sum_p);
 
     return { best_move, teacher };
 }
@@ -151,8 +166,11 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
         auto index = expandNode(pos);
         child_indices[next_index] = index;
 #ifdef USE_CATEGORICAL
-        result = hash_table_[index].value_dist;
-        std::reverse(result.begin(), result.end());
+        //result = hash_table_[index].value_dist;
+        //std::reverse(result.begin(), result.end());
+
+        auto value = expOfValueDist(hash_table_[index].value_dist);
+        result = onehotDist(1.0 - value);
 #else
         result = 1.0f - hash_table_[index].value_win;
 #endif
@@ -380,7 +398,7 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
                 Q += current_node.child_wins[i][j] / child_move_counts[i];
             }
         }
-        assert(0.0 <= Q && Q <= 1.0);
+        assert(-0.01 <= Q && Q <= 1.01);
 #else
         double Q = (child_move_counts[i] == 0 ? 0.5 : current_node.child_wins[i] / child_move_counts[i]);
 #endif
