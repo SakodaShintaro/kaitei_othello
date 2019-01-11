@@ -20,11 +20,7 @@ public:
 
 private:
     //再帰する探索関数
-#ifdef USE_CATEGORICAL
-    std::array<CalcType, BIN_SIZE> uctSearch(Position& pos, Index current_index);
-#else
-    CalcType uctSearch(Position& pos, Index current_index);
-#endif
+    ValueType uctSearch(Position& pos, Index current_index);
 
     //ノードを展開する関数
     Index expandNode(Position& pos);

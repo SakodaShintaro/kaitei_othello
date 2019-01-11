@@ -1,5 +1,3 @@
-#pragma once
-
 #ifndef UCT_HASH_ENTRY_HPP
 #define UCT_HASH_ENTRY_HPP
 
@@ -10,21 +8,14 @@
 using Index = int32_t;
 
 struct UctHashEntry {
-    int32_t move_count;
-    int32_t child_num;
-    std::vector<Move> legal_moves;
+    int32_t sum_N;
+    int32_t moves_size;
+    std::vector<Move> moves;
     std::vector<Index> child_indices;
-    std::vector<int32_t> child_move_counts;
-    std::vector<CalcType> nn_rates;
-#ifdef USE_CATEGORICAL
-    std::array<CalcType, BIN_SIZE> value_dist;
-    std::array<CalcType, BIN_SIZE> win_sum;
-    std::vector<std::array<CalcType, BIN_SIZE>> child_wins;
-#else
-    CalcType value_win;
-    CalcType win_sum;
-    std::vector<CalcType> child_wins;
-#endif
+    std::vector<int32_t> N;
+    std::vector<CalcType> policy;
+    ValueType value;
+    std::vector<ValueType> W;
     bool evaled;
 
     //識別用データ
@@ -36,11 +27,11 @@ struct UctHashEntry {
 
 #ifdef USE_CATEGORICAL
     UctHashEntry() :
-        move_count(0), child_num(0),
+        sum_N(0), moves_size(0),
         evaled(false), hash(0), turn_number(0), age(0) {}
 #else
     UctHashEntry() :
-        move_count(0), win_sum(0.0), child_num(0), value_win(0.0),
+        sum_N(0), moves_size(0), value(0.0),
         evaled(false), hash(0), turn_number(0), age(0) {}
 #endif
 };

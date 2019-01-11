@@ -66,9 +66,9 @@ void UctHashTable::saveUsedHash(Position& pos, Index index) {
 
     auto& current_node = table_[index];
     auto& child_indices = current_node.child_indices;
-    for (int32_t i = 0; i < current_node.child_num; i++) {
+    for (int32_t i = 0; i < current_node.moves_size; i++) {
         if (child_indices[i] != NOT_EXPANDED && table_[child_indices[i]].age != age_) {
-            pos.doMove(current_node.legal_moves[i]);
+            pos.doMove(current_node.moves[i]);
             saveUsedHash(pos, child_indices[i]);
             pos.undo();
         }

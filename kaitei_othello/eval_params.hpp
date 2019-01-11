@@ -15,6 +15,7 @@
 //型は実際のパラメータ(int16_t)と、学習時のパラメータ,勾配(float)を想定
 using DefaultEvalType = float;
 using CalcType = float;
+
 using Vec = Eigen::VectorXf;
 using TeacherType = std::vector<CalcType>;
 using Feature = std::vector<CalcType>;
@@ -43,6 +44,11 @@ constexpr std::array<int32_t, 2> MATRIX_SIZE[LAYER_NUM] = {
 #define USE_ACTIVATION_RELU
 
 using LearnEvalType = float;
+#ifdef USE_CATEGORICAL
+using ValueType = std::array<CalcType, BIN_SIZE>;
+#else
+using ValueType = CalcType;
+#endif
 
 template<typename T>
 class EvalParams {

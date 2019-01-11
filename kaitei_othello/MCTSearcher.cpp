@@ -18,7 +18,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
     auto& current_node = hash_table_[current_root_index_];
 
     //NULL_MOVEだけならすぐ返す
-    if (current_node.child_num == 1 && current_node.legal_moves[0] == NULL_MOVE) {
+    if (current_node.moves_size == 1 && current_node.moves[0] == NULL_MOVE) {
         return { NULL_MOVE, TeacherType() };
     }
 
@@ -26,9 +26,9 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
         //ノイズを加える
         //Alpha Zeroの論文と同じディリクレノイズ
         constexpr double epsilon = 0.25;
-        auto dirichlet = dirichletDistribution(current_node.child_num, 0.05);
-        for (int32_t i = 0; i < current_node.child_num; i++) {
-            current_node.nn_rates[i] = (CalcType)((1.0 - epsilon) * current_node.nn_rates[i] + epsilon * dirichlet[i]);
+        auto dirichlet = dirichletDistribution(current_node.moves_size, 0.05);
+        for (int32_t i = 0; i < current_node.moves_size; i++) {
+            current_node.policy[i] = (CalcType)((1.0 - epsilon) * current_node.policy[i] + epsilon * dirichlet[i]);
         }
     }
 
@@ -52,52 +52,52 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
 
     //std::cout << "playout_num = " << playout_num << std::endl;
 
-    const auto& child_move_counts = current_node.child_move_counts;
+    const auto& N = current_node.N;
 
     //for debug
     //root.print();
-    //auto child_num = current_node.child_num;
-    //auto root_moves = current_node.legal_moves;
-    //for (int32_t i = 0; i < child_num; i++) {
-    //    printf("%3d: move_count = %6d, nn_rate = %.5f, win_rate = %7.5f, ", i, child_move_counts[i],
-    //        current_node.nn_rates[i], (child_move_counts[i] > 0 ? expOfValueDist(current_node.child_wins[i]) / child_move_counts[i] : 0));
+    //auto moves_size = current_node.moves_size;
+    //auto root_moves = current_node.moves;
+    //for (int32_t i = 0; i < moves_size; i++) {
+    //    printf("%3d: sum_N = %6d, nn_rate = %.5f, win_rate = %7.5f, ", i, N[i],
+    //        current_node.policy[i], (N[i] > 0 ? expOfValueDist(current_node.child_wins[i]) / N[i] : 0));
     //    root_moves[i].print();
     //}
     
     // 訪問回数最大の手を選択する
-    int32_t best_index = (int32_t)(std::max_element(child_move_counts.begin(), child_move_counts.end()) - child_move_counts.begin());
+    int32_t best_index = (int32_t)(std::max_element(N.begin(), N.end()) - N.begin());
 
     //選択した着手の勝率の算出
 #ifdef USE_CATEGORICAL
-    double best_wp = expOfValueDist(current_node.child_wins[best_index]) / current_node.child_move_counts[best_index];
+    double best_wp = expOfValueDist(current_node.W[best_index]) / current_node.N[best_index];
 #else
-    auto best_wp = (child_move_counts[best_index] == 0 ? 0.0
-        : current_node.child_wins[best_index] / child_move_counts[best_index]);
+    auto best_wp = (N[best_index] == 0 ? 0.0
+        : current_node.W[best_index] / N[best_index]);
 #endif
     assert(0.0 <= best_wp && best_wp <= 1.0);
 
     TeacherType teacher(OUTPUT_DIM, 0.0);
 
     //訪問回数に基づいた分布を得る
-    std::vector<double> distribution(current_node.child_num);
-    for (int32_t i = 0; i < current_node.child_num; i++) {
-        distribution[i] = (double)child_move_counts[i] / current_node.move_count;
+    std::vector<double> distribution(current_node.moves_size);
+    for (int32_t i = 0; i < current_node.moves_size; i++) {
+        distribution[i] = (double)N[i] / current_node.sum_N;
         assert(0.0 <= distribution[i] && distribution[i] <= 1.0);
 
         //分布を教師データにセット
-        teacher[current_node.legal_moves[i].toLabel()] = (CalcType)distribution[i];
+        teacher[current_node.moves[i].toLabel()] = (CalcType)distribution[i];
     }
 
     //valueのセット
 #ifdef USE_CATEGORICAL
-    for (int32_t i = 0; i < current_node.child_num; i++) {
-        if (current_node.child_move_counts[i] == 0) {
+    for (int32_t i = 0; i < current_node.moves_size; i++) {
+        if (current_node.N[i] == 0) {
             //distribution[i] == 0のはずなので計算する意味がない
             assert(distribution[i] == 0.0);
             continue;
         } 
 
-        double exp = expOfValueDist(current_node.child_wins[i]) / current_node.child_move_counts[i];
+        double exp = expOfValueDist(current_node.W[i]) / current_node.N[i];
         assert(0.0 <= exp && exp <= 1.0);
 
         //期待値のところに投げ込む
@@ -110,15 +110,15 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
     //最善手
     //手数が指定以下だった場合は訪問回数の分布からランダムに選択
     Move best_move = (root.turn_number() < usi_option.random_turn
-        ? current_node.legal_moves[randomChoise(distribution)]
-        : current_node.legal_moves[best_index]);
+        ? current_node.moves[randomChoise(distribution)]
+        : current_node.moves[best_index]);
     best_move.score = (Score)best_wp;
     
     //best_indexの分布を表示
     //CalcType value = 0.0;
     //double sum_p = 0.0;
     //for (int32_t i = 0; i < BIN_SIZE; i++) {
-    //    double p = current_node.child_wins[best_index][i] / current_node.child_move_counts[best_index];
+    //    double p = current_node.child_wins[best_index][i] / current_node.N[best_index];
     //    printf("p[%f] = %f ", VALUE_WIDTH * (0.5 + i), p);
     //    for (int32_t j = 0; j < (int32_t)(p / 0.02); j++) {
     //        std::cout << "*";
@@ -145,7 +145,7 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
     auto next_index = selectMaxUcbChild(current_node);
 
     // 選んだ手を着手
-    pos.doMove(current_node.legal_moves[next_index]);
+    pos.doMove(current_node.moves[next_index]);
 
 #ifdef USE_CATEGORICAL
     std::array<CalcType, BIN_SIZE> result;
@@ -166,13 +166,10 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
         auto index = expandNode(pos);
         child_indices[next_index] = index;
 #ifdef USE_CATEGORICAL
-        //result = hash_table_[index].value_dist;
-        //std::reverse(result.begin(), result.end());
-
-        auto value = expOfValueDist(hash_table_[index].value_dist);
-        result = onehotDist(1.0 - value);
+        result = hash_table_[index].value;
+        std::reverse(result.begin(), result.end());
 #else
-        result = 1.0f - hash_table_[index].value_win;
+        result = 1.0f - hash_table_[index].value;
 #endif
     } else {
         // 手番を入れ替えて1手深く読む
@@ -185,10 +182,9 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
     }
 
     // 探索結果の反映
-    current_node.win_sum += result;
-    current_node.move_count++;
-    current_node.child_wins[next_index] += result;
-    current_node.child_move_counts[next_index]++;
+    current_node.sum_N++;
+    current_node.W[next_index] += result;
+    current_node.N[next_index]++;
 
     // 手を戻す
     pos.undo();
@@ -210,27 +206,25 @@ Index MCTSearcher::expandNode(Position& pos) {
     auto& current_node = hash_table_[index];
 
     // 候補手の展開
-    current_node.legal_moves = pos.generateAllMoves();
-    current_node.child_num = (uint32_t)current_node.legal_moves.size();
-    current_node.child_indices = std::vector<int32_t>(current_node.child_num, UctHashTable::NOT_EXPANDED);
-    current_node.child_move_counts = std::vector<int32_t>(current_node.child_num, 0);
+    current_node.moves = pos.generateAllMoves();
+    current_node.moves_size = (uint32_t)current_node.moves.size();
+    current_node.child_indices = std::vector<int32_t>(current_node.moves_size, UctHashTable::NOT_EXPANDED);
+    current_node.N = std::vector<int32_t>(current_node.moves_size, 0);
 
     // 現在のノードの初期化
-    current_node.move_count = 0;
+    current_node.sum_N = 0;
     current_node.evaled = false;
 #ifdef USE_CATEGORICAL
-    current_node.child_wins = std::vector<std::array<CalcType, BIN_SIZE>>(current_node.child_num);
+    current_node.W = std::vector<std::array<CalcType, BIN_SIZE>>(current_node.moves_size);
     for (int32_t i = 0; i < BIN_SIZE; i++) {
-        current_node.value_dist[i] = 0.0;
-        current_node.win_sum[i] = 0.0;
-        for (int32_t j = 0; j < current_node.child_num; j++) {
-            current_node.child_wins[j][i] = 0.0;
+        current_node.value[i] = 0.0;
+        for (int32_t j = 0; j < current_node.moves_size; j++) {
+            current_node.W[j][i] = 0.0;
         }
     }
 #else
-    current_node.value_win = 0.0;
-    current_node.win_sum = 0.0;
-    current_node.child_wins = std::vector<float>(current_node.child_num, 0.0);
+    current_node.value = 0.0;
+    current_node.W = std::vector<float>(current_node.moves_size, 0.0);
 #endif
 
     //ノードを評価
@@ -241,28 +235,28 @@ Index MCTSearcher::expandNode(Position& pos) {
 
 void MCTSearcher::evalNode(Position& pos, Index index) {
     auto& current_node = hash_table_[index];
-    std::vector<float> legal_move_policy(current_node.child_num);
+    std::vector<float> legal_move_policy(current_node.moves_size);
 
     //Policyの計算
-    if (current_node.child_num != 1) {
+    if (current_node.moves_size != 1) {
         auto policy_score = pos.policyScore();
 
-        for (int32_t i = 0; i < current_node.child_num; i++) {
-            legal_move_policy[i] = policy_score[current_node.legal_moves[i].toLabel()];
+        for (int32_t i = 0; i < current_node.moves_size; i++) {
+            legal_move_policy[i] = policy_score[current_node.moves[i].toLabel()];
         }
 
         //softmax分布にする
-        current_node.nn_rates = softmax(legal_move_policy);
+        current_node.policy = softmax(legal_move_policy);
     } else {
         //1手だけだから計算するまでもない
-        current_node.nn_rates.assign(1, 1.0);
+        current_node.policy.assign(1, 1.0);
     }
 
     //ノードの値を計算
 #ifdef USE_CATEGORICAL
-    current_node.value_dist = pos.valueDist();
+    current_node.value = pos.valueDist();
 #else
-    current_node.value_win = (CalcType)pos.valueForTurn();
+    current_node.value = (CalcType)pos.valueForTurn();
 #endif
     current_node.evaled = true;
 }
@@ -283,7 +277,7 @@ bool MCTSearcher::shouldStop() {
 
     // 探索回数が最も多い手と次に多い手を求める
     int32_t max1 = 0, max2 = 0;
-    for (auto e : hash_table_[current_root_index_].child_move_counts) {
+    for (auto e : hash_table_[current_root_index_].N) {
         if (e > max1) {
             max2 = max1;
             max1 = e;
@@ -298,10 +292,10 @@ bool MCTSearcher::shouldStop() {
 
 std::vector<Move> MCTSearcher::getPV() const {
     std::vector<Move> pv;
-    for (Index curr_node_index = current_root_index_; curr_node_index != UctHashTable::NOT_EXPANDED && hash_table_[curr_node_index].child_num != 0; ) {
-        const auto& child_move_counts = hash_table_[curr_node_index].child_move_counts;
-        Index next_index = (int32_t)(std::max_element(child_move_counts.begin(), child_move_counts.end()) - child_move_counts.begin());
-        pv.push_back(hash_table_[curr_node_index].legal_moves[next_index]);
+    for (Index curr_node_index = current_root_index_; curr_node_index != UctHashTable::NOT_EXPANDED && hash_table_[curr_node_index].moves_size != 0; ) {
+        const auto& N = hash_table_[curr_node_index].N;
+        Index next_index = (int32_t)(std::max_element(N.begin(), N.end()) - N.begin());
+        pv.push_back(hash_table_[curr_node_index].moves[next_index]);
         curr_node_index = hash_table_[curr_node_index].child_indices[next_index];
     }
 
@@ -315,15 +309,15 @@ void MCTSearcher::printUSIInfo() const {
     auto finish_time = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(finish_time - start_);
 
-    const auto& child_move_counts = current_node.child_move_counts;
-    int32_t selected_index = (int32_t)(std::max_element(child_move_counts.begin(), child_move_counts.end()) - child_move_counts.begin());
+    const auto& N = current_node.N;
+    int32_t selected_index = (int32_t)(std::max_element(N.begin(), N.end()) - N.begin());
 
     //選択した着手の勝率の算出
 #ifdef USE_CATEGORICAL
-    double best_wp = expOfValueDist(current_node.child_wins[selected_index]) / child_move_counts[selected_index];
+    double best_wp = expOfValueDist(current_node.W[selected_index]) / N[selected_index];
 #else
-    auto best_wp = (child_move_counts[selected_index] == 0 ? 0.0
-        : current_node.child_wins[selected_index] / child_move_counts[selected_index]);
+    auto best_wp = (N[selected_index] == 0 ? 0.0
+        : current_node.W[selected_index] / N[selected_index]);
 #endif
     assert(0.0 <= best_wp && best_wp <= 1.0);
 
@@ -331,9 +325,9 @@ void MCTSearcher::printUSIInfo() const {
     int32_t cp = inv_sigmoid(best_wp, CP_GAIN);
 
     printf("info nps %d time %d nodes %d hashfull %d score cp %d pv ",
-        (int)(current_node.move_count * 1000 / std::max((long long)elapsed.count(), 1LL)),
+        (int)(current_node.sum_N * 1000 / std::max((long long)elapsed.count(), 1LL)),
         (int)(elapsed.count()),
-        current_node.move_count,
+        current_node.sum_N,
         (int)(hash_table_.getUsageRate() * 1000),
         cp);
 
@@ -361,7 +355,7 @@ std::vector<double> MCTSearcher::dirichletDistribution(int32_t k, double alpha) 
 }
 
 int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
-    const auto& child_move_counts = current_node.child_move_counts;
+    const auto& N = current_node.N;
 
     // ucb = Q(s, a) + U(s, a)
     // Q(s, a) = W(s, a) / N(s, a)
@@ -372,48 +366,48 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
     double max_value = INT_MIN;
 
 #ifdef USE_CATEGORICAL
-    int32_t best_index = (int32_t)(std::max_element(child_move_counts.begin(), child_move_counts.end()) - child_move_counts.begin());
-    double best_wp = (current_node.child_move_counts[best_index] == 0 ? 0.0:
-        expOfValueDist(current_node.child_wins[best_index]) / current_node.child_move_counts[best_index]);
+    int32_t best_index = (int32_t)(std::max_element(N.begin(), N.end()) - N.begin());
+    double best_wp = (current_node.N[best_index] == 0 ? 0.0:
+        expOfValueDist(current_node.W[best_index]) / current_node.N[best_index]);
 #endif
 
-    for (int32_t i = 0; i < current_node.child_num; i++) {
+    for (int32_t i = 0; i < current_node.moves_size; i++) {
 #ifdef USE_CATEGORICAL
         double Q = 0.0;
-        if (child_move_counts[i] == 0) {
+        if (N[i] == 0) {
             Q = 0.5;
         } else {
             ////(1)普通に期待値を計算する
-            //Q = expOfValueDist(current_node.child_wins[i]) / child_move_counts[i];
+            //Q = expOfValueDist(current_node.child_wins[i]) / N[i];
 
             ////(2)分散を(1)に加える
             //auto e = Q;
             //for (int32_t j = 0; j < BIN_SIZE; j++) {
             //    Q += pow(VALUE_WIDTH * (0.5 + j) - e, 2) *
-            //        (child_move_counts[i] == 0 ? 0.0 : current_node.child_wins[i][j] / child_move_counts[i]);
+            //        (N[i] == 0 ? 0.0 : current_node.child_wins[i][j] / N[i]);
             //}
 
             //(3)基準値を超える確率(提案手法)
             for (int32_t j = std::min(valueToIndex(best_wp) + 1, BIN_SIZE - 1); j < BIN_SIZE; j++) {
-                Q += current_node.child_wins[i][j] / child_move_counts[i];
+                Q += current_node.W[i][j] / N[i];
             }
         }
         assert(-0.01 <= Q && Q <= 1.01);
 #else
-        double Q = (child_move_counts[i] == 0 ? 0.5 : current_node.child_wins[i] / child_move_counts[i]);
+        double Q = (N[i] == 0 ? 0.5 : current_node.W[i] / N[i]);
 #endif
         constexpr double C_base = 19652.0;
         constexpr double C_init = 1.25;
-        double C = (std::log((current_node.move_count + C_base + 1) / C_base) + C_init) / 2;
+        double C = (std::log((current_node.sum_N + C_base + 1) / C_base) + C_init) / 2;
         
-        double U = std::sqrt(current_node.move_count + 1) / (child_move_counts[i] + 1);
-        double ucb = Q + C * current_node.nn_rates[i] * U;
+        double U = std::sqrt(current_node.sum_N + 1) / (N[i] + 1);
+        double ucb = Q + C * current_node.policy[i] * U;
         if (ucb > max_value) {
             max_value = ucb;
             max_index = i;
         }
     }
-    assert(0 <= max_index && max_index < (int32_t)current_node.child_num);
+    assert(0 <= max_index && max_index < (int32_t)current_node.moves_size);
     return max_index;
 }
 
