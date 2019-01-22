@@ -378,7 +378,7 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
             Q = 0.5;
         } else {
             ////(1)•’Ê‚ÉŠú‘Ò’l‚ğŒvZ‚·‚é
-            //Q = expOfValueDist(current_node.child_wins[i]) / N[i];
+            //Q = expOfValueDist(current_node.W[i]) / N[i];
 
             ////(2)•ªU‚ğ(1)‚É‰Á‚¦‚é
             //auto e = Q;
