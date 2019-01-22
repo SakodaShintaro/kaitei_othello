@@ -126,7 +126,7 @@ void AlphaZeroTrainer::learn() {
     auto start_learning_rate = LEARN_RATE;
 
     //äwèK
-    for (int32_t i = 1; ; i++) {
+    for (int32_t i = 1; i <= 5 ; i++) {
         //éûä‘Çèâä˙âª
         start_time_ = std::chrono::steady_clock::now();
 
