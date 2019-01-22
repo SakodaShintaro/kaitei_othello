@@ -56,6 +56,12 @@ private:
     //ステップ数
     int64_t MAX_STEP_NUM;
 
+    //最初に待つ量
+    int64_t WAIT_LIMIT_SIZE;
+
+    //疑似的に学習時間を倍増させてActorの数を増やす係数
+    double WAIT_COEFF;
+
     //------------
     //    変数
     //------------

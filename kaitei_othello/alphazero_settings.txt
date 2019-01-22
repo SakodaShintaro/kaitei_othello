@@ -17,3 +17,5 @@ policy_loss_coeff 1.0
 value_loss_coeff 1.0
 max_stack_size 1000000
 max_step_num 50000
+wait_limit_size 10
+wait_coeff 0

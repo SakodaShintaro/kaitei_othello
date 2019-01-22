@@ -72,6 +72,10 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
             position_pool_.reserve(MAX_STACK_SIZE);
         } else if (name == "max_step_num") {
             ifs >> MAX_STEP_NUM;
+        } else if (name == "wait_limit_size") {
+            ifs >> WAIT_LIMIT_SIZE;
+        } else if (name == "wait_coeff"){
+            ifs >> WAIT_COEFF;
 #ifdef USE_MCTS
         } else if (name == "playout_limit") {
             ifs >> usi_option.playout_limit;
@@ -176,11 +180,14 @@ void AlphaZeroTrainer::learn() {
         MUTEX.unlock();
 
         for (int32_t step_num = 1; step_num <= MAX_STEP_NUM; step_num++) {
+            //このステップにかかった時間をかける
+            auto step_start = std::chrono::steady_clock::now();
+
             //ミニバッチ分勾配を貯める
             auto grad = std::make_unique<EvalParams<LearnEvalType>>();
             std::array<double, 2> loss{ 0.0, 0.0 };
             for (int32_t j = 0; j < BATCH_SIZE; j++) {
-                if (position_pool_.size() <= BATCH_SIZE * 10) {
+                if ((int64_t)position_pool_.size() <= BATCH_SIZE * WAIT_LIMIT_SIZE) {
                     j--;
                     continue;
                 }
@@ -230,6 +237,10 @@ void AlphaZeroTrainer::learn() {
             log_file_ << std::endl;
 
             MUTEX.unlock();
+
+            auto step_end = std::chrono::steady_clock::now();
+            auto ela = std::chrono::duration_cast<std::chrono::milliseconds>(step_end - step_start);
+            std::this_thread::sleep_for(ela * WAIT_COEFF);
         }
 
         log_file_.close();
