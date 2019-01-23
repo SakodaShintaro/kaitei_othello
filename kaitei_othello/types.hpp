@@ -18,12 +18,10 @@ enum Depth {
 };
 
 using Score = float;
-constexpr Score MAX_SCORE = 1000000.0f;
+constexpr Score MAX_SCORE = 1.0f;
 constexpr Score SCORE_ZERO = 0.0f;
 constexpr Score DRAW_SCORE = 0.0f;
-constexpr Score MIN_SCORE = -MAX_SCORE;
-
-constexpr double CP_GAIN = 1.0 / 600.0;
+constexpr Score MIN_SCORE = 0.0f;
 
 //Depth
 constexpr Depth operator-(Depth lhs) { return Depth(-int(lhs)); }

@@ -327,7 +327,7 @@ void MCTSearcher::printUSIInfo() const {
     assert(0.0 <= best_wp && best_wp <= 1.0);
 
     //Ÿ—¦‚ð•]‰¿’l‚É•ÏŠ·
-    int32_t cp = inv_sigmoid(best_wp, CP_GAIN);
+    int32_t cp = cp * 1000;
 
     printf("info nps %d time %d nodes %d hashfull %d score cp %d pv ",
         (int)(current_node.sum_N * 1000 / std::max((long long)elapsed.count(), 1LL)),
