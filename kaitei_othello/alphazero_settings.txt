@@ -18,4 +18,4 @@ value_loss_coeff 1.0
 max_stack_size 100000
 max_step_num 50000
 wait_limit_size 5
-wait_coeff 0
+wait_coeff 1

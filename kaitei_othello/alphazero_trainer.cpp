@@ -243,7 +243,7 @@ void AlphaZeroTrainer::learn() {
             MUTEX.unlock();
 
             //ŠwK‚É‚©‚©‚Á‚½ŠÔ‚Ì’è””{–°‚é‚±‚Æ‚Å‹^—“I‚ÉActor‚Ì”‚ğ‘‚â‚·
-            std::this_thread::sleep_for(ela * WAIT_COEFF);
+            std::this_thread::sleep_for(ela * (WAIT_COEFF - 1));
         }
 
         log_file_.close();
