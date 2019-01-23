@@ -227,6 +227,10 @@ void AlphaZeroTrainer::learn() {
             //ŠwK—¦‚ÌŒ¸Š
             LEARN_RATE *= LEARN_RATE_DECAY;
 
+            //ŠÔ‚ÌŒv‘ª
+            auto step_end = std::chrono::steady_clock::now();
+            auto ela = std::chrono::duration_cast<std::chrono::milliseconds>(step_end - step_start);
+
             //•]‰¿‚Æ‘‚«o‚µ
             if (step_num % EVALUATION_INTERVAL == 0 || step_num == MAX_STEP_NUM) {
                 evaluate();
@@ -238,8 +242,7 @@ void AlphaZeroTrainer::learn() {
 
             MUTEX.unlock();
 
-            auto step_end = std::chrono::steady_clock::now();
-            auto ela = std::chrono::duration_cast<std::chrono::milliseconds>(step_end - step_start);
+            //ŠwK‚É‚©‚©‚Á‚½ŠÔ‚Ì’è””{–°‚é‚±‚Æ‚Å‹^—“I‚ÉActor‚Ì”‚ğ‘‚â‚·
             std::this_thread::sleep_for(ela * WAIT_COEFF);
         }
 
