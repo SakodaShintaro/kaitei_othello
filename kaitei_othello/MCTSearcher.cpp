@@ -3,6 +3,7 @@
 #include"network.hpp"
 #include"usi_options.hpp"
 #include"operate_params.hpp"
+#include<stack>
 
 #ifdef USE_MCTS
 
@@ -43,6 +44,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
 
         //1回プレイアウト
         uctSearch(root, current_root_index_);
+        //onePlay(root);
 
         //探索を打ち切るか確認
         if (shouldStop() || !hash_table_.hasEnoughSize()) {
@@ -51,6 +53,9 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
     }
 
     //std::cout << "playout_num = " << playout_num << std::endl;
+    //auto end = std::chrono::steady_clock::now();
+    //auto elapsed = end - start_;
+    //std::cout << "time = " << elapsed.count() << std::endl;
 
     const auto& N = current_node.N;
 
@@ -60,7 +65,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
     //auto root_moves = current_node.moves;
     //for (int32_t i = 0; i < moves_size; i++) {
     //    printf("%3d: sum_N = %6d, nn_rate = %.5f, win_rate = %7.5f, ", i, N[i],
-    //        current_node.policy[i], (N[i] > 0 ? expOfValueDist(current_node.child_wins[i]) / N[i] : 0));
+    //        current_node.policy[i], (N[i] > 0 ? expOfValueDist(current_node.W[i]) / N[i] : 0));
     //    root_moves[i].print();
     //}
     
@@ -410,5 +415,58 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
     assert(0 <= max_index && max_index < (int32_t)current_node.moves_size);
     return max_index;
 }
+
+void MCTSearcher::onePlay(Position& pos) {
+    std::stack<Index> indices;
+    std::stack<int32_t> actions;
+
+    auto index = current_root_index_;
+
+    //未展開の局面に至るまで遷移を繰り返す
+    while (index != UctHashTable::NOT_EXPANDED) {
+        //状態を記録
+        indices.push(index);
+
+        //選択
+        auto action = selectMaxUcbChild(hash_table_[index]);
+
+        //取った行動を記録
+        actions.push(action);
+
+        //遷移
+        pos.doMove(hash_table_[index].moves[action]);
+
+        //index更新
+        index = hash_table_[index].child_indices[action];
+    }
+
+    //今の局面を展開・評価
+    index = expandNode(pos);
+    auto result = hash_table_[index].value;
+    hash_table_[indices.top()].child_indices[actions.top()] = index;
+
+    //バックアップ
+    while (!actions.empty()) {
+        pos.undo();
+        index = indices.top();
+        indices.pop();
+
+        auto action = actions.top();
+        actions.pop();
+
+        //手番が変わっているので反転
+#ifdef USE_CATEGORICAL
+        std::reverse(result.begin(), result.end());
+#else
+        result = MAX_SCORE + MIN_SCORE - result;
+#endif
+
+        // 探索結果の反映
+        hash_table_[index].W[action] += result;
+        hash_table_[index].sum_N++;
+        hash_table_[index].N[action]++;
+    }
+}
+
 
 #endif

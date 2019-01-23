@@ -19,8 +19,11 @@ public:
     std::pair<Move, TeacherType> thinkForGenerateLearnData(Position& pos, bool add_noise);
 
 private:
+    //再帰しない探索関数
+    void onePlay(Position& root);
+
     //再帰する探索関数
-    ValueType uctSearch(Position& pos, Index current_index);
+    ValueType uctSearch(Position& root, Index current_index);
 
     //ノードを展開する関数
     Index expandNode(Position& pos);
