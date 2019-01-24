@@ -34,7 +34,7 @@ protected:
     void timestamp();
 
     //•W€o—Í‚Ælog_file_‚Ì—¼•û‚Éo—Í‚·‚éŠÖ”
-    template<class T> void print(T t);
+    template<class T> void print(T t, bool add_tub = true);
 
     //optimizer‚Æ‚µ‚Ä“ü—Í‚³‚ê‚½‚à‚Ì‚ª³“–‚©”»’è‚·‚éŠÖ”
     bool isLegalOptimizer();
@@ -78,9 +78,9 @@ protected:
 };
 
 template<class T>
-inline void BaseTrainer::print(T t) {
-    std::cout << t << "\t";
-    log_file_ << t << "\t";
+inline void BaseTrainer::print(T t, bool add_tub) {
+    std::cout << t << (add_tub ? "\t" : "");
+    log_file_ << t << (add_tub ? "\t" : "");
 }
 
 #endif // !TRAINER_HPP

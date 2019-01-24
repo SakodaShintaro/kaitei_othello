@@ -177,8 +177,7 @@ void AlphaZeroTrainer::learn() {
         print(eval_params->maxAbs());
         print(eval_params->sumAbs());
         evaluate();
-        std::cout << std::endl;
-        log_file_ << std::endl;
+        print("\n", false);
 
         position_pool_.clear();
         position_pool_.reserve(MAX_STACK_SIZE);
@@ -219,17 +218,6 @@ void AlphaZeroTrainer::learn() {
             //äwèK
             updateParams(*eval_params, *grad);
 
-            //äwèKèÓïÒÇÃï\é¶
-            timestamp();
-            print(step_num);
-            print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
-            print(loss[0]);
-            print(loss[1]);
-            print(LEARN_RATE * grad->maxAbs());
-            print(LEARN_RATE * grad->sumAbs());
-            print(eval_params->maxAbs());
-            print(eval_params->sumAbs());
-
             //äwèKó¶ÇÃå∏êä
             if (step_num == MAX_STEP_NUM / 2
                 || step_num == MAX_STEP_NUM * 3 / 4) {
@@ -240,14 +228,38 @@ void AlphaZeroTrainer::learn() {
             auto step_end = std::chrono::steady_clock::now();
             auto ela = std::chrono::duration_cast<std::chrono::milliseconds>(step_end - step_start);
 
-            //ï]âøÇ∆èëÇ´èoÇµ
             if (step_num % EVALUATION_INTERVAL == 0 || step_num == MAX_STEP_NUM) {
+                //äwèKèÓïÒÇÃï\é¶
+                timestamp();
+                print(step_num);
+                print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
+                print(loss[0]);
+                print(loss[1]);
+                print(LEARN_RATE * grad->maxAbs());
+                print(LEARN_RATE * grad->sumAbs());
+                print(eval_params->maxAbs());
+                print(eval_params->sumAbs());
+                
+                //ï]âø
                 evaluate();
-                eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
-            }
 
-            std::cout << std::endl;
-            log_file_ << std::endl;
+                //èëÇ´èoÇµ
+                eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
+
+                print("\n", false);
+            } else if (step_num % 10 == 0) {
+                //äwèKèÓïÒÇÃï\é¶ÇæÇØ
+                timestamp();
+                print(step_num);
+                print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
+                print(loss[0]);
+                print(loss[1]);
+                print(LEARN_RATE * grad->maxAbs());
+                print(LEARN_RATE * grad->sumAbs());
+                print(eval_params->maxAbs());
+                print(eval_params->sumAbs());
+                print("\n", false);
+            }
 
             MUTEX.unlock();
 
