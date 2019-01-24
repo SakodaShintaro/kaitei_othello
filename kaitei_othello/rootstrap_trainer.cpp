@@ -33,8 +33,6 @@ RootstrapTrainer::RootstrapTrainer(std::string settings_file_path) {
             }
         } else if (name == "learn_rate") {
             ifs >> LEARN_RATE;
-        } else if (name == "learn_rate_decay") {
-            ifs >> LEARN_RATE_DECAY;
         } else if (name == "momentum_decay") {
             ifs >> MOMENTUM_DECAY;
         } else if (name == "thread_num") {

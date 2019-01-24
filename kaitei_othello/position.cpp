@@ -84,48 +84,48 @@ void Position::print() const {
         lastMove().printWithScore();
     }
 
-//    //評価値
-//    auto output = makeOutput();
-//#ifdef USE_CATEGORICAL
-//    std::vector<CalcType> categorical_distribution(BIN_SIZE);
-//    for (int32_t i = 0; i < BIN_SIZE; i++) {
-//        categorical_distribution[i] = output(POLICY_DIM + i);
-//    }
-//    categorical_distribution = softmax(categorical_distribution);
-//
-//    CalcType value = 0.0;
-//    for (int32_t i = 0; i < BIN_SIZE; i++) {
-//        printf("p[%f] = %f ", VALUE_WIDTH * (0.5 + i), categorical_distribution[i]);
-//        for (int32_t j = 0; j < (int32_t)(categorical_distribution[i] / 0.02); j++) {
-//            std::cout << "*";
-//        }
-//        std::cout << std::endl;
-//        value += (CalcType)(VALUE_WIDTH * (0.5 + i) * categorical_distribution[i]);
-//    }
-//    printf("value = %f\n", value);
-//#else
-//    printf("value = %f\n", standardSigmoid(output(POLICY_DIM)));
-//#endif
-//
-//    //方策
-//    std::vector<Move> moves = generateAllMoves();
-//    if (moves.front() != NULL_MOVE) {
-//        std::cout << std::fixed;
-//
-//        std::vector<double> policy;
-//        for (Move move : moves) {
-//            policy.push_back(output(move.toLabel()));
-//        }
-//        policy = softmax(policy);
-//
-//        for (int32_t i = 0; i < moves.size(); i++) {
-//            std::cout << moves[i] << " " << policy[i] << " ";
-//            for (int32_t j = 0; j < (int32_t)(policy[i] / 0.02); j++) {
-//                std::cout << "*";
-//            }
-//            std::cout << std::endl;
-//        }
-//    }
+    //評価値
+    auto output = makeOutput();
+#ifdef USE_CATEGORICAL
+    std::vector<CalcType> categorical_distribution(BIN_SIZE);
+    for (int32_t i = 0; i < BIN_SIZE; i++) {
+        categorical_distribution[i] = output(POLICY_DIM + i);
+    }
+    categorical_distribution = softmax(categorical_distribution);
+
+    CalcType value = 0.0;
+    for (int32_t i = 0; i < BIN_SIZE; i++) {
+        printf("p[%f] = %f ", VALUE_WIDTH * (0.5 + i), categorical_distribution[i]);
+        for (int32_t j = 0; j < (int32_t)(categorical_distribution[i] / 0.02); j++) {
+            std::cout << "*";
+        }
+        std::cout << std::endl;
+        value += (CalcType)(VALUE_WIDTH * (0.5 + i) * categorical_distribution[i]);
+    }
+    printf("value = %f\n", value);
+#else
+    printf("value = %f\n", standardSigmoid(output(POLICY_DIM)));
+#endif
+
+    //方策
+    std::vector<Move> moves = generateAllMoves();
+    if (moves.front() != NULL_MOVE) {
+        std::cout << std::fixed;
+
+        std::vector<double> policy;
+        for (Move move : moves) {
+            policy.push_back(output(move.toLabel()));
+        }
+        policy = softmax(policy);
+
+        for (int32_t i = 0; i < moves.size(); i++) {
+            std::cout << moves[i] << " " << policy[i] << " ";
+            for (int32_t j = 0; j < (int32_t)(policy[i] / 0.02); j++) {
+                std::cout << "*";
+            }
+            std::cout << std::endl;
+        }
+    }
 
     printf("ハッシュ値:%lld\n", hash_value_);
 }

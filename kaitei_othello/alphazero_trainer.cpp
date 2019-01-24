@@ -41,8 +41,6 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
             }
         } else if (name == "learn_rate") {
             ifs >> LEARN_RATE;
-        } else if (name == "learn_rate_decay") {
-            ifs >> LEARN_RATE_DECAY;
         } else if (name == "momentum_decay") {
             ifs >> MOMENTUM_DECAY;
         } else if (name == "thread_num") {
@@ -233,7 +231,10 @@ void AlphaZeroTrainer::learn() {
             print(eval_params->sumAbs());
 
             //äwèKó¶ÇÃå∏êä
-            LEARN_RATE *= LEARN_RATE_DECAY;
+            if (step_num == MAX_STEP_NUM / 2
+                || step_num == MAX_STEP_NUM * 3 / 4) {
+                LEARN_RATE *= 0.1;
+            }
 
             //éûä‘ÇÃåvë™
             auto step_end = std::chrono::steady_clock::now();
