@@ -125,12 +125,20 @@ void AlphaZeroTrainer::learn() {
     //減衰をかけて壊してしまうので学習率の初期値を保持しておく
     auto start_learning_rate = LEARN_RATE;
 
+    //model.binをfirst_target.binへコピー
+    eval_params->readFile();
+    eval_params->writeFile("first_target.bin");
+
     //学習
-    for (int32_t i = 1; i <= 5 ; i++) {
+    for (int32_t i = 1; i <= 5; i++) {
         //時間を初期化
         start_time_ = std::chrono::steady_clock::now();
 
         MUTEX.lock();
+
+        //first_targetをmodel.binへコピー
+        eval_params->readFile("first_target.bin");
+        eval_params->writeFile();
 
         //パラメータの初期化
         eval_params->initRandom();
