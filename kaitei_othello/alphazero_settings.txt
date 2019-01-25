@@ -18,3 +18,4 @@ max_stack_size 100000
 max_step_num 50000
 wait_limit_size 5
 wait_coeff 1
+learn_num 3

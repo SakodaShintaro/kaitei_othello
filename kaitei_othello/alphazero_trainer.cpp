@@ -72,8 +72,10 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
             ifs >> MAX_STEP_NUM;
         } else if (name == "wait_limit_size") {
             ifs >> WAIT_LIMIT_SIZE;
-        } else if (name == "wait_coeff"){
+        } else if (name == "wait_coeff") {
             ifs >> WAIT_COEFF;
+        } else if (name == "learn_num") {
+            ifs >> LEARN_NUM;
 #ifdef USE_MCTS
         } else if (name == "playout_limit") {
             ifs >> usi_option.playout_limit;
@@ -128,7 +130,7 @@ void AlphaZeroTrainer::learn() {
     eval_params->writeFile("first_target.bin");
 
     //ŠwK
-    for (int32_t i = 1; i <= 5; i++) {
+    for (int32_t i = 1; i <= LEARN_NUM; i++) {
         //ŠÔ‚ğ‰Šú‰»
         start_time_ = std::chrono::steady_clock::now();
 
