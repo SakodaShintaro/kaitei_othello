@@ -76,6 +76,8 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
             ifs >> WAIT_COEFF;
         } else if (name == "learn_num") {
             ifs >> LEARN_NUM;
+        } else if (name == "print_interval") {
+            ifs >> PRINT_INTERVAL;
 #ifdef USE_MCTS
         } else if (name == "playout_limit") {
             ifs >> usi_option.playout_limit;
@@ -244,12 +246,12 @@ void AlphaZeroTrainer::learn() {
                 
                 //•]‰¿
                 evaluate();
+                print("\n", false);
 
                 //‘‚«o‚µ
                 eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
 
-                print("\n", false);
-            } else if (step_num % 10 == 0) {
+            } else if (step_num % PRINT_INTERVAL == 0) {
                 //ŠwKî•ñ‚Ì•\¦‚¾‚¯
                 timestamp();
                 print(step_num);
