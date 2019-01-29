@@ -184,16 +184,18 @@ void BaseTrainer::updateParamsMomentum(EvalParams<LearnEvalType>& params, const 
 void BaseTrainer::timestamp() {
     auto elapsed = std::chrono::steady_clock::now() - start_time_;
     auto seconds = std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
+
+    //ログファイルには小数点まで考えた時間で出力
+    log_file_ << seconds / 3600.0 << "\t";
+
+    //標準出力にはhh:mm:ssで表示
     auto minutes = seconds / 60;
     seconds %= 60;
     auto hours = minutes / 60;
     minutes %= 60;
-    std::cout << std::setfill('0') << std::setw(3) << hours << ":"
-        << std::setfill('0') << std::setw(2) << minutes << ":"
-        << std::setfill('0') << std::setw(2) << seconds << "\t";
-    log_file_ << std::setfill('0') << std::setw(3) << hours << ":"
-        << std::setfill('0') << std::setw(2) << minutes << ":"
-        << std::setfill('0') << std::setw(2) << seconds << "\t";
+    std::cout << std::setfill('0') << std::setw(3) << hours   << ":"
+              << std::setfill('0') << std::setw(2) << minutes << ":"
+              << std::setfill('0') << std::setw(2) << seconds << "\t";
 }
 
 bool BaseTrainer::isLegalOptimizer() {
