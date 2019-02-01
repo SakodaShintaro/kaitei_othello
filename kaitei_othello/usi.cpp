@@ -6,8 +6,6 @@
 #include"shared_data.hpp"
 #include"eval_params.hpp"
 #include"game.hpp"
-#include"rootstrap_trainer.hpp"
-#include"treestrap_trainer.hpp"
 #include"alphazero_trainer.hpp"
 #include"test.hpp"
 #include"network.hpp"
@@ -82,12 +80,6 @@ void NBoardProtocol::loop() {
             std::cout << "読み込む評価関数: ";
             std::cin >> file_name;
             eval_params->readFile(file_name);
-        } else if (input == "learnAsync") {
-            RootstrapTrainer trainer("rootstrap_settings.txt");
-            trainer.learnAsync();
-        } else if (input == "learnSync") {
-            RootstrapTrainer trainer("rootstrap_settings.txt");
-            trainer.learnSync();
 #ifndef USE_MCTS
         } else if (input == "treeStrap") {
             TreestrapTrainer trainer("treestrap_settings.txt");
@@ -111,9 +103,6 @@ void NBoardProtocol::loop() {
 #endif
         } else if (input == "testNN") {
             testNN();
-        } else if (input == "testLearn") {
-            RootstrapTrainer trainer("rootstrap_settings.txt");
-            trainer.testLearn();
         } else if (input == "vsHuman") {
             vsHuman();
         } else if (input == "vsAI") {

@@ -1,7 +1,6 @@
 #pragma once
 
 #include"alphazero_trainer.hpp"
-#include"rootstrap_trainer.hpp"
 #include"position.hpp"
 #include"searcher.hpp"
 #include"eval_params.hpp"
@@ -288,7 +287,7 @@ void AlphaZeroTrainer::learnSlave() {
     //停止信号が来るまでループ
     while (!shared_data.stop_signal) {
         //棋譜を生成
-        auto games = RootstrapTrainer::play(1, true);
+        auto games = play(1, true);
 
         MUTEX.lock();
         //生成した棋譜を学習用データに加工してstackへ詰め込む
@@ -312,7 +311,7 @@ void AlphaZeroTrainer::evaluate() {
     //random_turnは小さめにする
     auto copy = usi_option.random_turn;
     usi_option.random_turn = (uint32_t)EVALUATION_RANDOM_TURN;
-    auto test_games = RootstrapTrainer::parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, false);
+    auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, false);
     usi_option.random_turn = copy;
 
     //出力
@@ -387,4 +386,74 @@ void AlphaZeroTrainer::pushOneGame(Game& game) {
         //スタックに詰める
         position_pool_.push_back({ pos.data(), game.teachers[i] });
     }
+}
+
+std::vector<Game> AlphaZeroTrainer::play(int32_t game_num, bool add_noise) {
+    auto searcher = std::make_unique<Searcher>(usi_option.USI_Hash);
+
+    std::vector<Game> games(game_num);
+    for (int32_t i = 0; i < game_num; i++) {
+        Game& game = games[i];
+        Position pos(*eval_params);
+
+        while (!pos.isFinish()) {
+            //iが偶数のときpos_cが先手
+            auto move_and_teacher = searcher->thinkForGenerateLearnData(pos, add_noise);
+            Move best_move = move_and_teacher.first;
+            TeacherType teacher = move_and_teacher.second;
+
+            pos.doMove(best_move);
+            game.moves.push_back(best_move);
+            game.teachers.push_back(teacher);
+        }
+
+        //対局結果の設定
+        game.result = pos.resultForBlack();
+    }
+
+    return games;
+}
+
+std::vector<Game> AlphaZeroTrainer::parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, bool add_noise) {
+    std::vector<Game> games(game_num);
+    std::atomic<int32_t> index;
+    index = 0;
+
+    std::vector<std::thread> threads;
+    for (int32_t i = 0; i < (int32_t)usi_option.thread_num; i++) {
+        threads.emplace_back([&]() {
+            auto searcher = std::make_unique<Searcher>(usi_option.USI_Hash);
+            while (true) {
+                int32_t curr_index = index++;
+                if (curr_index >= game_num) {
+                    return;
+                }
+                Game& game = games[curr_index];
+                game.moves.reserve(70);
+                game.teachers.reserve(70);
+                Position pos_c(curr), pos_t(target);
+
+                while (!pos_c.isFinish()) {
+                    //iが偶数のときpos_cが先手
+                    auto move_and_teacher = ((pos_c.turn_number() % 2) == (curr_index % 2) ?
+                        searcher->thinkForGenerateLearnData(pos_c, add_noise) :
+                        searcher->thinkForGenerateLearnData(pos_t, add_noise));
+                    Move best_move = move_and_teacher.first;
+                    TeacherType teacher = move_and_teacher.second;
+
+                    pos_c.doMove(best_move);
+                    pos_t.doMove(best_move);
+                    game.moves.push_back(best_move);
+                    game.teachers.push_back(teacher);
+                }
+
+                //対局結果の設定
+                game.result = pos_c.resultForBlack();
+            }
+        });
+    }
+    for (int32_t i = 0; i < (int32_t)usi_option.thread_num; i++) {
+        threads[i].join();
+    }
+    return games;
 }

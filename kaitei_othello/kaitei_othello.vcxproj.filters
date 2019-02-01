@@ -72,12 +72,6 @@
     <ClCompile Include="base_trainer.cpp">
       <Filter>ソース ファイル\trainer</Filter>
     </ClCompile>
-    <ClCompile Include="rootstrap_trainer.cpp">
-      <Filter>ソース ファイル\trainer</Filter>
-    </ClCompile>
-    <ClCompile Include="treestrap_trainer.cpp">
-      <Filter>ソース ファイル\trainer</Filter>
-    </ClCompile>
     <ClCompile Include="MCTSearcher.cpp">
       <Filter>ソース ファイル\searcher</Filter>
     </ClCompile>
@@ -155,12 +149,6 @@
     <ClInclude Include="base_trainer.hpp">
       <Filter>ヘッダー ファイル\trainer</Filter>
     </ClInclude>
-    <ClInclude Include="rootstrap_trainer.hpp">
-      <Filter>ヘッダー ファイル\trainer</Filter>
-    </ClInclude>
-    <ClInclude Include="treestrap_trainer.hpp">
-      <Filter>ヘッダー ファイル\trainer</Filter>
-    </ClInclude>
     <ClInclude Include="MCTSearcher.hpp">
       <Filter>ヘッダー ファイル\searcher</Filter>
     </ClInclude>
@@ -172,9 +160,6 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="rootstrap_settings.txt">
-      <Filter>リソース ファイル</Filter>
-    </Text>
     <Text Include="alphazero_settings.txt">
       <Filter>リソース ファイル</Filter>
     </Text>

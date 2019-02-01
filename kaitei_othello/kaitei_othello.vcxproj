@@ -38,11 +38,9 @@
     <ClCompile Include="network.cpp" />
     <ClCompile Include="piece.cpp" />
     <ClCompile Include="position.cpp" />
-    <ClCompile Include="rootstrap_trainer.cpp" />
     <ClCompile Include="alphabeta_searcher.cpp" />
     <ClCompile Include="square.cpp" />
     <ClCompile Include="test.cpp" />
-    <ClCompile Include="treestrap_trainer.cpp" />
     <ClCompile Include="types.cpp" />
     <ClCompile Include="uct_hash_table.cpp" />
     <ClCompile Include="usi.cpp" />
@@ -64,14 +62,12 @@
     <ClInclude Include="piece.hpp" />
     <ClInclude Include="position.hpp" />
     <ClInclude Include="pv_table.hpp" />
-    <ClInclude Include="rootstrap_trainer.hpp" />
     <ClInclude Include="alphabeta_searcher.hpp" />
     <ClInclude Include="searcher.hpp" />
     <ClInclude Include="search_stack.hpp" />
     <ClInclude Include="shared_data.hpp" />
     <ClInclude Include="square.hpp" />
     <ClInclude Include="test.hpp" />
-    <ClInclude Include="treestrap_trainer.hpp" />
     <ClInclude Include="types.hpp" />
     <ClInclude Include="uct_hash_table.hpp" />
     <ClInclude Include="usi.hpp" />
@@ -79,7 +75,6 @@
   </ItemGroup>
   <ItemGroup>
     <Text Include="alphazero_settings.txt" />
-    <Text Include="rootstrap_settings.txt" />
     <Text Include="settings.txt" />
   </ItemGroup>
   <PropertyGroup Label="Globals">

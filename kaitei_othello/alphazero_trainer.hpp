@@ -18,6 +18,9 @@ public:
     //これらは並列に行われる
     void learn();
 
+    //並列化して対局を行う関数
+    static std::vector<Game> parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, bool add_noise);
+
 private:
     //--------------------
     //    内部メソッド
@@ -30,6 +33,9 @@ private:
 
     //TDLeaf(λ)で教師信号を計算しながら学習データプールに詰めていく関数
     void pushOneGame(Game& game);
+
+    //自己対局を行う関数
+    static std::vector<Game> play(int32_t game_num, bool add_noise);
 
     //---------------------------------------------
     //    ファイルから読み込むためconst化はして

@@ -6,9 +6,10 @@
 #include"game.hpp"
 #include"network.hpp"
 #include"operate_params.hpp"
-#include"rootstrap_trainer.hpp"
+#include"alphazero_trainer.hpp"
 #include<cassert>
 #include<numeric>
+#include<iomanip>
 #include<set>
 
 void testRandom() {
@@ -158,7 +159,7 @@ void testDistEffect() {
     usi_option.node_limit = 800;
 #endif
     
-    auto games = RootstrapTrainer::parallelPlay(*eval_params, *eval_params, 100, false);
+    auto games = AlphaZeroTrainer::parallelPlay(*eval_params, *eval_params, 100, false);
     std::set<int64_t> hash_values;
 
     result_fs << "探索した値";
@@ -248,7 +249,7 @@ void testTreeDist() {
     usi_option.thread_num = 5;
     usi_option.playout_limit = 800;
 
-    auto games = RootstrapTrainer::parallelPlay(*eval_params, *eval_params, 1, false);
+    auto games = AlphaZeroTrainer::parallelPlay(*eval_params, *eval_params, 1, false);
     std::set<int64_t> hash_values;
 
     MCTSearcher searcher(16);
