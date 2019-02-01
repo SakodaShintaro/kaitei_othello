@@ -398,7 +398,7 @@ std::vector<Game> AlphaZeroTrainer::play(int32_t game_num, bool add_noise) {
 
         while (!pos.isFinish()) {
             //i‚ª‹ô”‚Ì‚Æ‚«pos_c‚ªæŽè
-            auto move_and_teacher = searcher->thinkForGenerateLearnData(pos, add_noise);
+            auto move_and_teacher = searcher->think(pos, add_noise);
             Move best_move = move_and_teacher.first;
             TeacherType teacher = move_and_teacher.second;
 
@@ -436,8 +436,8 @@ std::vector<Game> AlphaZeroTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
                 while (!pos_c.isFinish()) {
                     //i‚ª‹ô”‚Ì‚Æ‚«pos_c‚ªæŽè
                     auto move_and_teacher = ((pos_c.turn_number() % 2) == (curr_index % 2) ?
-                        searcher->thinkForGenerateLearnData(pos_c, add_noise) :
-                        searcher->thinkForGenerateLearnData(pos_t, add_noise));
+                        searcher->think(pos_c, add_noise) :
+                        searcher->think(pos_t, add_noise));
                     Move best_move = move_and_teacher.first;
                     TeacherType teacher = move_and_teacher.second;
 

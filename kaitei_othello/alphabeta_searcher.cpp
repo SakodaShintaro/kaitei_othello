@@ -17,7 +17,7 @@
 
 extern USIOption usi_option;
 
-std::pair<Move, TeacherType> AlphaBetaSearcher::thinkForGenerateLearnData(Position& root, bool add_noise) {
+std::pair<Move, TeacherType> AlphaBetaSearcher::think(Position& root, bool add_noise) {
     //思考開始時間をセット
     start_ = std::chrono::steady_clock::now();
 

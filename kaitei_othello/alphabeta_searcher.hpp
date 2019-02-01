@@ -17,7 +17,7 @@ public:
 	AlphaBetaSearcher(int64_t hash_size) : hash_table_(hash_size) {}
 
     //学習データを生成する関数
-    std::pair<Move, TeacherType> thinkForGenerateLearnData(Position &root, bool add_noise);
+    std::pair<Move, TeacherType> think(Position &root, bool add_noise);
 
     //探索で再帰的に用いる通常の関数
     template<bool train_mode>

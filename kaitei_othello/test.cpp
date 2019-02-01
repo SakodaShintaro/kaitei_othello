@@ -30,7 +30,7 @@ void testRandom() {
         Game game;
         while (!pos.isFinish()) {
             //思考する
-            auto result = searcher.thinkForGenerateLearnData(pos, false);
+            auto result = searcher.think(pos, false);
             Move move = result.first;
             pos.doMove(move);
             game.moves.push_back(move);
@@ -81,7 +81,7 @@ void testNN() {
             continue;
         }
 
-        auto result = searcher->thinkForGenerateLearnData(pos, false);
+        auto result = searcher->think(pos, false);
 
         if (pos.turn_number() % 10 != 0) {
             pos.doMove(result.first);
@@ -120,7 +120,7 @@ void testKifuOutput() {
     auto searcher = std::make_unique<Searcher>(usi_option.USI_Hash);
 
     while (!pos.isFinish()) {
-        auto result = searcher->thinkForGenerateLearnData(pos, false);
+        auto result = searcher->think(pos, false);
         pos.doMove(result.first);
         game.moves.push_back(result.first);
         game.teachers.push_back(result.second);
@@ -268,7 +268,7 @@ void testTreeDist() {
             for (auto curr_move : curr_moves) {
                 //各指し手について探索してみる
                 pos.doMove(curr_move);
-                auto result = searcher.thinkForGenerateLearnData(pos, false);
+                auto result = searcher.think(pos, false);
                 result.first.score = (Score)(1.0 - result.first.score);
 
                 double value = 0.0;

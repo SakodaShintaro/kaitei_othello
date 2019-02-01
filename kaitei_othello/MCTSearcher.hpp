@@ -16,7 +16,7 @@ public:
     MCTSearcher(int64_t hash_size) : hash_table_(hash_size) {}
     
     //学習用に一番良い指し手と学習データを返す
-    std::pair<Move, TeacherType> thinkForGenerateLearnData(Position& pos, bool add_noise);
+    std::pair<Move, TeacherType> think(Position& pos, bool add_noise);
 
 private:
     //再帰しない探索関数

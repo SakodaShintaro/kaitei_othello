@@ -67,7 +67,7 @@ void NBoardProtocol::loop() {
         std::cin >> input;
         if (input == "go") {
             shared_data.stop_signal = false;
-            auto result = searcher.thinkForGenerateLearnData(root_, false);
+            auto result = searcher.think(root_, false);
             std::cout << "=== " << result.first << std::endl;
         } else if (input == "prepareForLearn") {
             eval_params->initRandom();
@@ -220,7 +220,7 @@ void NBoardProtocol::vsHuman() {
                 }
             }
         } else {
-            auto result = searcher.thinkForGenerateLearnData(pos, false);
+            auto result = searcher.think(pos, false);
             pos.doMove(result.first);
         }
     }
@@ -302,7 +302,7 @@ void NBoardProtocol::vsAI() {
             Move move;
             if ((pos.turn_number() + i) % 2 == turn) {
                 //思考する
-                auto result = searcher.thinkForGenerateLearnData(pos, false);
+                auto result = searcher.think(pos, false);
                 move = result.first;
 
                 DWORD dwBytesWritten;
