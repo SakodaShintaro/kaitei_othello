@@ -1,4 +1,4 @@
-ï»¿#pragma once
+#pragma once
 
 #include"alphazero_trainer.hpp"
 #include"position.hpp"
@@ -15,12 +15,12 @@
 #include<sys/stat.h>
 #endif
 
-//ä¿å­˜ã™ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®åå‰
+//•Û‘¶‚·‚éƒfƒBƒŒƒNƒgƒŠ‚Ì–¼‘O
 static const std::string LEARN_GAMES_DIR = "./learn_games/";
 static const std::string EVAL_GAMES_DIR = "./test_games/";
 
 AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
-    //ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã‚’ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰èª­ã¿è¾¼ã‚€
+    //ƒIƒvƒVƒ‡ƒ“‚ğƒtƒ@ƒCƒ‹‚©‚ç“Ç‚İ‚Ş
     std::ifstream ifs(settings_file_path);
     if (!ifs) {
         std::cerr << "fail to open setting_file(" << settings_file_path << ")" << std::endl;
@@ -36,7 +36,7 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
         } else if (name == "optimizer") {
             ifs >> OPTIMIZER_NAME;
             if (!isLegalOptimizer()) {
-                std::cerr << "optimizerãŒä¸æ­£" << std::endl;
+                std::cerr << "optimizer‚ª•s³" << std::endl;
                 assert(false);
             }
         } else if (name == "learn_rate") {
@@ -53,10 +53,6 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
             ifs >> usi_option.random_turn;
         } else if (name == "lambda") {
             ifs >> replay_buffer_->LAMBDA;
-        } else if (name == "max_stack_size") {
-            ifs >> replay_buffer_->MAX_STACK_SIZE;
-        } else if (name == "wait_limit_size") {
-            ifs >> replay_buffer_->WAIT_LIMIT_SIZE;
         } else if (name == "USI_Hash") {
             ifs >> usi_option.USI_Hash;
         } else if (name == "evaluation_game_num") {
@@ -69,8 +65,12 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
             ifs >> POLICY_LOSS_COEFF;
         } else if (name == "value_loss_coeff") {
             ifs >> VALUE_LOSS_COEFF;
+        } else if (name == "max_stack_size") {
+            ifs >> replay_buffer_->MAX_STACK_SIZE;
         } else if (name == "max_step_num") {
             ifs >> MAX_STEP_NUM;
+        } else if (name == "wait_limit_size") {
+            ifs >> replay_buffer_->WAIT_LIMIT_SIZE;
         } else if (name == "wait_coeff") {
             ifs >> WAIT_COEFF;
         } else if (name == "learn_num") {
@@ -84,20 +84,20 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
         }
     }
 
-    //ãã®ä»–ã‚ªãƒ—ã‚·ãƒ§ãƒ³ã‚’å­¦ç¿’ç”¨ã«è¨­å®š
+    //‚»‚Ì‘¼ƒIƒvƒVƒ‡ƒ“‚ğŠwK—p‚Éİ’è
     shared_data.limit_msec = LLONG_MAX;
     shared_data.stop_signal = false;
 
-    //Optimizerã«åˆã‚ã›ã¦å¿…è¦ãªã‚‚ã®ã‚’æº–å‚™
+    //Optimizer‚É‡‚í‚¹‚Ä•K—v‚È‚à‚Ì‚ğ€”õ
     if (OPTIMIZER_NAME == "MOMENTUM") {
         pre_update_ = std::make_unique<EvalParams<LearnEvalType>>();
     }
 
-    //æ£‹è­œã‚’ä¿å­˜ã™ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®å‰Šé™¤
+    //Šû•ˆ‚ğ•Û‘¶‚·‚éƒfƒBƒŒƒNƒgƒŠ‚Ìíœ
     std::experimental::filesystem::remove_all(LEARN_GAMES_DIR);
     std::experimental::filesystem::remove_all(EVAL_GAMES_DIR);
 
-    //æ£‹è­œã‚’ä¿å­˜ã™ã‚‹ãƒ‡ã‚£ãƒ¬ã‚¯ãƒˆãƒªã®ä½œæˆ
+    //Šû•ˆ‚ğ•Û‘¶‚·‚éƒfƒBƒŒƒNƒgƒŠ‚Ìì¬
 #ifdef _MSC_VER
     _mkdir(LEARN_GAMES_DIR.c_str());
     _mkdir(EVAL_GAMES_DIR.c_str());
@@ -110,64 +110,64 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
 void AlphaZeroTrainer::learn() {
     std::cout << "start alphaZero()" << std::endl;
 
-    //è‡ªå·±å¯¾å±€ã‚¹ãƒ¬ãƒƒãƒ‰ã®ä½œæˆ
+    //©ŒÈ‘Î‹ÇƒXƒŒƒbƒh‚Ìì¬
     std::vector<std::thread> slave_threads(THREAD_NUM - 1);
     for (uint32_t i = 0; i < THREAD_NUM - 1; i++) {
         slave_threads[i] = std::thread(&AlphaZeroTrainer::learnSlave, this);
     }
 
-    //ä¹±æ•°ã®æº–å‚™
+    //—”‚Ì€”õ
     std::random_device seed;
     std::default_random_engine engine(seed());
 
-    //å±€é¢ã‚‚ã‚¤ãƒ³ã‚¹ã‚¿ãƒ³ã‚¹ã¯ä¸€ã¤ç”¨æ„ã—ã¦éƒ½åº¦å±€é¢ã‚’æ§‹æˆ
+    //‹Ç–Ê‚àƒCƒ“ƒXƒ^ƒ“ƒX‚Íˆê‚Â—pˆÓ‚µ‚Ä“s“x‹Ç–Ê‚ğ\¬
     Position pos(*eval_params);
 
-    //æ¸›è¡°ã‚’ã‹ã‘ã¦å£Šã—ã¦ã—ã¾ã†ã®ã§å­¦ç¿’ç‡ã®åˆæœŸå€¤ã‚’ä¿æŒã—ã¦ãŠã
+    //Œ¸Š‚ğ‚©‚¯‚Ä‰ó‚µ‚Ä‚µ‚Ü‚¤‚Ì‚ÅŠwK—¦‚Ì‰Šú’l‚ğ•Û‚µ‚Ä‚¨‚­
     auto start_learning_rate = LEARN_RATE;
 
-    //model.binã‚’first_target.binã¸ã‚³ãƒ”ãƒ¼
+    //model.bin‚ğfirst_target.bin‚ÖƒRƒs[
     eval_params->readFile();
     eval_params->writeFile("first_target.bin");
 
-    //å­¦ç¿’
+    //ŠwK
     for (int32_t i = 1; i <= LEARN_NUM; i++) {
-        //æ™‚é–“ã‚’åˆæœŸåŒ–
+        //ŠÔ‚ğ‰Šú‰»
         start_time_ = std::chrono::steady_clock::now();
 
-        //first_targetã‚’model.binã¸ã‚³ãƒ”ãƒ¼
+        //first_target‚ğmodel.bin‚ÖƒRƒs[
         eval_params->readFile("first_target.bin");
         eval_params->writeFile();
 
-        //ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã®åˆæœŸåŒ–
+        //ƒpƒ‰ƒ[ƒ^‚Ì‰Šú‰»
         eval_params->initRandom();
         eval_params->writeFile("before_learn" + std::to_string(i) + ".bin");
 
-        //å¤‰æ•°ã®åˆæœŸåŒ–
+        //•Ï”‚Ì‰Šú‰»
         update_num_ = 0;
 
-        //å­¦ç¿’ç‡ã®åˆæœŸåŒ–
+        //ŠwK—¦‚Ì‰Šú‰»
         LEARN_RATE = start_learning_rate;
 
-        //ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ã®è¨­å®š
+        //ƒƒOƒtƒ@ƒCƒ‹‚Ìİ’è
         log_file_.open("alphazero_log" + std::to_string(i) + ".txt");
-        print("çµŒéæ™‚é–“");
-        print("ã‚¹ãƒ†ãƒƒãƒ—æ•°");
-        print("æå¤±");
-        print("Policyæå¤±");
-        print("Valueæå¤±");
-        print("æœ€å¤§æ›´æ–°é‡");
-        print("ç·å’Œæ›´æ–°é‡");
-        print("æœ€å¤§ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿");
-        print("ç·å’Œãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿");
-        print("å‹ç‡");
-        print("æ›´æ–°å›æ•°");
-        print("é‡è¤‡æ•°");
-        print("æ¬¡å›ã®ãƒ©ãƒ³ãƒ€ãƒ æ‰‹æ•°");
+        print("Œo‰ßŠÔ");
+        print("ƒXƒeƒbƒv”");
+        print("‘¹¸");
+        print("Policy‘¹¸");
+        print("Value‘¹¸");
+        print("Å‘åXV—Ê");
+        print("‘˜aXV—Ê");
+        print("Å‘åƒpƒ‰ƒ[ƒ^");
+        print("‘˜aƒpƒ‰ƒ[ƒ^");
+        print("Ÿ—¦");
+        print("XV‰ñ”");
+        print("d•¡”");
+        print("Ÿ‰ñ‚Ìƒ‰ƒ“ƒ_ƒ€è”");
         log_file_ << std::endl << std::fixed;
         std::cout << std::endl << std::fixed;
 
-        //0å›ç›®ã‚’å…¥ã‚Œã¦ã¿ã‚‹
+        //0‰ñ–Ú‚ğ“ü‚ê‚Ä‚İ‚é
         timestamp();
         print(0);
         print(0.0);
@@ -183,10 +183,10 @@ void AlphaZeroTrainer::learn() {
         replay_buffer_->clear();
 
         for (int32_t step_num = 1; step_num <= MAX_STEP_NUM; step_num++) {
-            //ã“ã®ã‚¹ãƒ†ãƒƒãƒ—ã«ã‹ã‹ã£ãŸæ™‚é–“ã‚’ã‹ã‘ã‚‹
+            //‚±‚ÌƒXƒeƒbƒv‚É‚©‚©‚Á‚½ŠÔ‚ğ‚©‚¯‚é
             auto step_start = std::chrono::steady_clock::now();
 
-            //ãƒŸãƒ‹ãƒãƒƒãƒåˆ†å‹¾é…ã‚’è²¯ã‚ã‚‹
+            //ƒ~ƒjƒoƒbƒ`•ªŒù”z‚ğ’™‚ß‚é
             auto grad = std::make_unique<EvalParams<LearnEvalType>>();
             std::array<double, 2> loss{ 0.0, 0.0 };
             for (const auto& data : replay_buffer_->makeBatch(BATCH_SIZE)) {
@@ -198,21 +198,21 @@ void AlphaZeroTrainer::learn() {
                 g /= BATCH_SIZE;
             });
 
-            //å­¦ç¿’
+            //ŠwK
             updateParams(*eval_params, *grad);
 
-            //å­¦ç¿’ç‡ã®æ¸›è¡°
+            //ŠwK—¦‚ÌŒ¸Š
             if (step_num == MAX_STEP_NUM / 2
                 || step_num == MAX_STEP_NUM * 3 / 4) {
                 LEARN_RATE *= 0.1;
             }
 
-            //æ™‚é–“ã®è¨ˆæ¸¬
+            //ŠÔ‚ÌŒv‘ª
             auto step_end = std::chrono::steady_clock::now();
             auto ela = std::chrono::duration_cast<std::chrono::milliseconds>(step_end - step_start);
 
             if (step_num % EVALUATION_INTERVAL == 0 || step_num == MAX_STEP_NUM) {
-                //å­¦ç¿’æƒ…å ±ã®è¡¨ç¤º
+                //ŠwKî•ñ‚Ì•\¦
                 timestamp();
                 print(step_num);
                 print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
@@ -223,15 +223,15 @@ void AlphaZeroTrainer::learn() {
                 print(eval_params->maxAbs());
                 print(eval_params->sumAbs());
                 
-                //è©•ä¾¡
+                //•]‰¿
                 evaluate();
                 print("\n", false);
 
-                //æ›¸ãå‡ºã—
+                //‘‚«o‚µ
                 eval_params->writeFile("tmp" + std::to_string(i) + "_" + std::to_string(step_num) + ".bin");
 
             } else if (step_num % PRINT_INTERVAL == 0) {
-                //å­¦ç¿’æƒ…å ±ã®è¡¨ç¤ºã ã‘
+                //ŠwKî•ñ‚Ì•\¦‚¾‚¯
                 timestamp();
                 print(step_num);
                 print(POLICY_LOSS_COEFF * loss[0] + VALUE_LOSS_COEFF * loss[1]);
@@ -244,7 +244,7 @@ void AlphaZeroTrainer::learn() {
                 print("\n", false);
             }
 
-            //å­¦ç¿’ã«ã‹ã‹ã£ãŸæ™‚é–“ã®å®šæ•°å€çœ ã‚‹ã“ã¨ã§ç–‘ä¼¼çš„ã«Actorã®æ•°ã‚’å¢—ã‚„ã™
+            //ŠwK‚É‚©‚©‚Á‚½ŠÔ‚Ì’è””{–°‚é‚±‚Æ‚Å‹^—“I‚ÉActor‚Ì”‚ğ‘‚â‚·
             std::this_thread::sleep_for(ela * (WAIT_COEFF - 1));
         }
 
@@ -254,7 +254,7 @@ void AlphaZeroTrainer::learn() {
     shared_data.stop_signal = true;
     for (uint32_t i = 0; i < THREAD_NUM - 1; i++) {
         slave_threads[i].join();
-        printf("%2dã‚¹ãƒ¬ãƒƒãƒ‰ã‚’join\n", i);
+        printf("%2dƒXƒŒƒbƒh‚ğjoin\n", i);
     }
 
     log_file_.close();
@@ -262,9 +262,9 @@ void AlphaZeroTrainer::learn() {
 }
 
 void AlphaZeroTrainer::learnSlave() {
-    //åœæ­¢ä¿¡å·ãŒæ¥ã‚‹ã¾ã§ãƒ«ãƒ¼ãƒ—
+    //’â~M†‚ª—ˆ‚é‚Ü‚Åƒ‹[ƒv
     while (!shared_data.stop_signal) {
-        //æ£‹è­œã‚’ç”Ÿæˆ
+        //Šû•ˆ‚ğ¶¬
         auto searcher = std::make_unique<Searcher>(usi_option.USI_Hash);
 
         Game game;
@@ -280,7 +280,7 @@ void AlphaZeroTrainer::learnSlave() {
             game.teachers.push_back(teacher);
         }
 
-        //å¯¾å±€çµæœã®è¨­å®š
+        //‘Î‹ÇŒ‹‰Ê‚Ìİ’è
         game.result = pos.resultForBlack();
 
         replay_buffer_->push(game);
@@ -290,17 +290,17 @@ void AlphaZeroTrainer::learnSlave() {
 void AlphaZeroTrainer::evaluate() {
     replay_buffer_->mutex.lock();
 
-    //å¯¾å±€ã™ã‚‹ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’æº–å‚™
+    //‘Î‹Ç‚·‚éƒpƒ‰ƒ[ƒ^‚ğ€”õ
     auto opponent_parameters_ = std::make_unique<EvalParams<DefaultEvalType>>();
     opponent_parameters_->readFile();
 
-    //random_turnã¯å°ã•ã‚ã«ã™ã‚‹
+    //random_turn‚Í¬‚³‚ß‚É‚·‚é
     auto copy = usi_option.random_turn;
     usi_option.random_turn = (uint32_t)EVALUATION_RANDOM_TURN;
     auto test_games = parallelPlay(*eval_params, *opponent_parameters_, EVALUATION_GAME_NUM, false);
     usi_option.random_turn = copy;
 
-    //å‡ºåŠ›
+    //o—Í
     for (int32_t i = 0; i < std::min(2, (int32_t)test_games.size()); i++) {
         test_games[i].writeKifuFile(EVAL_GAMES_DIR);
     }
@@ -310,7 +310,7 @@ void AlphaZeroTrainer::evaluate() {
         win_rate += (i % 2 == 0 ? test_games[i].result : 1.0 - test_games[i].result);
     }
 
-    //é‡è¤‡ã®ç¢ºèªã‚’ã—ã¦ã¿ã‚‹
+    //d•¡‚ÌŠm”F‚ğ‚µ‚Ä‚İ‚é
     int32_t same_num = 0;
     for (int32_t i = 0; i < test_games.size(); i++) {
         for (int32_t j = i + 1; j < test_games.size(); j++) {
@@ -353,7 +353,7 @@ std::vector<Game> AlphaZeroTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
                 Position pos_c(curr), pos_t(target);
 
                 while (!pos_c.isFinish()) {
-                    //iãŒå¶æ•°ã®ã¨ãpos_cãŒå…ˆæ‰‹
+                    //i‚ª‹ô”‚Ì‚Æ‚«pos_c‚ªæè
                     auto move_and_teacher = ((pos_c.turn_number() % 2) == (curr_index % 2) ?
                         searcher->think(pos_c, add_noise) :
                         searcher->think(pos_t, add_noise));
@@ -366,7 +366,7 @@ std::vector<Game> AlphaZeroTrainer::parallelPlay(const EvalParams<DefaultEvalTyp
                     game.teachers.push_back(teacher);
                 }
 
-                //å¯¾å±€çµæœã®è¨­å®š
+                //‘Î‹ÇŒ‹‰Ê‚Ìİ’è
                 game.result = pos_c.resultForBlack();
             }
         });

@@ -1,4 +1,4 @@
-ï»¿#include"base_trainer.hpp"
+#include"base_trainer.hpp"
 #include"network.hpp"
 
 //#define PRINT_DEBUG
@@ -17,18 +17,18 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
     }
 
     //Policy
-    //åˆæ³•æ‰‹ã ã‘ã«ãƒã‚¹ã‚¯ã—ã¦ã„ã„ã®ã‹ã‚ˆãã‚ã‹ã‚‰ãªããªã£ã¦ããŸ
-    //ãƒã‚¹ã‚¯ã—ãªã„æ–¹ãŒè‰¯ã•ãã†(2018/12/06ã®å®Ÿé¨“çµæœã‹ã‚‰)
+    //‡–@è‚¾‚¯‚Éƒ}ƒXƒN‚µ‚Ä‚¢‚¢‚Ì‚©‚æ‚­‚í‚©‚ç‚È‚­‚È‚Á‚Ä‚«‚½
+    //ƒ}ƒXƒN‚µ‚È‚¢•û‚ª—Ç‚³‚»‚¤(2018/12/06‚ÌÀŒ±Œ‹‰Ê‚©‚ç)
     //auto y = pos.maskedPolicy();
     auto y = softmax(pos.policyScore());
 
-    //Policyã®æå¤±
+    //Policy‚Ì‘¹¸
     double policy_loss = 0.0;
     for (int32_t i = 0; i < POLICY_DIM; i++) {
         policy_loss += crossEntropy(y[i], teacher[i]);
     }
 
-    //Valueã®æå¤±
+    //Value‚Ì‘¹¸
 #ifdef USE_CATEGORICAL
     auto v = pos.valueDist();
 
@@ -44,12 +44,12 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
     double value_loss = binaryCrossEntropy(v, teacher[POLICY_DIM]);
 #endif
 
-    //Policyã®å‹¾é…
+    //Policy‚ÌŒù”z
     Vec delta(OUTPUT_DIM);
     for (int32_t i = 0; i < POLICY_DIM; i++) {
         delta(i) = (CalcType)(POLICY_LOSS_COEFF * (y[i] - teacher[i]));
     }
-    //Valueã®å‹¾é…
+    //Value‚ÌŒù”z
 #ifdef USE_CATEGORICAL
     for (int32_t i = 0; i < BIN_SIZE; i++) {
         delta(POLICY_DIM + i) = (CalcType)(VALUE_LOSS_COEFF * (v[i] - teacher[POLICY_DIM + i]));
@@ -68,7 +68,7 @@ std::array<double, 2> BaseTrainer::addGrad(EvalParams<LearnEvalType>& grad, Posi
     std::cout << "value = " << pos.valueForTurn() << " t = " << teacher[POLICY_DIM] << std::endl;
 #endif
 
-    //é€†ä¼æ’­
+    //‹t“`”d
     for (int32_t i = LAYER_NUM - 1; i >= 0; i--) {
         grad.w[i] += delta * x[i].transpose();
         grad.b[i] += delta;
@@ -88,7 +88,7 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
     constexpr CalcType eps = 0.001f;
     std::cout << std::fixed << std::setprecision(15);
 
-    //å€¤ã‚’å¤‰ãˆãšã«é †ä¼æ’­ã—ãŸã¨ãã®æå¤±
+    //’l‚ğ•Ï‚¦‚¸‚É‡“`”d‚µ‚½‚Æ‚«‚Ì‘¹¸
     double loss1 = 0.0;
     auto y1 = softmax(pos.policyScore());
     auto value1 = pos.valueForTurn();
@@ -116,7 +116,7 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
                 double grad = (loss2 - loss1) / eps;
 
                 if (abs(grad - grad_bp->w[i](j, k)) >= 0.005) {
-                    printf("å‹¾é…ãŒãŠã‹ã—ã„\n");
+                    printf("Œù”z‚ª‚¨‚©‚µ‚¢\n");
                     std::cout << "(i, j, k) = (" << i << ", " << j << ", " << k << ")" << std::endl;
                     std::cout << "loss    = " << loss[0] + loss[1]  << std::endl;
                     std::cout << "loss1   = " << loss1 << std::endl;
@@ -140,7 +140,7 @@ void BaseTrainer::verifyAddGrad(Position & pos, TeacherType teacher) {
             double grad = (loss2 - loss1) / eps;
 
             if (std::abs(grad - grad_bp->b[i](j)) >= 0.005) {
-                printf("å‹¾é…ãŒãŠã‹ã—ã„\n");
+                printf("Œù”z‚ª‚¨‚©‚µ‚¢\n");
                 std::cout << "(i, j) = (" << i << ", " << j << ")" << std::endl;
                 std::cout << "loss    = " << loss[0] + loss[1] << std::endl;
                 std::cout << "loss1   = " << loss1 << std::endl;
@@ -185,10 +185,10 @@ void BaseTrainer::timestamp() {
     auto elapsed = std::chrono::steady_clock::now() - start_time_;
     auto seconds = std::chrono::duration_cast<std::chrono::seconds>(elapsed).count();
 
-    //ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«ã«ã¯å°æ•°ç‚¹ã¾ã§è€ƒãˆãŸæ™‚é–“ã§å‡ºåŠ›
+    //ƒƒOƒtƒ@ƒCƒ‹‚É‚Í¬”“_‚Ü‚Ål‚¦‚½ŠÔ‚Åo—Í
     log_file_ << seconds / 3600.0 << "\t";
 
-    //æ¨™æº–å‡ºåŠ›ã«ã¯hh:mm:ssã§è¡¨ç¤º
+    //•W€o—Í‚É‚Íhh:mm:ss‚Å•\¦
     auto minutes = seconds / 60;
     seconds %= 60;
     auto hours = minutes / 60;

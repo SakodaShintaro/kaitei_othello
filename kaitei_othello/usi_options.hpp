@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #ifndef USI_OPTIONS_HPP
 #define USI_OPTIONS_HPP
 

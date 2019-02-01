@@ -1,4 +1,4 @@
-ï»¿#include"MCTSearcher.hpp"
+#include"MCTSearcher.hpp"
 #include"shared_data.hpp"
 #include"network.hpp"
 #include"usi_options.hpp"
@@ -8,24 +8,24 @@
 #ifdef USE_MCTS
 
 std::pair<Move, TeacherType> MCTSearcher::think(Position& root, bool add_noise) {
-    //æ€è€ƒé–‹å§‹æ™‚é–“ã‚’ã‚»ãƒƒãƒˆ
+    //vlŠJnŠÔ‚ğƒZƒbƒg
     start_ = std::chrono::steady_clock::now();
 
-    //å¤ã„ãƒãƒƒã‚·ãƒ¥ã‚’å‰Šé™¤
+    //ŒÃ‚¢ƒnƒbƒVƒ…‚ğíœ
     hash_table_.deleteOldHash(root, add_noise);
 
-    //ãƒ«ãƒ¼ãƒˆãƒãƒ¼ãƒ‰ã®å±•é–‹
+    //ƒ‹[ƒgƒm[ƒh‚Ì“WŠJ
     current_root_index_ = expandNode(root);
     auto& current_node = hash_table_[current_root_index_];
 
-    //NULL_MOVEã ã‘ãªã‚‰ã™ãè¿”ã™
+    //NULL_MOVE‚¾‚¯‚È‚ç‚·‚®•Ô‚·
     if (current_node.moves_size == 1 && current_node.moves[0] == NULL_MOVE) {
         return { NULL_MOVE, TeacherType() };
     }
 
     if (add_noise) {
-        //ãƒã‚¤ã‚ºã‚’åŠ ãˆã‚‹
-        //Alpha Zeroã®è«–æ–‡ã¨åŒã˜ãƒ‡ã‚£ãƒªã‚¯ãƒ¬ãƒã‚¤ã‚º
+        //ƒmƒCƒY‚ğ‰Á‚¦‚é
+        //Alpha Zero‚Ì˜_•¶‚Æ“¯‚¶ƒfƒBƒŠƒNƒŒƒmƒCƒY
         constexpr double epsilon = 0.25;
         auto dirichlet = dirichletDistribution(current_node.moves_size, 0.5);
         for (int32_t i = 0; i < current_node.moves_size; i++) {
@@ -33,20 +33,20 @@ std::pair<Move, TeacherType> MCTSearcher::think(Position& root, bool add_noise) 
         }
     }
 
-    //åˆæœŸåŒ–
+    //‰Šú‰»
     playout_num = 0;
 
-    //ãƒ—ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆã‚’ç¹°ã‚Šè¿”ã™
-    //æ¢ç´¢å›æ•°ãŒé–¾å€¤ã‚’è¶…ãˆã‚‹ã€ã¾ãŸã¯æ¢ç´¢ãŒæ‰“ã¡åˆ‡ã‚‰ã‚ŒãŸã‚‰ãƒ«ãƒ¼ãƒ—ã‚’æŠœã‘ã‚‹
+    //ƒvƒŒƒCƒAƒEƒg‚ğŒJ‚è•Ô‚·
+    //’Tõ‰ñ”‚ªè‡’l‚ğ’´‚¦‚éA‚Ü‚½‚Í’Tõ‚ª‘Å‚¿Ø‚ç‚ê‚½‚çƒ‹[ƒv‚ğ”²‚¯‚é
     while (playout_num < usi_option.playout_limit) {
-        //æ¢ç´¢å›æ•°ã‚’1å›å¢—ã‚„ã™
+        //’Tõ‰ñ”‚ğ1‰ñ‘‚â‚·
         playout_num++;
 
-        //1å›ãƒ—ãƒ¬ã‚¤ã‚¢ã‚¦ãƒˆ
+        //1‰ñƒvƒŒƒCƒAƒEƒg
         uctSearch(root, current_root_index_);
         //onePlay(root);
 
-        //æ¢ç´¢ã‚’æ‰“ã¡åˆ‡ã‚‹ã‹ç¢ºèª
+        //’Tõ‚ğ‘Å‚¿Ø‚é‚©Šm”F
         if (shouldStop() || !hash_table_.hasEnoughSize()) {
             break;
         }
@@ -69,10 +69,10 @@ std::pair<Move, TeacherType> MCTSearcher::think(Position& root, bool add_noise) 
     //    root_moves[i].print();
     //}
     
-    // è¨ªå•å›æ•°æœ€å¤§ã®æ‰‹ã‚’é¸æŠã™ã‚‹
+    // –K–â‰ñ”Å‘å‚Ìè‚ğ‘I‘ğ‚·‚é
     int32_t best_index = (int32_t)(std::max_element(N.begin(), N.end()) - N.begin());
 
-    //é¸æŠã—ãŸç€æ‰‹ã®å‹ç‡ã®ç®—å‡º
+    //‘I‘ğ‚µ‚½’…è‚ÌŸ—¦‚ÌZo
 #ifdef USE_CATEGORICAL
     double best_wp = expOfValueDist(current_node.W[best_index]) / current_node.N[best_index];
 #else
@@ -83,21 +83,21 @@ std::pair<Move, TeacherType> MCTSearcher::think(Position& root, bool add_noise) 
 
     TeacherType teacher(OUTPUT_DIM, 0.0);
 
-    //è¨ªå•å›æ•°ã«åŸºã¥ã„ãŸåˆ†å¸ƒã‚’å¾—ã‚‹
+    //–K–â‰ñ”‚ÉŠî‚Ã‚¢‚½•ª•z‚ğ“¾‚é
     std::vector<double> distribution(current_node.moves_size);
     for (int32_t i = 0; i < current_node.moves_size; i++) {
         distribution[i] = (double)N[i] / current_node.sum_N;
         assert(0.0 <= distribution[i] && distribution[i] <= 1.0);
 
-        //åˆ†å¸ƒã‚’æ•™å¸«ãƒ‡ãƒ¼ã‚¿ã«ã‚»ãƒƒãƒˆ
+        //•ª•z‚ğ‹³tƒf[ƒ^‚ÉƒZƒbƒg
         teacher[current_node.moves[i].toLabel()] = (CalcType)distribution[i];
     }
 
-    //valueã®ã‚»ãƒƒãƒˆ
+    //value‚ÌƒZƒbƒg
 #ifdef USE_CATEGORICAL
     for (int32_t i = 0; i < current_node.moves_size; i++) {
         if (current_node.N[i] == 0) {
-            //distribution[i] == 0ã®ã¯ãšãªã®ã§è¨ˆç®—ã™ã‚‹æ„å‘³ãŒãªã„
+            //distribution[i] == 0‚Ì‚Í‚¸‚È‚Ì‚ÅŒvZ‚·‚éˆÓ–¡‚ª‚È‚¢
             assert(distribution[i] == 0.0);
             continue;
         } 
@@ -105,21 +105,21 @@ std::pair<Move, TeacherType> MCTSearcher::think(Position& root, bool add_noise) 
         double exp = expOfValueDist(current_node.W[i]) / current_node.N[i];
         assert(0.0 <= exp && exp <= 1.0);
 
-        //æœŸå¾…å€¤ã®ã¨ã“ã‚ã«æŠ•ã’è¾¼ã‚€
+        //Šú‘Ò’l‚Ì‚Æ‚±‚ë‚É“Š‚°‚Ş
         teacher[POLICY_DIM + valueToIndex(exp)] += (CalcType)distribution[i];
     }
 #else
     teacher[POLICY_DIM] = (CalcType)best_wp;
 #endif
 
-    //æœ€å–„æ‰‹
-    //æ‰‹æ•°ãŒæŒ‡å®šä»¥ä¸‹ã ã£ãŸå ´åˆã¯è¨ªå•å›æ•°ã®åˆ†å¸ƒã‹ã‚‰ãƒ©ãƒ³ãƒ€ãƒ ã«é¸æŠ
+    //Å‘Pè
+    //è”‚ªw’èˆÈ‰º‚¾‚Á‚½ê‡‚Í–K–â‰ñ”‚Ì•ª•z‚©‚çƒ‰ƒ“ƒ_ƒ€‚É‘I‘ğ
     Move best_move = (root.turn_number() < usi_option.random_turn
         ? current_node.moves[randomChoise(distribution)]
         : current_node.moves[best_index]);
     best_move.score = (Score)best_wp;
     
-    //best_indexã®åˆ†å¸ƒã‚’è¡¨ç¤º
+    //best_index‚Ì•ª•z‚ğ•\¦
     //CalcType value = 0.0;
     //double sum_p = 0.0;
     //for (int32_t i = 0; i < BIN_SIZE; i++) {
@@ -142,45 +142,45 @@ ValueType MCTSearcher::uctSearch(Position & pos, Index current_index) {
 
     auto& child_indices = current_node.child_indices;
 
-    // UCBå€¤ãŒæœ€å¤§ã®æ‰‹ã‚’æ±‚ã‚ã‚‹
+    // UCB’l‚ªÅ‘å‚Ìè‚ğ‹‚ß‚é
     auto next_index = selectMaxUcbChild(current_node);
 
-    // é¸ã‚“ã æ‰‹ã‚’ç€æ‰‹
+    // ‘I‚ñ‚¾è‚ğ’…è
     pos.doMove(current_node.moves[next_index]);
 
     ValueType result;
 
-    // ãƒãƒ¼ãƒ‰ã®å±•é–‹ã®ç¢ºèª
+    // ƒm[ƒh‚Ì“WŠJ‚ÌŠm”F
     if (pos.isFinish()) {
-        //çµ‚äº†
+        //I—¹
 #ifdef USE_CATEGORICAL
         result = onehotDist(pos.resultForTurn());
 #else
         result = (CalcType)(pos.resultForTurn());
 #endif
     } else if (child_indices[next_index] == UctHashTable::NOT_EXPANDED) {
-        // ãƒãƒ¼ãƒ‰ã®å±•é–‹
+        // ƒm[ƒh‚Ì“WŠJ
         auto index = expandNode(pos);
         child_indices[next_index] = index;
         result = hash_table_[index].value;
     } else {
-        // å†å¸°çš„ã«æ¢ç´¢
+        // Ä‹A“I‚É’Tõ
         result = uctSearch(pos, child_indices[next_index]);
     }
 
-    //1æ‰‹é€²ã‚ã¦æ‰‹ç•ªãŒåè»¢ã—ã¦ã„ã‚‹ã®ã§resultã‚’åè»¢ã•ã›ã‚‹
+    //1èi‚ß‚Äè”Ô‚ª”½“]‚µ‚Ä‚¢‚é‚Ì‚Åresult‚ğ”½“]‚³‚¹‚é
 #ifdef USE_CATEGORICAL
     std::reverse(result.begin(), result.end());
 #else
     result = MAX_SCORE + MIN_SCORE - result;
 #endif
 
-    // æ¢ç´¢çµæœã®åæ˜ 
+    // ’TõŒ‹‰Ê‚Ì”½‰f
     current_node.sum_N++;
     current_node.W[next_index] += result;
     current_node.N[next_index]++;
 
-    // æ‰‹ã‚’æˆ»ã™
+    // è‚ğ–ß‚·
     pos.undo();
 
     return result;
@@ -189,23 +189,23 @@ ValueType MCTSearcher::uctSearch(Position & pos, Index current_index) {
 Index MCTSearcher::expandNode(Position& pos) {
     auto index = hash_table_.findSameHashIndex(pos.hash_value(), pos.turn_number());
 
-    // åˆæµå…ˆãŒæ¤œçŸ¥ã§ãã‚Œã°ãã‚Œã‚’è¿”ã™
+    // ‡—¬æ‚ªŒŸ’m‚Å‚«‚ê‚Î‚»‚ê‚ğ•Ô‚·
     if (index != hash_table_.size()) {
         return index;
     }
 
-    // ç©ºã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’æ¢ã™
+    // ‹ó‚ÌƒCƒ“ƒfƒbƒNƒX‚ğ’T‚·
     index = hash_table_.searchEmptyIndex(pos.hash_value(), pos.turn_number());
 
     auto& current_node = hash_table_[index];
 
-    // å€™è£œæ‰‹ã®å±•é–‹
+    // Œó•âè‚Ì“WŠJ
     current_node.moves = pos.generateAllMoves();
     current_node.moves_size = (uint32_t)current_node.moves.size();
     current_node.child_indices = std::vector<int32_t>(current_node.moves_size, UctHashTable::NOT_EXPANDED);
     current_node.N = std::vector<int32_t>(current_node.moves_size, 0);
 
-    // ç¾åœ¨ã®ãƒãƒ¼ãƒ‰ã®åˆæœŸåŒ–
+    // Œ»İ‚Ìƒm[ƒh‚Ì‰Šú‰»
     current_node.sum_N = 0;
     current_node.evaled = false;
 #ifdef USE_CATEGORICAL
@@ -221,7 +221,7 @@ Index MCTSearcher::expandNode(Position& pos) {
     current_node.W = std::vector<float>(current_node.moves_size, 0.0);
 #endif
 
-    //ãƒãƒ¼ãƒ‰ã‚’è©•ä¾¡
+    //ƒm[ƒh‚ğ•]‰¿
     evalNode(pos, index);
 
     return index;
@@ -231,7 +231,7 @@ void MCTSearcher::evalNode(Position& pos, Index index) {
     auto& current_node = hash_table_[index];
     std::vector<float> legal_move_policy(current_node.moves_size);
 
-    //Policyã®è¨ˆç®—
+    //Policy‚ÌŒvZ
     if (current_node.moves_size != 1) {
         auto policy_score = pos.policyScore();
 
@@ -239,14 +239,14 @@ void MCTSearcher::evalNode(Position& pos, Index index) {
             legal_move_policy[i] = policy_score[current_node.moves[i].toLabel()];
         }
 
-        //softmaxåˆ†å¸ƒã«ã™ã‚‹
+        //softmax•ª•z‚É‚·‚é
         current_node.policy = softmax(legal_move_policy);
     } else {
-        //1æ‰‹ã ã‘ã ã‹ã‚‰è¨ˆç®—ã™ã‚‹ã¾ã§ã‚‚ãªã„
+        //1è‚¾‚¯‚¾‚©‚çŒvZ‚·‚é‚Ü‚Å‚à‚È‚¢
         current_node.policy.assign(1, 1.0);
     }
 
-    //ãƒãƒ¼ãƒ‰ã®å€¤ã‚’è¨ˆç®—
+    //ƒm[ƒh‚Ì’l‚ğŒvZ
 #ifdef USE_CATEGORICAL
     current_node.value = pos.valueDist();
 #else
@@ -256,7 +256,7 @@ void MCTSearcher::evalNode(Position& pos, Index index) {
 }
 
 bool MCTSearcher::isTimeOver() {
-    //æ™‚é–“ã®ãƒã‚§ãƒƒã‚¯
+    //ŠÔ‚Ìƒ`ƒFƒbƒN
     auto now_time = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now_time - start_);
     return (elapsed.count() >= shared_data.limit_msec);
@@ -269,7 +269,7 @@ bool MCTSearcher::shouldStop() {
 
     return false;
 
-    // æ¢ç´¢å›æ•°ãŒæœ€ã‚‚å¤šã„æ‰‹ã¨æ¬¡ã«å¤šã„æ‰‹ã‚’æ±‚ã‚ã‚‹
+    // ’Tõ‰ñ”‚ªÅ‚à‘½‚¢è‚ÆŸ‚É‘½‚¢è‚ğ‹‚ß‚é
     int32_t max1 = 0, max2 = 0;
     for (auto e : hash_table_[current_root_index_].N) {
         if (e > max1) {
@@ -280,7 +280,7 @@ bool MCTSearcher::shouldStop() {
         }
     }
 
-    // æ®‹ã‚Šã®æ¢ç´¢ã‚’å…¨ã¦æ¬¡å–„æ‰‹ã«è²»ã‚„ã—ã¦ã‚‚æœ€å–„æ‰‹ã‚’è¶…ãˆã‚‰ã‚Œãªã„å ´åˆã¯æ¢ç´¢ã‚’æ‰“ã¡åˆ‡ã‚‹
+    // c‚è‚Ì’Tõ‚ğ‘S‚ÄŸ‘Pè‚É”ï‚â‚µ‚Ä‚àÅ‘Pè‚ğ’´‚¦‚ç‚ê‚È‚¢ê‡‚Í’Tõ‚ğ‘Å‚¿Ø‚é
     return (max1 - max2) > (usi_option.playout_limit - playout_num);
 }
 
@@ -299,14 +299,14 @@ std::vector<Move> MCTSearcher::getPV() const {
 void MCTSearcher::printUSIInfo() const {
     const auto& current_node = hash_table_[current_root_index_];
 
-    //æ¢ç´¢ã«ã‹ã‹ã£ãŸæ™‚é–“ã‚’æ±‚ã‚ã‚‹
+    //’Tõ‚É‚©‚©‚Á‚½ŠÔ‚ğ‹‚ß‚é
     auto finish_time = std::chrono::steady_clock::now();
     auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(finish_time - start_);
 
     const auto& N = current_node.N;
     int32_t selected_index = (int32_t)(std::max_element(N.begin(), N.end()) - N.begin());
 
-    //é¸æŠã—ãŸç€æ‰‹ã®å‹ç‡ã®ç®—å‡º
+    //‘I‘ğ‚µ‚½’…è‚ÌŸ—¦‚ÌZo
 #ifdef USE_CATEGORICAL
     double best_wp = expOfValueDist(current_node.W[selected_index]) / N[selected_index];
 #else
@@ -315,7 +315,7 @@ void MCTSearcher::printUSIInfo() const {
 #endif
     assert(0.0 <= best_wp && best_wp <= 1.0);
 
-    //å‹ç‡ã‚’è©•ä¾¡å€¤ã«å¤‰æ›
+    //Ÿ—¦‚ğ•]‰¿’l‚É•ÏŠ·
     int32_t cp = cp * 1000;
 
     printf("info nps %d time %d nodes %d hashfull %d score cp %d pv ",
@@ -371,17 +371,17 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
         if (N[i] == 0) {
             Q = 0.5;
         } else {
-            ////(1)æ™®é€šã«æœŸå¾…å€¤ã‚’è¨ˆç®—ã™ã‚‹
+            ////(1)•’Ê‚ÉŠú‘Ò’l‚ğŒvZ‚·‚é
             //Q = expOfValueDist(current_node.W[i]) / N[i];
 
-            ////(2)åˆ†æ•£ã‚’(1)ã«åŠ ãˆã‚‹
+            ////(2)•ªU‚ğ(1)‚É‰Á‚¦‚é
             //auto e = Q;
             //for (int32_t j = 0; j < BIN_SIZE; j++) {
             //    Q += pow(VALUE_WIDTH * (0.5 + j) - e, 2) *
             //        (N[i] == 0 ? 0.0 : current_node.child_wins[i][j] / N[i]);
             //}
 
-            //(3)åŸºæº–å€¤ã‚’è¶…ãˆã‚‹ç¢ºç‡(ææ¡ˆæ‰‹æ³•)
+            //(3)Šî€’l‚ğ’´‚¦‚éŠm—¦(’ñˆÄè–@)
             for (int32_t j = std::min(valueToIndex(best_wp) + 1, BIN_SIZE - 1); j < BIN_SIZE; j++) {
                 Q += current_node.W[i][j] / N[i];
             }
@@ -411,30 +411,30 @@ void MCTSearcher::onePlay(Position& pos) {
 
     auto index = current_root_index_;
 
-    //æœªå±•é–‹ã®å±€é¢ã«è‡³ã‚‹ã¾ã§é·ç§»ã‚’ç¹°ã‚Šè¿”ã™
+    //–¢“WŠJ‚Ì‹Ç–Ê‚ÉŠ‚é‚Ü‚Å‘JˆÚ‚ğŒJ‚è•Ô‚·
     while (index != UctHashTable::NOT_EXPANDED) {
-        //çŠ¶æ…‹ã‚’è¨˜éŒ²
+        //ó‘Ô‚ğ‹L˜^
         indices.push(index);
 
-        //é¸æŠ
+        //‘I‘ğ
         auto action = selectMaxUcbChild(hash_table_[index]);
 
-        //å–ã£ãŸè¡Œå‹•ã‚’è¨˜éŒ²
+        //æ‚Á‚½s“®‚ğ‹L˜^
         actions.push(action);
 
-        //é·ç§»
+        //‘JˆÚ
         pos.doMove(hash_table_[index].moves[action]);
 
-        //indexæ›´æ–°
+        //indexXV
         index = hash_table_[index].child_indices[action];
     }
 
-    //ä»Šã®å±€é¢ã‚’å±•é–‹ãƒ»è©•ä¾¡
+    //¡‚Ì‹Ç–Ê‚ğ“WŠJE•]‰¿
     index = expandNode(pos);
     auto result = hash_table_[index].value;
     hash_table_[indices.top()].child_indices[actions.top()] = index;
 
-    //ãƒãƒƒã‚¯ã‚¢ãƒƒãƒ—
+    //ƒoƒbƒNƒAƒbƒv
     while (!actions.empty()) {
         pos.undo();
         index = indices.top();
@@ -443,14 +443,14 @@ void MCTSearcher::onePlay(Position& pos) {
         auto action = actions.top();
         actions.pop();
 
-        //æ‰‹ç•ªãŒå¤‰ã‚ã£ã¦ã„ã‚‹ã®ã§åè»¢
+        //è”Ô‚ª•Ï‚í‚Á‚Ä‚¢‚é‚Ì‚Å”½“]
 #ifdef USE_CATEGORICAL
         std::reverse(result.begin(), result.end());
 #else
         result = MAX_SCORE + MIN_SCORE - result;
 #endif
 
-        // æ¢ç´¢çµæœã®åæ˜ 
+        // ’TõŒ‹‰Ê‚Ì”½‰f
         hash_table_[index].W[action] += result;
         hash_table_[index].sum_N++;
         hash_table_[index].N[action]++;

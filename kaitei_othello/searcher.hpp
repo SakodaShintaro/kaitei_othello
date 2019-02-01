@@ -1,4 +1,4 @@
-﻿#ifndef SEARCHER_HPP
+#ifndef SEARCHER_HPP
 #define SEARCHER_HPP
 
 #include"alphabeta_searcher.hpp"

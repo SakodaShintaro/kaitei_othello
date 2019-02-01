@@ -1,4 +1,4 @@
-ï»¿#ifndef TYPES_HPP
+#ifndef TYPES_HPP
 #define TYPES_HPP
 
 #include<iostream>
@@ -48,7 +48,7 @@ inline Depth& operator/=(Depth& lhs, int rhs) { lhs = lhs / rhs;  return lhs; }
 std::ostream& operator<<(std::ostream& os, const Depth d);
 std::istream& operator>>(std::istream& is, Depth& d);
 
-//std::arrayã«é–¢ã™ã‚‹ã‚ªãƒ¼ãƒãƒ¼ãƒ­ãƒ¼ãƒ‰
+//std::array‚ÉŠÖ‚·‚éƒI[ƒo[ƒ[ƒh
 template<class T, size_t SIZE>
 inline std::array<T, SIZE> operator+(std::array<T, SIZE> lhs, std::array<T, SIZE> rhs) {
     for (size_t i = 0; i < SIZE; i++) {
