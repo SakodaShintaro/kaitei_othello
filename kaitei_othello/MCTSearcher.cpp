@@ -27,7 +27,7 @@ std::pair<Move, TeacherType> MCTSearcher::thinkForGenerateLearnData(Position& ro
         //ノイズを加える
         //Alpha Zeroの論文と同じディリクレノイズ
         constexpr double epsilon = 0.25;
-        auto dirichlet = dirichletDistribution(current_node.moves_size, 0.05);
+        auto dirichlet = dirichletDistribution(current_node.moves_size, 0.5);
         for (int32_t i = 0; i < current_node.moves_size; i++) {
             current_node.policy[i] = (CalcType)((1.0 - epsilon) * current_node.policy[i] + epsilon * dirichlet[i]);
         }
