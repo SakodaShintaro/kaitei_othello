@@ -73,7 +73,7 @@ protected:
     //学習開始時間
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
 
-
+    //SGDで用いる前回の更新量
     std::unique_ptr<EvalParams<LearnEvalType>> pre_update_;
 };
 
