@@ -1,10 +1,10 @@
-#pragma once
-
 #ifndef ALPHAZERO_TRAINER_HPP
 #define ALPHAZERO_TRAINER_HPP
 
+#include<mutex>
+
 #include"base_trainer.hpp"
-#include"game.hpp"
+#include"replay_buffer.hpp"
 
 class AlphaZeroTrainer : BaseTrainer {
 public:
@@ -31,19 +31,10 @@ private:
     //今ファイルに保存されているパラメータと対局して強さを測定する関数
     void evaluate();
 
-    //TDLeaf(λ)で教師信号を計算しながら学習データプールに詰めていく関数
-    void pushOneGame(Game& game);
-
-    //自己対局を行う関数
-    static std::vector<Game> play(int32_t game_num, bool add_noise);
-
     //---------------------------------------------
     //    ファイルから読み込むためconst化はして
     //    いないがほぼ定数であるもの
     //---------------------------------------------
-    //TDLeaf(λ)のλ
-    double LAMBDA;
-
     //強くなったとみなす勝率の閾値
     double THRESHOLD;
 
@@ -56,14 +47,8 @@ private:
     //評価するときのランダム手数
     int32_t EVALUATION_RANDOM_TURN;
 
-    //スタックサイズの上限
-    int64_t MAX_STACK_SIZE;
-
     //ステップ数
     int64_t MAX_STEP_NUM;
-
-    //最初に待つ量
-    int64_t WAIT_LIMIT_SIZE;
 
     //疑似的に学習時間を倍増させてActorの数を増やす係数
     double WAIT_COEFF;
@@ -77,8 +62,8 @@ private:
     //------------
     //    変数
     //------------
-    //学習用に加工済の局面と教師データのセットをプールするもの
-    std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> position_pool_;
+    //リプレイバッファをInner Classとして宣言する
+    std::unique_ptr<ReplayBuffer> replay_buffer_;
     
     //強くなって世代が進んだ回数
     uint64_t update_num_;

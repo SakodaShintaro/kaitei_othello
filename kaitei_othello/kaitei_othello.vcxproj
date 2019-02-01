@@ -39,6 +39,7 @@
     <ClCompile Include="piece.cpp" />
     <ClCompile Include="position.cpp" />
     <ClCompile Include="alphabeta_searcher.cpp" />
+    <ClCompile Include="replay_buffer.cpp" />
     <ClCompile Include="square.cpp" />
     <ClCompile Include="test.cpp" />
     <ClCompile Include="types.cpp" />
@@ -63,6 +64,7 @@
     <ClInclude Include="position.hpp" />
     <ClInclude Include="pv_table.hpp" />
     <ClInclude Include="alphabeta_searcher.hpp" />
+    <ClInclude Include="replay_buffer.hpp" />
     <ClInclude Include="searcher.hpp" />
     <ClInclude Include="search_stack.hpp" />
     <ClInclude Include="shared_data.hpp" />

@@ -14,8 +14,6 @@
 #include<sys/stat.h>
 #endif
 
-static std::mutex MUTEX;
-
 //保存するディレクトリの名前
 static const std::string LEARN_GAMES_DIR = "./learn_games/";
 static const std::string EVAL_GAMES_DIR = "./test_games/";
@@ -27,6 +25,8 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
         std::cerr << "fail to open setting_file(" << settings_file_path << ")" << std::endl;
         assert(false);
     }
+
+    replay_buffer_ = std::make_unique<ReplayBuffer>();
 
     std::string name;
     while (ifs >> name) {
@@ -51,7 +51,7 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
         } else if (name == "random_move_num") {
             ifs >> usi_option.random_turn;
         } else if (name == "lambda") {
-            ifs >> LAMBDA;
+            ifs >> replay_buffer_->LAMBDA;
         } else if (name == "USI_Hash") {
             ifs >> usi_option.USI_Hash;
         } else if (name == "evaluation_game_num") {
@@ -65,12 +65,11 @@ AlphaZeroTrainer::AlphaZeroTrainer(std::string settings_file_path) {
         } else if (name == "value_loss_coeff") {
             ifs >> VALUE_LOSS_COEFF;
         } else if (name == "max_stack_size") {
-            ifs >> MAX_STACK_SIZE;
-            position_pool_.reserve(MAX_STACK_SIZE);
+            ifs >> replay_buffer_->MAX_STACK_SIZE;
         } else if (name == "max_step_num") {
             ifs >> MAX_STEP_NUM;
         } else if (name == "wait_limit_size") {
-            ifs >> WAIT_LIMIT_SIZE;
+            ifs >> replay_buffer_->WAIT_LIMIT_SIZE;
         } else if (name == "wait_coeff") {
             ifs >> WAIT_COEFF;
         } else if (name == "learn_num") {
@@ -135,8 +134,6 @@ void AlphaZeroTrainer::learn() {
         //時間を初期化
         start_time_ = std::chrono::steady_clock::now();
 
-        MUTEX.lock();
-
         //first_targetをmodel.binへコピー
         eval_params->readFile("first_target.bin");
         eval_params->writeFile();
@@ -182,10 +179,7 @@ void AlphaZeroTrainer::learn() {
         evaluate();
         print("\n", false);
 
-        position_pool_.clear();
-        position_pool_.reserve(MAX_STACK_SIZE);
-
-        MUTEX.unlock();
+        replay_buffer_->clear();
 
         for (int32_t step_num = 1; step_num <= MAX_STEP_NUM; step_num++) {
             //このステップにかかった時間をかける
@@ -194,22 +188,8 @@ void AlphaZeroTrainer::learn() {
             //ミニバッチ分勾配を貯める
             auto grad = std::make_unique<EvalParams<LearnEvalType>>();
             std::array<double, 2> loss{ 0.0, 0.0 };
-            for (int32_t j = 0; j < BATCH_SIZE; j++) {
-                if ((int64_t)position_pool_.size() <= BATCH_SIZE * WAIT_LIMIT_SIZE) {
-                    j--;
-                    continue;
-                }
-
-                //ランダムに選ぶ
-                MUTEX.lock();
-                int32_t random = engine() % position_pool_.size();
-                auto data = position_pool_[random];
-                MUTEX.unlock();
-
-                //局面を復元
+            for (const auto& data : replay_buffer_->makeBatch(BATCH_SIZE)) {
                 pos.loadData(data.first);
-
-                //勾配を計算
                 loss += addGrad(*grad, pos, data.second);
             }
             loss /= BATCH_SIZE;
@@ -217,7 +197,6 @@ void AlphaZeroTrainer::learn() {
                 g /= BATCH_SIZE;
             });
 
-            MUTEX.lock();
             //学習
             updateParams(*eval_params, *grad);
 
@@ -264,8 +243,6 @@ void AlphaZeroTrainer::learn() {
                 print("\n", false);
             }
 
-            MUTEX.unlock();
-
             //学習にかかった時間の定数倍眠ることで疑似的にActorの数を増やす
             std::this_thread::sleep_for(ela * (WAIT_COEFF - 1));
         }
@@ -287,23 +264,31 @@ void AlphaZeroTrainer::learnSlave() {
     //停止信号が来るまでループ
     while (!shared_data.stop_signal) {
         //棋譜を生成
-        auto games = play(1, true);
+        auto searcher = std::make_unique<Searcher>(usi_option.USI_Hash);
 
-        MUTEX.lock();
-        //生成した棋譜を学習用データに加工してstackへ詰め込む
-        for (auto& game : games) {
-            pushOneGame(game);
+        Game game;
+        Position pos(*eval_params);
+
+        while (!pos.isFinish()) {
+            auto move_and_teacher = searcher->think(pos, true);
+            Move best_move = move_and_teacher.first;
+            TeacherType teacher = move_and_teacher.second;
+
+            pos.doMove(best_move);
+            game.moves.push_back(best_move);
+            game.teachers.push_back(teacher);
         }
 
-        if ((int64_t)position_pool_.size() >= MAX_STACK_SIZE) {
-            auto diff = position_pool_.size() - MAX_STACK_SIZE;
-            position_pool_.erase(position_pool_.begin(), position_pool_.begin() + diff);
-        }
-        MUTEX.unlock();
+        //対局結果の設定
+        game.result = pos.resultForBlack();
+
+        replay_buffer_->push(game);
     }
 }
 
 void AlphaZeroTrainer::evaluate() {
+    replay_buffer_->mutex.lock();
+
     //対局するパラメータを準備
     auto opponent_parameters_ = std::make_unique<EvalParams<DefaultEvalType>>();
     opponent_parameters_->readFile();
@@ -343,75 +328,8 @@ void AlphaZeroTrainer::evaluate() {
     print(update_num_);
     print(same_num);
     print(same_num == 0 ? --EVALUATION_RANDOM_TURN : ++EVALUATION_RANDOM_TURN);
-}
 
-void AlphaZeroTrainer::pushOneGame(Game& game) {
-    Position pos(*eval_params);
-
-    //まずは最終局面まで動かす
-    for (auto move : game.moves) {
-        pos.doMove(move);
-    }
-
-    assert(Game::RESULT_WHITE_WIN <= game.result && game.result <= Game::RESULT_BLACK_WIN);
-
-    //先手から見た勝率,分布.指数移動平均で動かしていく.最初は結果によって初期化(0 or 0.5 or 1)
-    double win_rate_for_black = game.result;
-
-    for (int32_t i = (int32_t)game.moves.size() - 1; i >= 0; i--) {
-        //i番目の指し手が対応するのは1手戻した局面
-        pos.undo();
-
-        if (game.moves[i] == NULL_MOVE) { 
-            //パスだったら学習を飛ばす
-            continue;
-        }
-
-#ifdef USE_CATEGORICAL
-        //手番から見た分布を得る
-        auto teacher_dist = onehotDist(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
-
-        //teacherにコピーする
-        std::copy(teacher_dist.begin(), teacher_dist.end(), game.teachers[i].begin() + POLICY_DIM);
-#else
-        //teacherにコピーする
-        game.teachers[i][POLICY_DIM] = (CalcType)(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
-#endif
-        //探索結果を先手から見た値に変換
-        double curr_win_rate = (pos.color() == BLACK ? game.moves[i].score : 1.0 - game.moves[i].score);
-
-        //混合
-        win_rate_for_black = LAMBDA * win_rate_for_black + (1.0 - LAMBDA) * curr_win_rate;
-
-        //スタックに詰める
-        position_pool_.push_back({ pos.data(), game.teachers[i] });
-    }
-}
-
-std::vector<Game> AlphaZeroTrainer::play(int32_t game_num, bool add_noise) {
-    auto searcher = std::make_unique<Searcher>(usi_option.USI_Hash);
-
-    std::vector<Game> games(game_num);
-    for (int32_t i = 0; i < game_num; i++) {
-        Game& game = games[i];
-        Position pos(*eval_params);
-
-        while (!pos.isFinish()) {
-            //iが偶数のときpos_cが先手
-            auto move_and_teacher = searcher->think(pos, add_noise);
-            Move best_move = move_and_teacher.first;
-            TeacherType teacher = move_and_teacher.second;
-
-            pos.doMove(best_move);
-            game.moves.push_back(best_move);
-            game.teachers.push_back(teacher);
-        }
-
-        //対局結果の設定
-        game.result = pos.resultForBlack();
-    }
-
-    return games;
+    replay_buffer_->mutex.unlock();
 }
 
 std::vector<Game> AlphaZeroTrainer::parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, bool add_noise) {

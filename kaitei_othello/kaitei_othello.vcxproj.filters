@@ -78,6 +78,9 @@
     <ClCompile Include="alphabeta_searcher.cpp">
       <Filter>ソース ファイル\searcher</Filter>
     </ClCompile>
+    <ClCompile Include="replay_buffer.cpp">
+      <Filter>ソース ファイル\trainer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array_map.hpp">
@@ -157,6 +160,9 @@
     </ClInclude>
     <ClInclude Include="searcher.hpp">
       <Filter>ヘッダー ファイル\searcher</Filter>
+    </ClInclude>
+    <ClInclude Include="replay_buffer.hpp">
+      <Filter>ヘッダー ファイル\trainer</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
