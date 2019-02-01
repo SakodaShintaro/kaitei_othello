@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef OPERATE_PARAMS_HPP
 #define OPERATE_PARAMS_HPP
@@ -12,9 +12,9 @@ inline int32_t valueToIndex(double value) {
 }
 
 inline std::array<CalcType, BIN_SIZE> onehotDist(double value) {
-    //value‚Ì‚Æ‚±‚ë‚¾‚¯1.0, ‘¼‚Í0.0‚Æ‚µ‚½•ª•z‚ğ•Ô‚·
-    //value / (1.0 / BIN_SIZE) = value * BIN_SIZE ‚Ì‚Æ‚±‚ë‚¾‚¯1.0
-    //value = 1.0‚¾‚Æ‚¿‚å‚¤‚ÇBIN_SIZE‚É‚È‚Á‚Ä‚µ‚Ü‚¤‚©‚çmin‚ğæ‚é
+    //valueã®ã¨ã“ã‚ã ã‘1.0, ä»–ã¯0.0ã¨ã—ãŸåˆ†å¸ƒã‚’è¿”ã™
+    //value / (1.0 / BIN_SIZE) = value * BIN_SIZE ã®ã¨ã“ã‚ã ã‘1.0
+    //value = 1.0ã ã¨ã¡ã‚‡ã†ã©BIN_SIZEã«ãªã£ã¦ã—ã¾ã†ã‹ã‚‰minã‚’å–ã‚‹
     std::array<CalcType, BIN_SIZE> result{};
     result[valueToIndex(value)] = 1.0f;
     return result;
@@ -23,7 +23,7 @@ inline std::array<CalcType, BIN_SIZE> onehotDist(double value) {
 inline double expOfValueDist(std::array<CalcType, BIN_SIZE> dist) {
     double exp = 0.0;
     for (int32_t i = 0; i < BIN_SIZE; i++) {
-        //i”Ô–Ú‚Ì—v‘f‚ª¦‚·’l‚Í(i + 0.5) * VALUE_WIDTH
+        //iç•ªç›®ã®è¦ç´ ãŒç¤ºã™å€¤ã¯(i + 0.5) * VALUE_WIDTH
         exp += (i + 0.5) * VALUE_WIDTH * dist[i];
     }
     return exp;

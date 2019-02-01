@@ -1,4 +1,4 @@
-#ifndef REPLAY_BUFFER_HPP
+ï»¿#ifndef REPLAY_BUFFER_HPP
 #define REPLAY_BUFFER_HPP
 
 #include<mutex>
@@ -7,30 +7,30 @@
 
 class ReplayBuffer {
 public:
-    //ƒoƒbƒ`ƒTƒCƒY•ª‚Ìƒf[ƒ^‚ğ•Ô‚·ŠÖ”
+    //ãƒãƒƒãƒã‚µã‚¤ã‚ºåˆ†ã®ãƒ‡ãƒ¼ã‚¿ã‚’è¿”ã™é–¢æ•°
     std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> makeBatch(int64_t batch_size);
 
-    //1‹Ç•ª‚Ìƒf[ƒ^‚ğ‹l‚ß‚ŞŠÖ”
+    //1å±€åˆ†ã®ãƒ‡ãƒ¼ã‚¿ã‚’è©°ã‚è¾¼ã‚€é–¢æ•°
     void push(Game& game);
 
-    //‰Šú‰»‚·‚éŠÖ”
+    //åˆæœŸåŒ–ã™ã‚‹é–¢æ•°
     void clear();
 
-    //AlphaZeroTainerƒNƒ‰ƒX‚©‚ç‚àƒAƒNƒZƒX‚Å‚«‚é‚æ‚¤‚Épublic‚É’u‚­
-    //TDLeaf(ƒÉ)‚ÌƒÉ
+    //AlphaZeroTainerã‚¯ãƒ©ã‚¹ã‹ã‚‰ã‚‚ã‚¢ã‚¯ã‚»ã‚¹ã§ãã‚‹ã‚ˆã†ã«publicã«ç½®ã
+    //TDLeaf(Î»)ã®Î»
     double LAMBDA;
 
-    //ƒXƒ^ƒbƒNƒTƒCƒY‚ÌãŒÀ
+    //ã‚¹ã‚¿ãƒƒã‚¯ã‚µã‚¤ã‚ºã®ä¸Šé™
     int64_t MAX_STACK_SIZE;
 
-    //Å‰‚É‘Ò‚Â—Ê
+    //æœ€åˆã«å¾…ã¤é‡
     int64_t WAIT_LIMIT_SIZE;
 
-    //”r‘¼§Œä—p
+    //æ’ä»–åˆ¶å¾¡ç”¨
     std::mutex mutex;
 
 private:
-    //ƒf[ƒ^‚ğŠi”[‚·‚éƒoƒbƒtƒ@
+    //ãƒ‡ãƒ¼ã‚¿ã‚’æ ¼ç´ã™ã‚‹ãƒãƒƒãƒ•ã‚¡
     std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> buffer_;
 };
 

@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 #ifndef SEARCH_STACK_HPP
 #define SEARCH_STACK_HPP
 
@@ -13,7 +13,7 @@ struct SearchStack {
     bool can_null_move;
 
     void updateKillers(const Move& move) {
-        //éQçl:https://qiita.com/ak11/items/0c1d20753b1073788275
+        //ÂèÇËÄÉ:https://qiita.com/ak11/items/0c1d20753b1073788275
         if (killers[0] != move) {
             killers[1] = killers[0];
             killers[0] = move;

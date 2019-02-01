@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef ARRAYMAP_HPP
 #define ARRAYMAP_HPP
@@ -6,12 +6,12 @@
 #include<cstdint>
 #include<cstring>
 
-//TypeŒ^‚ğ•Ô‚·”z—ñ‚Å‚ ‚èApair‚Ìinitializer_list‚Å‰Šú‰»‚Å‚«‚é‚à‚Ì
+//Typeå‹ã‚’è¿”ã™é…åˆ—ã§ã‚ã‚Šã€pairã®initializer_listã§åˆæœŸåŒ–ã§ãã‚‹ã‚‚ã®
 template<class Type, int32_t Size>
 class ArrayMap {
 public:
     constexpr ArrayMap() {
-        // ‘¬“x’á‰º‚ğ–h~‚·‚é‚½‚ßA“Á‚Éƒ[ƒ‰Šú‰»“™‚Ís‚í‚È‚¢
+        // é€Ÿåº¦ä½ä¸‹ã‚’é˜²æ­¢ã™ã‚‹ãŸã‚ã€ç‰¹ã«ã‚¼ãƒ­åˆæœŸåŒ–ç­‰ã¯è¡Œã‚ãªã„
     }
 
     ArrayMap(std::initializer_list<Type> list) {

@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #ifndef PV_TABLE_HPP
 #define PV_TABLE_HPP
 
@@ -46,7 +46,7 @@ public:
     }
 
     void reset() {
-        //˜_—“I‚ÈƒNƒŠƒA
+        //è«–ç†çš„ãªã‚¯ãƒªã‚¢
         pv_length_[0] = 0;
     }
 

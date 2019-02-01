@@ -2,4 +2,4 @@ hash_size 64
 random_turn 0
 thread_num 1
 playout_limit 32000
-limit_msec 10000000000
+limit_msec 10000000
