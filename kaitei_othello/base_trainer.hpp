@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 
 #ifndef TRAINER_HPP
 #define TRAINER_HPP
@@ -10,70 +10,70 @@
 #include<chrono>
 #include<ctime>
 
-//ŠeTrainer‚ÌŠî’ê‚Æ‚È‚éƒNƒ‰ƒX
+//å„Trainerã®åŸºåº•ã¨ãªã‚‹ã‚¯ãƒ©ã‚¹
 class BaseTrainer {
 protected:
     //------------------------------------
-    //    ƒpƒ‰ƒ[ƒ^XV‚ÉŠÖ‚·‚éŠÖ”—Ş
+    //    ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿æ›´æ–°ã«é–¢ã™ã‚‹é–¢æ•°é¡
     //------------------------------------
-    //Œ»‹Ç–Ê‚É‘Î‚·‚é•]‰¿ŠÖ”‚Ìo—Í‚ğteacher‚É‹ß‚Ã‚¯‚é‚æ‚¤‚ÉŒù”z‚ğXV‚·‚éŠÖ”
+    //ç¾å±€é¢ã«å¯¾ã™ã‚‹è©•ä¾¡é–¢æ•°ã®å‡ºåŠ›ã‚’teacherã«è¿‘ã¥ã‘ã‚‹ã‚ˆã†ã«å‹¾é…ã‚’æ›´æ–°ã™ã‚‹é–¢æ•°
     std::array<double, 2> addGrad(EvalParams<LearnEvalType>& grad, Position& pos, TeacherType teacher);
 
-    //‹t“`”d‚ª‡‚Á‚Ä‚¢‚é‚©”’l”÷•ª‚ÆÆ‚ç‚µ‡‚í‚¹‚ÄŒŸØ‚·‚éŠÖ”
+    //é€†ä¼æ’­ãŒåˆã£ã¦ã„ã‚‹ã‹æ•°å€¤å¾®åˆ†ã¨ç…§ã‚‰ã—åˆã‚ã›ã¦æ¤œè¨¼ã™ã‚‹é–¢æ•°
     void verifyAddGrad(Position& pos, TeacherType teacher);
 
-    //Œù”z‚ğ‚à‚Æ‚Éƒpƒ‰ƒ[ƒ^‚ğXV‚·‚éŠÖ”
+    //å‹¾é…ã‚’ã‚‚ã¨ã«ãƒ‘ãƒ©ãƒ¡ãƒ¼ã‚¿ã‚’æ›´æ–°ã™ã‚‹é–¢æ•°
     void updateParams(EvalParams<LearnEvalType>& params, const EvalParams<LearnEvalType>& grad);
     void updateParamsSGD(EvalParams<LearnEvalType>& params, const EvalParams<LearnEvalType>& grad);
     void updateParamsMomentum(EvalParams<LearnEvalType>& params, const EvalParams<LearnEvalType>& grad, EvalParams<LearnEvalType>& pre_update);
 
     //--------------------
-    //    ‚»‚Ì‘¼ŠÖ”—Ş
+    //    ãã®ä»–é–¢æ•°é¡
     //--------------------
-    //log_file_‚ÉŒo‰ßŠÔ‚ğo—Í‚·‚éŠÖ”
+    //log_file_ã«çµŒéæ™‚é–“ã‚’å‡ºåŠ›ã™ã‚‹é–¢æ•°
     void timestamp();
 
-    //•W€o—Í‚Ælog_file_‚Ì—¼•û‚Éo—Í‚·‚éŠÖ”
+    //æ¨™æº–å‡ºåŠ›ã¨log_file_ã®ä¸¡æ–¹ã«å‡ºåŠ›ã™ã‚‹é–¢æ•°
     template<class T> void print(T t, bool add_tub = true);
 
-    //optimizer‚Æ‚µ‚Ä“ü—Í‚³‚ê‚½‚à‚Ì‚ª³“–‚©”»’è‚·‚éŠÖ”
+    //optimizerã¨ã—ã¦å…¥åŠ›ã•ã‚ŒãŸã‚‚ã®ãŒæ­£å½“ã‹åˆ¤å®šã™ã‚‹é–¢æ•°
     bool isLegalOptimizer();
 
     //-----------------------------------------------------
-    //    ƒtƒ@ƒCƒ‹‚©‚ç“Ç‚İ‚Ş‚½‚ßconst‰»‚Í‚µ‚Ä‚¢‚È‚¢‚ª
-    //    ‚Ù‚Ú’è”‚Å‚ ‚é‚à‚Ì
+    //    ãƒ•ã‚¡ã‚¤ãƒ«ã‹ã‚‰èª­ã¿è¾¼ã‚€ãŸã‚conståŒ–ã¯ã—ã¦ã„ãªã„ãŒ
+    //    ã»ã¼å®šæ•°ã§ã‚ã‚‹ã‚‚ã®
     //-----------------------------------------------------
-    //ŠwK—¦
+    //å­¦ç¿’ç‡
     double LEARN_RATE;
 
-    //Momentum‚É‚¨‚¯‚é¬‡”ä
+    //Momentumã«ãŠã‘ã‚‹æ··åˆæ¯”
     double MOMENTUM_DECAY;
 
-    //ƒoƒbƒ`ƒTƒCƒY
+    //ãƒãƒƒãƒã‚µã‚¤ã‚º
     int32_t BATCH_SIZE;
 
-    //optimizer‚Ìİ’è
+    //optimizerã®è¨­å®š
     std::string OPTIMIZER_NAME;
 
-    //•À—ñ‰»‚·‚éƒXƒŒƒbƒh”
+    //ä¸¦åˆ—åŒ–ã™ã‚‹ã‚¹ãƒ¬ãƒƒãƒ‰æ•°
     uint32_t THREAD_NUM;
 
-    //policy_loss‚É‚©‚¯‚éŒW”
+    //policy_lossã«ã‹ã‘ã‚‹ä¿‚æ•°
     double POLICY_LOSS_COEFF;
 
-    //value_loss‚É‚©‚¯‚éŒW”
+    //value_lossã«ã‹ã‘ã‚‹ä¿‚æ•°
     double VALUE_LOSS_COEFF;
 
     //--------------------------------
-    //    ŠwK’†‚É—p‚¢‚éƒƒ“ƒo•Ï”
+    //    å­¦ç¿’ä¸­ã«ç”¨ã„ã‚‹ãƒ¡ãƒ³ãƒå¤‰æ•°
     //--------------------------------
-    //ƒƒOƒtƒ@ƒCƒ‹
+    //ãƒ­ã‚°ãƒ•ã‚¡ã‚¤ãƒ«
     std::ofstream log_file_;
 
-    //ŠwKŠJnŠÔ
+    //å­¦ç¿’é–‹å§‹æ™‚é–“
     std::chrono::time_point<std::chrono::steady_clock> start_time_;
 
-    //SGD‚Å—p‚¢‚é‘O‰ñ‚ÌXV—Ê
+    //SGDã§ç”¨ã„ã‚‹å‰å›ã®æ›´æ–°é‡
     std::unique_ptr<EvalParams<LearnEvalType>> pre_update_;
 };
 

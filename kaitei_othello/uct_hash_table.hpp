@@ -1,4 +1,4 @@
-#ifndef UCT_HASH_ENTRY_HPP
+ï»¿#ifndef UCT_HASH_ENTRY_HPP
 #define UCT_HASH_ENTRY_HPP
 
 #include"piece.hpp"
@@ -18,8 +18,8 @@ struct UctHashEntry {
     std::vector<ValueType> W;
     bool evaled;
 
-    //¯•Ê—pƒf[ƒ^
-    //ƒnƒbƒVƒ…’l‚¾‚¯‚Å‚ÍÕ“Ë‚ª”­¶‚·‚é‚Ì‚Åè”‚à‚Â
+    //è­˜åˆ¥ç”¨ãƒ‡ãƒ¼ã‚¿
+    //ãƒãƒƒã‚·ãƒ¥å€¤ã ã‘ã§ã¯è¡çªãŒç™ºç”Ÿã™ã‚‹ã®ã§æ‰‹æ•°ã‚‚æŒã¤
     int64_t hash;
     int16_t turn_number;
 
@@ -50,14 +50,14 @@ public:
 
     void setSize(int64_t megabytes);
 
-    // –¢g—p‚ÌƒCƒ“ƒfƒbƒNƒX‚ğ’T‚µ‚Ä•Ô‚·(ŠJ”Ô’n–@)
+    // æœªä½¿ç”¨ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹ã‚’æ¢ã—ã¦è¿”ã™(é–‹ç•ªåœ°æ³•)
     Index searchEmptyIndex(int64_t hash, int16_t turn_number);
 
     Index findSameHashIndex(int64_t hash, int16_t turn_number);
 
     void saveUsedHash(Position& pos, Index index);
 
-    // Œ»İ‚Ì‹Ç–Ê‚ğƒ‹[ƒg‚Æ‚·‚é‹Ç–ÊˆÈŠO‚ğíœ‚·‚é
+    // ç¾åœ¨ã®å±€é¢ã‚’ãƒ«ãƒ¼ãƒˆã¨ã™ã‚‹å±€é¢ä»¥å¤–ã‚’å‰Šé™¤ã™ã‚‹
     void deleteOldHash(Position& root, bool leave_root);
 
     double getUsageRate() const {
@@ -76,7 +76,7 @@ public:
         return size_;
     }
 
-    // –¢“WŠJ‚Ìƒm[ƒh‚ÌƒCƒ“ƒfƒbƒNƒX
+    // æœªå±•é–‹ã®ãƒãƒ¼ãƒ‰ã®ã‚¤ãƒ³ãƒ‡ãƒƒã‚¯ã‚¹
     static constexpr Index NOT_EXPANDED = -1;
 
 private:

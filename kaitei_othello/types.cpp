@@ -1,4 +1,4 @@
-#include"types.hpp"
+﻿#include"types.hpp"
 
 //Depth
 std::ostream& operator<<(std::ostream& os, const Depth d) {

@@ -1,4 +1,4 @@
-#pragma once
+Ôªø#pragma once
 
 #include"uct_hash_table.hpp"
 
@@ -84,7 +84,7 @@ void UctHashTable::deleteOldHash(Position& root, bool leave_root) {
     //    table_[i].flag = false;
     //}
 
-    if (leave_root && root_index != size_) { //å©Ç¬Ç©Ç¡ÇΩÇ∆Ç¢Ç§Ç±Ç∆
+    if (leave_root && root_index != size_) { //Ë¶ã„Å§„Åã„Å£„Åü„Å®„ÅÑ„ÅÜ„Åì„Å®
         saveUsedHash(root, root_index);
     }
 

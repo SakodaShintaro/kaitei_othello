@@ -1,6 +1,7 @@
-#include"position.hpp"
+ï»¿#include"position.hpp"
 #include"operate_params.hpp"
 #include"alphazero_trainer.hpp"
+#include<thread>
 
 std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> ReplayBuffer::makeBatch(int64_t batch_size) {
     std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> batch;
@@ -14,12 +15,12 @@ std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> ReplayBuffer::makeBa
         mutex.lock();
     }
 
-    //ƒf[ƒ^‚ªmax_size_‚ğ’´‰ß‚µ‚Ä‚¢‚½‚çŒ¸‚ç‚·
+    //ãƒ‡ãƒ¼ã‚¿ãŒmax_size_ã‚’è¶…éã—ã¦ã„ãŸã‚‰æ¸›ã‚‰ã™
     if ((int64_t)buffer_.size() > MAX_STACK_SIZE) {
         buffer_.erase(buffer_.begin(), buffer_.begin() + MAX_STACK_SIZE - buffer_.size());
     }
 
-    //ƒ‰ƒ“ƒ_ƒ€‚Éƒf[ƒ^‚ğæ‚é
+    //ãƒ©ãƒ³ãƒ€ãƒ ã«ãƒ‡ãƒ¼ã‚¿ã‚’å–ã‚‹
     std::uniform_int_distribution<int64_t> dist(0, buffer_.size() - 1);
     for (int64_t i = 0; i < batch_size; i++) {
         batch.push_back(buffer_[dist(engine)]);
@@ -31,42 +32,42 @@ std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> ReplayBuffer::makeBa
 void ReplayBuffer::push(Game& game) {
     Position pos(*eval_params);
 
-    //‚Ü‚¸‚ÍÅI‹Ç–Ê‚Ü‚Å“®‚©‚·
+    //ã¾ãšã¯æœ€çµ‚å±€é¢ã¾ã§å‹•ã‹ã™
     for (auto move : game.moves) {
         pos.doMove(move);
     }
 
     assert(Game::RESULT_WHITE_WIN <= game.result && game.result <= Game::RESULT_BLACK_WIN);
 
-    //æè‚©‚çŒ©‚½Ÿ—¦,•ª•z.w”ˆÚ“®•½‹Ï‚Å“®‚©‚µ‚Ä‚¢‚­.Å‰‚ÍŒ‹‰Ê‚É‚æ‚Á‚Ä‰Šú‰»(0 or 0.5 or 1)
+    //å…ˆæ‰‹ã‹ã‚‰è¦‹ãŸå‹ç‡,åˆ†å¸ƒ.æŒ‡æ•°ç§»å‹•å¹³å‡ã§å‹•ã‹ã—ã¦ã„ã.æœ€åˆã¯çµæœã«ã‚ˆã£ã¦åˆæœŸåŒ–(0 or 0.5 or 1)
     double win_rate_for_black = game.result;
 
     for (int32_t i = (int32_t)game.moves.size() - 1; i >= 0; i--) {
-        //i”Ô–Ú‚Ìw‚µè‚ª‘Î‰‚·‚é‚Ì‚Í1è–ß‚µ‚½‹Ç–Ê
+        //iç•ªç›®ã®æŒ‡ã—æ‰‹ãŒå¯¾å¿œã™ã‚‹ã®ã¯1æ‰‹æˆ»ã—ãŸå±€é¢
         pos.undo();
 
         if (game.moves[i] == NULL_MOVE) {
-            //ƒpƒX‚¾‚Á‚½‚çŠwK‚ğ”ò‚Î‚·
+            //ãƒ‘ã‚¹ã ã£ãŸã‚‰å­¦ç¿’ã‚’é£›ã°ã™
             continue;
         }
 
 #ifdef USE_CATEGORICAL
-        //è”Ô‚©‚çŒ©‚½•ª•z‚ğ“¾‚é
+        //æ‰‹ç•ªã‹ã‚‰è¦‹ãŸåˆ†å¸ƒã‚’å¾—ã‚‹
         auto teacher_dist = onehotDist(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
 
-        //teacher‚ÉƒRƒs[‚·‚é
+        //teacherã«ã‚³ãƒ”ãƒ¼ã™ã‚‹
         std::copy(teacher_dist.begin(), teacher_dist.end(), game.teachers[i].begin() + POLICY_DIM);
 #else
-        //teacher‚ÉƒRƒs[‚·‚é
+        //teacherã«ã‚³ãƒ”ãƒ¼ã™ã‚‹
         game.teachers[i][POLICY_DIM] = (CalcType)(pos.color() == BLACK ? win_rate_for_black : 1.0 - win_rate_for_black);
 #endif
-        //’TõŒ‹‰Ê‚ğæè‚©‚çŒ©‚½’l‚É•ÏŠ·
+        //æ¢ç´¢çµæœã‚’å…ˆæ‰‹ã‹ã‚‰è¦‹ãŸå€¤ã«å¤‰æ›
         double curr_win_rate = (pos.color() == BLACK ? game.moves[i].score : 1.0 - game.moves[i].score);
 
-        //¬‡
+        //æ··åˆ
         win_rate_for_black = LAMBDA * win_rate_for_black + (1.0 - LAMBDA) * curr_win_rate;
 
-        //ƒXƒ^ƒbƒN‚É‹l‚ß‚é
+        //ã‚¹ã‚¿ãƒƒã‚¯ã«è©°ã‚ã‚‹
         mutex.lock();
         buffer_.push_back({ pos.data(), game.teachers[i] });
         mutex.unlock();

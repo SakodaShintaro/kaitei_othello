@@ -1,4 +1,4 @@
-#include"network.hpp"
+﻿#include"network.hpp"
 #include"common.hpp"
 #include"move.hpp"
 #include<fstream>
