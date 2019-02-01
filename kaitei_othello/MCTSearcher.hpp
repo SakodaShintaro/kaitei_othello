@@ -1,5 +1,4 @@
-﻿#pragma once
-#ifndef MCTSEARCHER_HPP
+﻿#ifndef MCTSEARCHER_HPP
 #define MCTSEARCHER_HPP
 
 #include"types.hpp"
