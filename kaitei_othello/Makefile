@@ -1,6 +1,6 @@
 CXX = g++
 TARGET = kaitei
-CXXFLAGS = -O3 -std=c++17 -march=native -I ../eigen/ -w
+CXXFLAGS = -O3 -std=c++17 -march=native -I ../../eigen/ -w
 LDFLAGS = -pthread -lstdc++fs
 SRCS = $(wildcard *.cpp)
 OBJS = $(SRCS:.cpp=.o)
