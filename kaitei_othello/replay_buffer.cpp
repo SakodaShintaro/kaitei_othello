@@ -1,6 +1,7 @@
 ﻿#include"position.hpp"
 #include"operate_params.hpp"
 #include"alphazero_trainer.hpp"
+#include<thread>
 
 std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> ReplayBuffer::makeBatch(int64_t batch_size) {
     std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> batch;
