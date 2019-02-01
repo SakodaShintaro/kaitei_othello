@@ -7,6 +7,7 @@
 #include"operate_params.hpp"
 #include<iomanip>
 #include<algorithm>
+#include<thread>
 #include<experimental/filesystem>
 #ifdef _MSC_VER
 #include<direct.h>

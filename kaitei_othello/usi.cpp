@@ -227,6 +227,7 @@ void NBoardProtocol::vsHuman() {
 }
 
 void NBoardProtocol::vsAI() {
+#ifdef _MSC_VER
     //棋譜を保存するディレクトリの削除
     std::experimental::filesystem::remove_all("./games");
 
@@ -370,4 +371,5 @@ void NBoardProtocol::vsAI() {
     }
 
     std::cout << "勝率 : " << win_point / game_num << std::endl;
+#endif
 }
