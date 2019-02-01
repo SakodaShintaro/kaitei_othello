@@ -34,6 +34,7 @@
     <ClCompile Include="game.cpp" />
     <ClCompile Include="hash_table.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Makefile" />
     <ClCompile Include="MCTSearcher.cpp" />
     <ClCompile Include="network.cpp" />
     <ClCompile Include="piece.cpp" />

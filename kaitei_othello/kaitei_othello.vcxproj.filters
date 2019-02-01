@@ -81,6 +81,9 @@
     <ClCompile Include="replay_buffer.cpp">
       <Filter>ソース ファイル\trainer</Filter>
     </ClCompile>
+    <ClCompile Include="Makefile">
+      <Filter>リソース ファイル</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="array_map.hpp">
