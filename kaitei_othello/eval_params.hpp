@@ -15,6 +15,7 @@
 //型は実際のパラメータ(int16_t)と、学習時のパラメータ,勾配(float)を想定
 using DefaultEvalType = float;
 using CalcType = float;
+using LearnEvalType = float;
 
 using Vec = Eigen::VectorXf;
 using TeacherType = std::vector<CalcType>;
@@ -27,8 +28,10 @@ constexpr int32_t POLICY_DIM = 64;
 constexpr int32_t BIN_SIZE = 51;
 constexpr int32_t OUTPUT_DIM = POLICY_DIM + BIN_SIZE;
 constexpr double VALUE_WIDTH = 1.0 / BIN_SIZE;
+using ValueType = std::array<CalcType, BIN_SIZE>;
 #else
 constexpr int32_t OUTPUT_DIM = POLICY_DIM + 1;
+using ValueType = CalcType;
 #endif
 constexpr int32_t INPUT_DIM = 64;
 constexpr int32_t HIDDEN_DIM = 128;
@@ -42,13 +45,6 @@ constexpr std::array<int32_t, 2> MATRIX_SIZE[LAYER_NUM] = {
 
 //活性化関数の種類:オフにするとsigmoid
 #define USE_ACTIVATION_RELU
-
-using LearnEvalType = float;
-#ifdef USE_CATEGORICAL
-using ValueType = std::array<CalcType, BIN_SIZE>;
-#else
-using ValueType = CalcType;
-#endif
 
 template<typename T>
 class EvalParams {

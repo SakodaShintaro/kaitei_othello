@@ -137,11 +137,7 @@ std::pair<Move, TeacherType> MCTSearcher::think(Position& root, bool add_noise) 
     return { best_move, teacher };
 }
 
-#ifdef USE_CATEGORICAL
-std::array<CalcType, BIN_SIZE> MCTSearcher::uctSearch(Position & pos, Index current_index) {
-#else
-CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
-#endif
+ValueType MCTSearcher::uctSearch(Position & pos, Index current_index) {
     auto& current_node = hash_table_[current_index];
 
     auto& child_indices = current_node.child_indices;
@@ -152,39 +148,32 @@ CalcType MCTSearcher::uctSearch(Position & pos, Index current_index) {
     // ‘I‚ñ‚¾è‚ğ’…è
     pos.doMove(current_node.moves[next_index]);
 
-#ifdef USE_CATEGORICAL
-    std::array<CalcType, BIN_SIZE> result;
-#else
-    CalcType result;
-#endif
+    ValueType result;
+
     // ƒm[ƒh‚Ì“WŠJ‚ÌŠm”F
     if (pos.isFinish()) {
         //I—¹
 #ifdef USE_CATEGORICAL
         result = onehotDist(pos.resultForTurn());
-        std::reverse(result.begin(), result.end());
 #else
-        result = (CalcType)(1.0 - pos.resultForTurn());
+        result = (CalcType)(pos.resultForTurn());
 #endif
     } else if (child_indices[next_index] == UctHashTable::NOT_EXPANDED) {
         // ƒm[ƒh‚Ì“WŠJ
         auto index = expandNode(pos);
         child_indices[next_index] = index;
-#ifdef USE_CATEGORICAL
         result = hash_table_[index].value;
-        std::reverse(result.begin(), result.end());
-#else
-        result = 1.0f - hash_table_[index].value;
-#endif
     } else {
-        // è”Ô‚ğ“ü‚ê‘Ö‚¦‚Ä1è[‚­“Ç‚Ş
-#ifdef USE_CATEGORICAL
+        // Ä‹A“I‚É’Tõ
         result = uctSearch(pos, child_indices[next_index]);
-        std::reverse(result.begin(), result.end());
-#else
-        result = 1.0f - uctSearch(pos, child_indices[next_index]);
-#endif
     }
+
+    //1èi‚ß‚Äè”Ô‚ª”½“]‚µ‚Ä‚¢‚é‚Ì‚Åresult‚ğ”½“]‚³‚¹‚é
+#ifdef USE_CATEGORICAL
+    std::reverse(result.begin(), result.end());
+#else
+    result = MAX_SCORE + MIN_SCORE - result;
+#endif
 
     // ’TõŒ‹‰Ê‚Ì”½‰f
     current_node.sum_N++;
