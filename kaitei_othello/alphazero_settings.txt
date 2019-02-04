@@ -17,5 +17,5 @@ max_step_num 100000
 wait_limit_size 5
 wait_coeff 1
 learn_num 3
-print_interval 10
+print_interval 50
 playout_limit 800
