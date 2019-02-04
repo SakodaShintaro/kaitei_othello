@@ -69,7 +69,7 @@ void ReplayBuffer::push(Game& game) {
 
         //スタックに詰める
         mutex.lock();
-        buffer_.push_back({ pos.data(), game.teachers[i] });
+        buffer_.emplace_back(pos.data(), game.teachers[i]);
         mutex.unlock();
     }
 }
