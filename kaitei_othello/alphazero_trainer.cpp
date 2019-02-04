@@ -113,11 +113,7 @@ void AlphaZeroTrainer::learn() {
     for (uint32_t i = 0; i < THREAD_NUM - 1; i++) {
         slave_threads[i] = std::thread(&AlphaZeroTrainer::learnSlave, this);
     }
-
-    //乱数の準備
-    std::random_device seed;
-    std::default_random_engine engine(seed());
-
+    
     //局面もインスタンスは一つ用意して都度局面を構成
     Position pos(*eval_params);
 
@@ -332,7 +328,7 @@ void AlphaZeroTrainer::evaluate() {
 }
 
 std::vector<Game> AlphaZeroTrainer::parallelPlay(const EvalParams<DefaultEvalType>& curr, const EvalParams<DefaultEvalType>& target, int32_t game_num, bool add_noise) {
-    std::vector<Game> games(game_num);
+    std::vector<Game> games(static_cast<unsigned long>(game_num));
     std::atomic<int32_t> index;
     index = 0;
 

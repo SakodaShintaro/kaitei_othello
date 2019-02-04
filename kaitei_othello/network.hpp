@@ -1,4 +1,5 @@
-﻿#pragma once
+﻿#ifndef NETWORK_HPP
+#define NETWORK_HPP
 
 #include"types.hpp"
 #include"move.hpp"
@@ -17,3 +18,5 @@ namespace Network {
     Vec d_sigmoid(const Vec& x);
 #endif
 };
+
+#endif

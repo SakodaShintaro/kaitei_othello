@@ -63,15 +63,13 @@ void NBoardProtocol::loop() {
     //探索クラスの準備
     Searcher searcher(usi_option.USI_Hash);
 
-    while (true) {
-        std::cin >> input;
+    while (std::cin >> input) {
         if (input == "go") {
             shared_data.stop_signal = false;
             auto result = searcher.think(root_, false);
             std::cout << "=== " << result.first << std::endl;
         } else if (input == "prepareForLearn") {
             eval_params->initRandom();
-            eval_params->printHistgram();
             eval_params->writeFile();
             eval_params->writeFile("tmp.bin");
             std::cout << "0初期化したパラメータを出力" << std::endl;
@@ -90,7 +88,6 @@ void NBoardProtocol::loop() {
             trainer.learn();
         } else if (input == "printEvalParams") {
             eval_params->readFile();
-            eval_params->printHistgram();
         } else if (input == "testRandom") {
             testRandom();
 #ifdef USE_CATEGORICAL
@@ -130,7 +127,7 @@ void NBoardProtocol::loop() {
                         for (int32_t i = 0; i < ggf_str.size(); i++) {
                             if (ggf_str[i] == 'B' || ggf_str[i] == 'W') {
                                 //[から2文字を取ってMoveとして解釈し]まで飛ばす
-                                std::string s = ggf_str.substr(i + 2, 2);
+                                std::string s = ggf_str.substr(static_cast<unsigned long>(i + 2), 2);
                                 Move move = stringToMove(s);
                                 root_.doMove(move);
                                 while (ggf_str[i] != ']') {
@@ -189,7 +186,7 @@ void NBoardProtocol::vsHuman() {
             break;
         }
 
-        if (pos.generateAllMoves().size() == 0) {
+        if (pos.generateAllMoves().empty()) {
             //数を数える
             break;
         }

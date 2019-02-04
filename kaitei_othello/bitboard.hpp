@@ -9,7 +9,7 @@
 class Bitboard {
 public:
 	//引数なしコンストラクタは空でいいかな
-	Bitboard() {}
+	Bitboard() = default;
 
 	//値を直接引数に持つコンストラクタ
     Bitboard(uint64_t b) : board_(b) {}
@@ -19,8 +19,6 @@ public:
 		board_ = (1LL << SquareToNum[sq]);
 	}
 
-	//Stockfishとの互換性がなんちゃら
-	//普通にあった方が便利そうだけども
     operator int64_t() const {
         return board_;
     }

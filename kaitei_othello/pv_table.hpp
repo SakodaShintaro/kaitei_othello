@@ -21,7 +21,7 @@ public:
     }
 
     size_t size() const {
-        return pv_length_[0];
+        return static_cast<size_t>(pv_length_[0]);
     }
 
     const Move* begin() const {

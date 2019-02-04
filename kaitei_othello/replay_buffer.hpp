@@ -16,7 +16,7 @@ public:
     //初期化する関数
     void clear();
 
-    //AlphaZeroTainerクラスからもアクセスできるようにpublicに置く
+    //AlphaZeroTrainerクラスからもアクセスできるようにpublicに置く
     //TDLeaf(λ)のλ
     double LAMBDA;
 

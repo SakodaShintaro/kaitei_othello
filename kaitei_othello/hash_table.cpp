@@ -3,7 +3,7 @@
 #include <iostream>
 
 HashEntry* HashTable::find(int64_t key) {
-	if (table_[key & key_mask_].flag_ == false
+	if (!table_[key & key_mask_].flag_
         || table_[key & key_mask_].hash_val != key) return nullptr;
 	return &table_[key & key_mask_];
 }

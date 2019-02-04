@@ -10,15 +10,6 @@
 template<class Type, int32_t Size>
 class ArrayMap {
 public:
-    constexpr ArrayMap() {
-        // 速度低下を防止するため、特にゼロ初期化等は行わない
-    }
-
-    ArrayMap(std::initializer_list<Type> list) {
-        assert(list.size() <= Size);
-        std::copy(list.begin(), list.end(), begin());
-    }
-
     ArrayMap(std::initializer_list<std::pair<int32_t, Type>> list) {
         for (const auto& pair : list) {
             array_[pair.first] = pair.second;
@@ -50,11 +41,7 @@ public:
     }
 
     constexpr size_t size() const {
-        return Size;
-    }
-
-    void clear() {
-        std::memset(&array_[0], 0, sizeof(Type) * Size);
+        return static_cast<size_t>(Size);
     }
 private:
     Type array_[Size];

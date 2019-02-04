@@ -5,7 +5,7 @@
 
 std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> ReplayBuffer::makeBatch(int64_t batch_size) {
     std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> batch;
-    batch.reserve(batch_size);
+    batch.reserve(static_cast<unsigned long>(batch_size));
     static std::mt19937 engine(0);
     mutex.lock();
 
@@ -77,6 +77,6 @@ void ReplayBuffer::push(Game& game) {
 void ReplayBuffer::clear() {
     mutex.lock();
     buffer_.clear();
-    buffer_.reserve(MAX_STACK_SIZE);
+    buffer_.reserve(static_cast<unsigned long>(MAX_STACK_SIZE));
     mutex.unlock();
 }

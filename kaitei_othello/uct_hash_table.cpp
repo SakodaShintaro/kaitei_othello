@@ -1,6 +1,4 @@
-﻿#pragma once
-
-#include"uct_hash_table.hpp"
+﻿#include"uct_hash_table.hpp"
 
 UctHashTable::UctHashTable(int64_t hash_size) : age_(1) {
     setSize(hash_size);
@@ -8,11 +6,11 @@ UctHashTable::UctHashTable(int64_t hash_size) : age_(1) {
 
 void UctHashTable::setSize(int64_t megabytes) {
     int64_t bytes = megabytes * 1024 * 1024;
-    size_ = 1ull << MSB64(bytes / sizeof(UctHashEntry));
+    size_ = static_cast<int64_t>(1ull << MSB64(bytes / sizeof(UctHashEntry)));
     uct_hash_limit_ = size_ * 9 / 10;
     used_ = 0;
     enough_size_ = true;
-    table_.resize(size_);
+    table_.resize(static_cast<unsigned long>(size_));
 }
 
 Index UctHashTable::searchEmptyIndex(int64_t hash, int16_t turn_number) {
@@ -76,7 +74,7 @@ void UctHashTable::saveUsedHash(Position& pos, Index index) {
 }
 
 void UctHashTable::deleteOldHash(Position& root, bool leave_root) {
-    auto root_index = findSameHashIndex(root.hash_value(), root.turn_number());
+    auto root_index = findSameHashIndex(root.hash_value(), static_cast<int16_t>(root.turn_number()));
 
     used_ = 0;
     age_++;

@@ -81,10 +81,10 @@ std::pair<Move, TeacherType> MCTSearcher::think(Position& root, bool add_noise) 
 #endif
     assert(0.0 <= best_wp && best_wp <= 1.0);
 
-    TeacherType teacher(OUTPUT_DIM, 0.0);
+    TeacherType teacher((unsigned long)OUTPUT_DIM, 0.0);
 
     //訪問回数に基づいた分布を得る
-    std::vector<double> distribution(current_node.moves_size);
+    std::vector<double> distribution(static_cast<unsigned long>(current_node.moves_size));
     for (int32_t i = 0; i < current_node.moves_size; i++) {
         distribution[i] = (double)N[i] / current_node.sum_N;
         assert(0.0 <= distribution[i] && distribution[i] <= 1.0);
@@ -187,7 +187,7 @@ ValueType MCTSearcher::uctSearch(Position & pos, Index current_index) {
 }
 
 Index MCTSearcher::expandNode(Position& pos) {
-    auto index = hash_table_.findSameHashIndex(pos.hash_value(), pos.turn_number());
+    auto index = hash_table_.findSameHashIndex(pos.hash_value(), static_cast<int16_t>(pos.turn_number()));
 
     // 合流先が検知できればそれを返す
     if (index != hash_table_.size()) {
@@ -195,7 +195,7 @@ Index MCTSearcher::expandNode(Position& pos) {
     }
 
     // 空のインデックスを探す
-    index = hash_table_.searchEmptyIndex(pos.hash_value(), pos.turn_number());
+    index = hash_table_.searchEmptyIndex(pos.hash_value(), static_cast<int16_t>(pos.turn_number()));
 
     auto& current_node = hash_table_[index];
 
@@ -218,7 +218,7 @@ Index MCTSearcher::expandNode(Position& pos) {
     }
 #else
     current_node.value = 0.0;
-    current_node.W = std::vector<float>(current_node.moves_size, 0.0);
+    current_node.W = std::vector<float>(static_cast<unsigned long>(current_node.moves_size), 0.0);
 #endif
 
     //ノードを評価
@@ -229,7 +229,7 @@ Index MCTSearcher::expandNode(Position& pos) {
 
 void MCTSearcher::evalNode(Position& pos, Index index) {
     auto& current_node = hash_table_[index];
-    std::vector<float> legal_move_policy(current_node.moves_size);
+    std::vector<float> legal_move_policy(static_cast<unsigned long>(current_node.moves_size));
 
     //Policyの計算
     if (current_node.moves_size != 1) {
@@ -263,25 +263,24 @@ bool MCTSearcher::isTimeOver() {
 }
 
 bool MCTSearcher::shouldStop() {
-    if (isTimeOver()) {
-        return true;
-    }
-
-    return false;
-
-    // 探索回数が最も多い手と次に多い手を求める
-    int32_t max1 = 0, max2 = 0;
-    for (auto e : hash_table_[current_root_index_].N) {
-        if (e > max1) {
-            max2 = max1;
-            max1 = e;
-        } else if (e > max2) {
-            max2 = e;
-        }
-    }
-
-    // 残りの探索を全て次善手に費やしても最善手を超えられない場合は探索を打ち切る
-    return (max1 - max2) > (usi_option.playout_limit - playout_num);
+    return isTimeOver();
+//    if (isTimeOver()) {
+//        return true;
+//    }
+//
+//    // 探索回数が最も多い手と次に多い手を求める
+//    int32_t max1 = 0, max2 = 0;
+//    for (auto e : hash_table_[current_root_index_].N) {
+//        if (e > max1) {
+//            max2 = max1;
+//            max1 = e;
+//        } else if (e > max2) {
+//            max2 = e;
+//        }
+//    }
+//
+//    // 残りの探索を全て次善手に費やしても最善手を超えられない場合は探索を打ち切る
+//    return (max1 - max2) > (usi_option.playout_limit - playout_num);
 }
 
 std::vector<Move> MCTSearcher::getPV() const {
@@ -316,7 +315,7 @@ void MCTSearcher::printUSIInfo() const {
     assert(0.0 <= best_wp && best_wp <= 1.0);
 
     //勝率を評価値に変換
-    int32_t cp = cp * 1000;
+    int32_t cp = static_cast<int32_t>(best_wp * 1000);
 
     printf("info nps %d time %d nodes %d hashfull %d score cp %d pv ",
         (int)(current_node.sum_N * 1000 / std::max((long long)elapsed.count(), 1LL)),
@@ -337,7 +336,7 @@ std::vector<double> MCTSearcher::dirichletDistribution(int32_t k, double alpha) 
     static std::default_random_engine engine(seed());
     static constexpr double eps = 0.000000001;
     std::gamma_distribution<double> gamma(alpha, 1.0);
-    std::vector<double> dirichlet(k);
+    std::vector<double> dirichlet(static_cast<unsigned long>(k));
     double sum = 0.0;
     for (int32_t i = 0; i < k; i++) {
         sum += (dirichlet[i] = std::max(gamma(engine), eps));
@@ -353,8 +352,7 @@ int32_t MCTSearcher::selectMaxUcbChild(const UctHashEntry & current_node) {
 
     // ucb = Q(s, a) + U(s, a)
     // Q(s, a) = W(s, a) / N(s, a)
-    // U(s, a) = C_PUCT * P(s, a) * sqrt(sum_b(B(s, b)) / (1 + N(s, a))
-    constexpr double C_PUCT = 1.0;
+    // U(s, a) = C * P(s, a) * sqrt(sum_b(B(s, b)) / (1 + N(s, a))
 
     int32_t max_index = -1;
     double max_value = INT_MIN;

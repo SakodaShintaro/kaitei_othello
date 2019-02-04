@@ -12,7 +12,7 @@ public:
     //    公開メソッド
     //--------------------
     //コンストラクタ
-    AlphaZeroTrainer(std::string settings_file_path);
+    explicit AlphaZeroTrainer(std::string settings_file_path);
 
     //1スレッドだけ学習器を作り、残りのスレッドは自己対局
     //これらは並列に行われる

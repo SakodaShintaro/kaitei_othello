@@ -28,7 +28,7 @@ struct HashEntry {
         flag_(false) {}
 
     void print() {
-        printf("hash_val = %llx\n", hash_val);
+        printf("hash_val = %llx\n", static_cast<unsigned long long int>(hash_val));
         printf("best_move = "); best_move.printWithScore();
         printf("depth = %d\n", depth);
         printf("flag_ = %s\n", flag_ ? "YES" : "NO");

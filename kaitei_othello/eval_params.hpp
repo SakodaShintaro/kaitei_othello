@@ -62,11 +62,9 @@ public:
     template<typename Function> void forEach(Function f);
     template<typename Function> void forEach(Function f) const;
 
-    //統計:全てforEachで書ける(=KPPTとNNで変わらない)
+    //統計:全てforEachで書ける
     double sumAbs() const;
     double maxAbs() const;
-    void printHistgram(int64_t bin_size = 1) const;
-    void printBias() const;
 
     //コピー
     void copy(const EvalParams<DefaultEvalType>& source);
@@ -166,39 +164,6 @@ inline double EvalParams<T>::maxAbs() const {
 }
 
 template<typename T>
-inline void EvalParams<T>::printHistgram(int64_t bin_size) const {
-    std::cout << "sumAbs() = " << sumAbs() << std::endl;
-    std::map<int64_t, uint64_t> histgram;
-    forEach([&](T value) {
-        if (value == 0) {
-            //0はそのまま
-            histgram[static_cast<int64_t>(value)]++;
-        } else if (value > 0) {
-            //正の数はたとえばbin_size = 5のとき1~5が1, 6~10が2, ...となるように計算する 
-            histgram[static_cast<int64_t>((value + bin_size - 1) / bin_size)]++;
-        } else {
-            //負の数も-1~-5が-1, -6~-10が-2, ...となるように計算する
-            histgram[static_cast<int64_t>((value - bin_size + 1) / bin_size)]++;
-        }
-    });
-    double all_num = 0.0;
-    for (int32_t i = 0; i < LAYER_NUM; i++) {
-        all_num += MATRIX_SIZE[i][0] * (MATRIX_SIZE[i][1] + 1);
-    }
-    for (auto e : histgram) {
-        if (e.first == 0) {
-            //0はそのまま数えた
-            printf("      0       : %9llu (%6.2f)\n", e.second, (double)e.second / all_num * 100.0);
-        } else if (e.first > 0) {
-            printf("%6lld~%6lld : %9llu (%6.2f)\n", (e.first - 1) * bin_size + 1, e.first * bin_size, e.second, (double)e.second / all_num * 100.0);
-        } else {
-            printf("%6lld~%6lld : %9llu (%6.2f)\n", (e.first + 1) * bin_size - 1, e.first * bin_size, e.second, (double)e.second / all_num * 100.0);
-        }
-    }
-    std::cout << std::endl;
-}
-
-template<typename T>
 template<typename Function>
 void EvalParams<T>::forEach(Function f) {
     for (int32_t i = 0; i < LAYER_NUM; i++) {
@@ -245,14 +210,6 @@ inline void EvalParams<T>::roundCopy(const EvalParams<LearnEvalType>& source) {
                 b[i](j, k) = (T)std::round(source.b[i](j, k));
             }
         }
-    }
-}
-
-template<typename T>
-inline void EvalParams<T>::printBias() const {
-    for (int32_t i = 0; i < LAYER_NUM; i++) {
-        std::cout << i + 1 << "層目" << std::endl;
-        std::cout << b[i] << std::endl;
     }
 }
 

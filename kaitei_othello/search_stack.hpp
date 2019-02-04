@@ -1,5 +1,4 @@
-﻿#pragma once
-#ifndef SEARCH_STACK_HPP
+﻿#ifndef SEARCH_STACK_HPP
 #define SEARCH_STACK_HPP
 
 #ifdef USE_SEARCH_STACK

@@ -1,5 +1,4 @@
-﻿#pragma once
-#ifndef SHARED_DATA_HPP
+﻿#ifndef SHARED_DATA_HPP
 #define SHARED_DATA_HPP
 
 #include"hash_table.hpp"

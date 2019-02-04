@@ -1,6 +1,4 @@
-﻿#pragma once
-
-#ifndef LOAD_GAME_HPP
+﻿#ifndef LOAD_GAME_HPP
 #define LOAD_GAME_HPP
 
 #include"move.hpp"

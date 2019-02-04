@@ -1,6 +1,4 @@
-﻿#pragma once
-
-#ifndef OPERATE_PARAMS_HPP
+﻿#ifndef OPERATE_PARAMS_HPP
 #define OPERATE_PARAMS_HPP
 
 #include"eval_params.hpp"

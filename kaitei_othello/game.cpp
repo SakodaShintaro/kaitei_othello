@@ -13,7 +13,7 @@ void Game::writeKifuFile(std::string dir_path) const {
     std::string file_name = dir_path + std::to_string(id++) + ".okif";
     std::ofstream ofs(file_name);
     if (!ofs) {
-        std::cout << "cannnot open " << dir_path << std::endl;
+        std::cout << "cannot open " << dir_path << std::endl;
         assert(false);
     }
     ofs << std::fixed;

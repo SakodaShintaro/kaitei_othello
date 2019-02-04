@@ -40,7 +40,7 @@ public:
         return (color() == BLACK ? SquareToNum[to()] : SquareToNum[InvSquare[to()]]);
     }
 
-	//探索時にSeacherクラスから気軽にアクセスできるようpublicにおいてるけど
+	//探索時にSearcherクラスから気軽にアクセスできるようpublicにおいてるけど
 	int32_t move;
 	Score score;
 };
@@ -48,7 +48,7 @@ public:
 //比較用
 const Move NULL_MOVE(0);
 
-//sfen形式で出力するオーバーロード
+//ストリームに対して出力するオーバーロード
 inline std::ostream& operator<<(std::ostream& os, Move m) {
     if (m == NULL_MOVE) {
         os << "PA";

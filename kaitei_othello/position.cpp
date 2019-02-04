@@ -127,7 +127,7 @@ void Position::print() const {
         }
     }
 
-    printf("ハッシュ値:%lld\n", hash_value_);
+    printf("ハッシュ値:%lld\n", static_cast<long long int>(hash_value_));
 }
 
 void Position::doMove(const Move move) {
@@ -213,7 +213,6 @@ void Position::doMove(const Move move) {
 }
 
 void Position::undo() {
-    const Move last_move = kifu_.back();
     kifu_.pop_back();
 
     //手番を戻す(このタイミングでいいかな?)
@@ -336,7 +335,7 @@ std::vector<Move> Position::generateAllMoves() const {
             moves.push_back(move);
         }
     }
-    if (moves.size() == 0) {
+    if (moves.empty()) {
         moves.push_back(NULL_MOVE);
     }
     return moves;
@@ -350,7 +349,7 @@ std::vector<Move> Position::scoredAndSortedMoves() {
     for (Move& move : moves) {
         move.score = output_(move.toLabel());
     }
-    sort(moves.begin(), moves.end(), std::greater<Move>());
+    sort(moves.begin(), moves.end(), std::greater<>());
     return moves;
 }
 
