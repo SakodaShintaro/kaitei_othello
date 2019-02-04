@@ -1,6 +1,4 @@
-﻿#pragma once
-
-#include"alphazero_trainer.hpp"
+﻿#include"alphazero_trainer.hpp"
 #include"position.hpp"
 #include"searcher.hpp"
 #include"eval_params.hpp"

@@ -3,7 +3,7 @@ search_depth 2
 optimizer MOMENTUM
 learn_rate 0.5
 momentum_decay 0.9
-thread_num 4
+thread_num 16
 threshold(0.0~1.0)  0.9
 lambda 1.0
 playout_limit 800
