@@ -17,7 +17,7 @@ std::vector<std::pair<std::array<int64_t, 3>, TeacherType>> ReplayBuffer::makeBa
 
     //データがmax_size_を超過していたら減らす
     if ((int64_t)buffer_.size() > MAX_STACK_SIZE) {
-        buffer_.erase(buffer_.begin(), buffer_.begin() + MAX_STACK_SIZE - buffer_.size());
+        buffer_.erase(buffer_.begin(), buffer_.begin() + buffer_.size() - MAX_STACK_SIZE);
     }
 
     //ランダムにデータを取る
