@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2048
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "kaitei_othello", "kaitei_othello\kaitei_othello.vcxproj", "{E05EB196-A07B-42C9-949B-EFAC79AF8F40}"
 EndProject
@@ -11,8 +11,8 @@ Global
 		Categorical|x86 = Categorical|x86
 		Debug|x64 = Debug|x64
 		Debug|x86 = Debug|x86
-		Release|x64 = Release|x64
-		Release|x86 = Release|x86
+		Scalar|x64 = Scalar|x64
+		Scalar|x86 = Scalar|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Categorical|x64.ActiveCfg = Categorical|x64
@@ -23,10 +23,10 @@ Global
 		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Debug|x64.Build.0 = Debug|x64
 		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Debug|x86.ActiveCfg = Debug|Win32
 		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Debug|x86.Build.0 = Debug|Win32
-		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Release|x64.ActiveCfg = Release|x64
-		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Release|x64.Build.0 = Release|x64
-		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Release|x86.ActiveCfg = Release|Win32
-		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Release|x86.Build.0 = Release|Win32
+		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Scalar|x64.ActiveCfg = Scalar|x64
+		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Scalar|x64.Build.0 = Scalar|x64
+		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Scalar|x86.ActiveCfg = Scalar|Win32
+		{E05EB196-A07B-42C9-949B-EFAC79AF8F40}.Scalar|x86.Build.0 = Scalar|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
